@@ -2,7 +2,13 @@
 
 import { useEffect } from "react";
 
-import Image from "next/image";
+import { ArrowLeft, RotateCw } from "lucide-react";
+
+import {
+  brandButtonVariant,
+  BrandLink,
+} from "@/components/brand/brand-buttons";
+import { StatusScreen } from "@/components/brand/status-screen";
 
 export default function Error({
   error,
@@ -16,19 +22,31 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="flex h-dvh w-full flex-col items-center justify-center gap-4 px-6 text-center">
-      <Image alt="لوگو" src={"/favicon.svg"} width={150} height={150} />
-      <h1 className="text-2xl font-bold text-slate-800">مشکلی پیش آمد</h1>
-      <p dir="ltr" className="text-sm text-slate-500">
-        {error.message}
-      </p>
+    <StatusScreen
+      title="مشکلی پیش آمد"
+      description="در پردازش درخواست شما خطایی رخ داد. می‌توانید دوباره تلاش کنید یا به صفحه‌ی اصلی برگردید."
+    >
+      {error.digest ? (
+        <p
+          dir="ltr"
+          className="w-full font-mono text-xs text-[var(--sk-text-faint)]"
+        >
+          ref: {error.digest}
+        </p>
+      ) : null}
+
       <button
         type="button"
         onClick={() => unstable_retry()}
-        className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+        className={brandButtonVariant.gold}
       >
         تلاش مجدد
+        <RotateCw className="size-[18px]" />
       </button>
-    </main>
+      <BrandLink href="/" variant="outline">
+        بازگشت به خانه
+        <ArrowLeft className="size-[18px]" />
+      </BrandLink>
+    </StatusScreen>
   );
 }
