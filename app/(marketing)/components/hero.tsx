@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   ArrowLeft,
   CirclePlay,
@@ -26,6 +28,15 @@ const rise = {
 };
 
 export function Hero({ hero }: Props) {
+  // Gate the entrance on a post-mount flag so motion always commits `initial`
+  // before `animate`. Without this the transition races SSR hydration and the
+  // browser sometimes coalesces both states into one paint, skipping it.
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <section className="relative mx-auto max-w-[1200px] px-8 pt-18 pb-20 max-[560px]:px-5">
       <div className="pointer-events-none absolute -top-20 left-1/2 h-[480px] w-[760px] -translate-x-1/2 bg-[radial-gradient(50%_50%_at_50%_50%,color-mix(in_srgb,var(--sk-gold)_12%,transparent)_0%,transparent_70%)]" />
@@ -34,7 +45,7 @@ export function Hero({ hero }: Props) {
         <motion.div
           variants={rise}
           initial="initial"
-          animate="animate"
+          animate={entered ? "animate" : "initial"}
           transition={{ duration: 0.7, ease: [0.2, 0.7, 0.3, 1] }}
         >
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--sk-gold)_30%,transparent)] bg-[color-mix(in_srgb,var(--sk-gold)_10%,transparent)] px-3.5 py-[7px] text-[13px] text-[var(--sk-gold-light)]">
@@ -81,18 +92,18 @@ export function Hero({ hero }: Props) {
         <motion.div
           variants={rise}
           initial="initial"
-          animate="animate"
+          animate={entered ? "animate" : "initial"}
           transition={{ duration: 0.7, ease: [0.2, 0.7, 0.3, 1], delay: 0.15 }}
           className="relative mx-auto w-full max-w-[480px]"
         >
-          <PreviewCard hero={hero} />
+          <PreviewCard hero={hero} entered={entered} />
         </motion.div>
       </div>
     </section>
   );
 }
 
-function PreviewCard({ hero }: Props) {
+function PreviewCard({ hero, entered }: Props & { entered: boolean }) {
   return (
     <div className="relative">
       <div className="relative overflow-hidden rounded-[20px] border border-[var(--sk-border-strong)] bg-[var(--sk-surface-deep)] shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
@@ -145,7 +156,7 @@ function PreviewCard({ hero }: Props) {
                   className="flex-1 origin-bottom rounded-t-[5px] bg-[linear-gradient(180deg,var(--sk-gold-light),var(--sk-gold))]"
                   style={{ height: `${height}%` }}
                   initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
+                  animate={{ scaleY: entered ? 1 : 0 }}
                   transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 }}
                 />
               ))}
