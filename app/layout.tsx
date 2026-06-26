@@ -34,7 +34,7 @@ export default function RootLayout({
         <JsonLd data={websiteJsonLd()} />
         <JsonLd data={organizationJsonLd()} />
 
-        <NextTopLoader color="#36BCF8" height={2} showSpinner={false} />
+        <NextTopLoader color="#c9a24e" height={2} showSpinner={false} />
         <QueryProvider>
           <ShadcnTooltipProvider>
             {children}
