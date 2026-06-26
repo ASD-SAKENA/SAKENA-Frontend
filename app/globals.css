@@ -99,6 +99,28 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* ── Marketing landing palette (dark, gold accent) ── */
+:root {
+  --sk-bg: #0a0e1a;
+  --sk-bg-band: #0c111e;
+  --sk-surface: #0f1525;
+  --sk-surface-raised: #141a28;
+  --sk-surface-deep: #0e1320;
+  --sk-border: #1f2838;
+  --sk-border-strong: #2a3242;
+  --sk-border-subtle: #1a2233;
+  --sk-text: #eceef3;
+  --sk-text-muted: #9ca3b0;
+  --sk-text-faint: #6b7280;
+  --sk-gold: #c9a24e;
+  --sk-gold-light: #e6cc8a;
+  --sk-green: #3fb984;
+  --sk-blue: #4e8fe5;
+  --sk-amber: #e0a33e;
+  --sk-slate: #9ba4b4;
+  --sk-red: #e5644e;
+}
+
 @layer components {
   .text-motion {
     color: var(--color-motion);
