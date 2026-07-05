@@ -4,6 +4,7 @@ import {
   QueryProvider,
   ShadcnTooltipProvider,
   SonnerProvider,
+  ThemeProvider,
 } from "@/providers";
 import "katex/dist/katex.min.css";
 import NextTopLoader from "nextjs-toploader";
@@ -27,7 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fa" className={`${estedad.variable} ${figtree.variable}`}>
+    <html
+      lang="fa"
+      className={`${estedad.variable} ${figtree.variable}`}
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}
       >
@@ -35,12 +40,14 @@ export default function RootLayout({
         <JsonLd data={organizationJsonLd()} />
 
         <NextTopLoader color="#c9a24e" height={2} showSpinner={false} />
-        <QueryProvider>
-          <ShadcnTooltipProvider>
-            {children}
-            <SonnerProvider />
-          </ShadcnTooltipProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <ShadcnTooltipProvider>
+              {children}
+              <SonnerProvider />
+            </ShadcnTooltipProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

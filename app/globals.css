@@ -9,6 +9,22 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* App (dashboard) palette — themeable via [data-theme] */
+  --color-app-bg: var(--ap-bg);
+  --color-app-surface: var(--ap-surface);
+  --color-app-surface2: var(--ap-surface2);
+  --color-app-border: var(--ap-border);
+  --color-app-fg: var(--ap-fg);
+  --color-app-muted: var(--ap-muted);
+  --color-app-gold: var(--ap-gold);
+  --color-app-gold-light: var(--ap-gold-light);
+  --color-app-gold-fg: var(--ap-gold-fg);
+  --color-app-steel: var(--ap-steel);
+  --color-app-success: var(--ap-success);
+  --color-app-warning: var(--ap-warning);
+  --color-app-danger: var(--ap-danger);
+  --color-app-info: var(--ap-info);
   --font-sans:
     var(--font-estedad), var(--font-figtree), ui-sans-serif, system-ui,
     sans-serif;
@@ -121,7 +137,77 @@
   --sk-red: #e5644e;
 }
 
+/* ── App (dashboard) palette — dark default, light via [data-theme="light"] ── */
+:root {
+  --ap-bg: #0a0e1a;
+  --ap-surface: #141a28;
+  --ap-surface2: #1e2636;
+  --ap-border: #2a3242;
+  --ap-fg: #eceef3;
+  --ap-muted: #9ca3b0;
+  --ap-gold: #c9a24e;
+  --ap-gold-light: #e6cc8a;
+  --ap-gold-fg: #0a0e1a;
+  --ap-gold-soft: rgba(201, 162, 78, 0.15);
+  --ap-steel: #9ba4b4;
+  --ap-success: #3fb984;
+  --ap-warning: #e0a33e;
+  --ap-danger: #e5644e;
+  --ap-info: #4e8fe5;
+  --ap-glass-bg: rgba(20, 26, 40, 0.62);
+  --ap-glass-brd: rgba(255, 255, 255, 0.09);
+  --ap-glass-hi: rgba(255, 255, 255, 0.06);
+  --ap-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --ap-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] {
+  --ap-bg: #f7f8fa;
+  --ap-surface: #ffffff;
+  --ap-surface2: #f1f3f7;
+  --ap-border: #e5e7eb;
+  --ap-fg: #0a0e1a;
+  --ap-muted: #6b7280;
+  --ap-gold: #b8862f;
+  --ap-gold-light: #c9a24e;
+  --ap-gold-fg: #ffffff;
+  --ap-gold-soft: rgba(184, 134, 47, 0.12);
+  --ap-steel: #6b7280;
+  --ap-success: #2e9e6f;
+  --ap-warning: #b9822b;
+  --ap-danger: #cf4f3a;
+  --ap-info: #3f78c9;
+  --ap-glass-bg: rgba(255, 255, 255, 0.66);
+  --ap-glass-brd: rgba(16, 24, 40, 0.08);
+  --ap-glass-hi: rgba(255, 255, 255, 0.5);
+  --ap-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
+  --ap-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
 @layer components {
+  /* App shell helpers */
+  .sk-page {
+    animation: sk-rise 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  @keyframes sk-rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .sk-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .sk-scroll::-webkit-scrollbar-thumb {
+    background: var(--ap-border);
+    border-radius: 8px;
+  }
+
   .text-motion {
     color: var(--color-motion);
   }
