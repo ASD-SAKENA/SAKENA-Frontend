@@ -125,8 +125,8 @@ export async function getManagerRequests(): Promise<ManagerRequest[]> {
 }
 
 export async function createRequest(
-  payload: CreateRequestPayload,
+  _payload: CreateRequestPayload,
 ): Promise<{ id: string }> {
-  // Mock: the real call will be `http.post("/requests/", payload)`.
+  // Mock: the real call will be `http.post("/requests/", _payload)`.
   return { id: String(Date.now()) };
 }
