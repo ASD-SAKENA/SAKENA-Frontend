@@ -5,8 +5,8 @@ export const GLOBAL_CONFIG = {
   NEXT_PUBLIC_API_BASE:
     process.env.NEXT_PUBLIC_API_BASE ||
     (NODE_ENV === "development"
-      ? "http://localhost:8000/api"
-      : "https://api.sakena.ir/api"),
+      ? "http://localhost:8080/api/v1"
+      : "https://api.sakena.ir/api/v1"),
   NEXT_PUBLIC_CURRENT_URL:
     process.env.NEXT_PUBLIC_CURRENT_URL ||
     (NODE_ENV === "development"

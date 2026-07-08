@@ -55,17 +55,21 @@ export function SignupForm() {
   );
 
   const onSubmit = handleSubmit(async (values) => {
-    const { role } = await mutation.mutateAsync({
-      name: values.name,
-      mobile: values.mobile,
-      email: values.email || undefined,
-      buildingCode: values.buildingCode || undefined,
-      password: values.password,
-      role: values.role,
-    });
-    loginStore(role);
-    toast.success("حساب شما ساخته شد");
-    router.push(roleHomePath(role));
+    try {
+      const session = await mutation.mutateAsync({
+        name: values.name,
+        mobile: values.mobile,
+        email: values.email,
+        buildingCode: values.buildingCode || undefined,
+        password: values.password,
+        role: values.role,
+      });
+      loginStore(session.user, session.token);
+      toast.success("حساب شما ساخته شد");
+      router.push(roleHomePath(session.user.role));
+    } catch {
+      // The global http interceptor already surfaced the error toast.
+    }
   });
 
   const disabled = !ready || mutation.isPending;

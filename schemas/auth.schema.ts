@@ -18,12 +18,12 @@ export const signupSchema = z.object({
     .trim()
     .regex(/^0?9\d{9}$/, "شماره موبایل معتبر نیست."),
   buildingCode: z.string().trim().optional(),
+  // Required by the backend register endpoint (used for password recovery).
   email: z
     .string()
     .trim()
-    .email("ایمیل معتبر نیست.")
-    .optional()
-    .or(z.literal("")),
+    .min(1, "ایمیل را وارد کنید.")
+    .email("ایمیل معتبر نیست."),
   password: z.string().min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد."),
   role: roleEnum,
   agree: z.literal(true, {

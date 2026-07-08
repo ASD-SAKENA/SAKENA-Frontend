@@ -5,41 +5,41 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { AppUser, Role } from "@/types/app.type";
 
-/** Mock user profiles per role — replace with the real `me` response later. */
-const USERS: Record<Role, AppUser> = {
-  resident: {
-    name: "مهندس رضایی",
-    role: "resident",
-    roleLabel: "ساکن — واحد ۱۲",
-    unit: "۱۲ — بلوک B",
-    initial: "م",
-  },
-  manager: {
-    name: "سرکار خانم احمدی",
-    role: "manager",
-    roleLabel: "مدیر ساختمان",
-    unit: "برج نیلوفر · بلوک B",
-    initial: "ا",
-  },
-  staff: {
-    name: "آقای کریمی",
-    role: "staff",
-    roleLabel: "کارکن خدماتی",
-    unit: "واحد خدمات",
-    initial: "آ",
-  },
+const ROLE_LABELS: Record<Role, string> = {
+  resident: "ساکن",
+  manager: "مدیر ساختمان",
+  staff: "کارکن خدماتی",
 };
 
-export function userForRole(role: Role): AppUser {
-  return USERS[role];
+/**
+ * `unit` is client-side only until the backend models units-per-user; the
+ * rest of the user comes from the real auth/profile responses.
+ */
+const ROLE_UNITS: Record<Role, string> = {
+  resident: "—",
+  manager: "—",
+  staff: "واحد خدمات",
+};
+
+/** Build the app-level user from backend auth data (username + role). */
+export function buildAppUser(role: Role, name: string): AppUser {
+  return {
+    name,
+    role,
+    roleLabel: ROLE_LABELS[role],
+    unit: ROLE_UNITS[role],
+    initial: name.trim().charAt(0) || "س",
+  };
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   user: AppUser | null;
-  login: (role: Role) => void;
+  /** JWT access token; attached as `Authorization: Bearer` by services/http. */
+  token: string | null;
+  login: (user: AppUser, token: string) => void;
   logout: () => void;
-  /** Preview-only role switch (kept until the real backend fixes the role). */
+  /** Preview-only role switch (keeps the real name/token, swaps the role). */
   setRole: (role: Role) => void;
 }
 
@@ -48,9 +48,13 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       isAuthenticated: false,
       user: null,
-      login: (role) => set({ isAuthenticated: true, user: USERS[role] }),
-      logout: () => set({ isAuthenticated: false, user: null }),
-      setRole: (role) => set({ user: USERS[role] }),
+      token: null,
+      login: (user, token) => set({ isAuthenticated: true, user, token }),
+      logout: () => set({ isAuthenticated: false, user: null, token: null }),
+      setRole: (role) =>
+        set((state) => ({
+          user: buildAppUser(role, state.user?.name ?? ROLE_LABELS[role]),
+        })),
     }),
     {
       name: "sakena-auth",

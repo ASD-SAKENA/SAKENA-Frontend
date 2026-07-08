@@ -9,7 +9,7 @@ const STALE = 5 * 60 * 1000;
 export function useUnitsQuery() {
   return useQuery({
     queryKey: unitKeys.list,
-    queryFn: getUnits,
+    queryFn: () => getUnits(),
     staleTime: STALE,
   });
 }
