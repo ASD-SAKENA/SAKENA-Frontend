@@ -12,7 +12,6 @@ export const GLOBAL_CONFIG = {
     (NODE_ENV === "development"
       ? "http://localhost:3000"
       : "https://sakena.app"),
-  NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID || "",
 };
 
 export const LOCALE = "fa-IR";
