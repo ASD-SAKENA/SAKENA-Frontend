@@ -2,6 +2,7 @@ import type { StatusColor } from "@/types/app.type";
 import type { RequestPriority } from "@/types/requests.type";
 
 export interface StaffTask {
+  id: string;
   icon: string;
   title: string;
   unit: string;

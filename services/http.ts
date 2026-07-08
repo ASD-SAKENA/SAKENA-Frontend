@@ -9,6 +9,8 @@ import { toast } from "sonner";
 
 import { GLOBAL_CONFIG } from "@/app/config";
 
+import { useAuthStore } from "@/stores/auth.store";
+
 import { getQueryClient } from "@/lib/query-client";
 
 export { isAxiosError };
@@ -103,7 +105,13 @@ export function setSuppressAuthErrorToasts(value: boolean) {
 // ─── Request Interceptor
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // we dont need to add authorization header here because it will be added by the interceptor
+    // The backend is stateless JWT — attach the persisted token on the client.
+    if (typeof window !== "undefined") {
+      const token = useAuthStore.getState().token;
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
     return config;
   },
   (error: AxiosError) => Promise.reject(error),
@@ -145,8 +153,13 @@ http.interceptors.response.use(
             toast.error("ورود ناموفق بود. لطفا دوباره تلاش کنید.");
           }
           getQueryClient().clear();
-          if (!window.location.pathname.includes("/login") || isLogoutRequest) {
-            window.location.replace("/login");
+          const isAuthRequest = error.config?.url?.includes("/auth/");
+          if (!isAuthRequest) {
+            // Session expired mid-app: drop the stale token and re-login.
+            useAuthStore.getState().logout();
+            if (!window.location.pathname.includes("/login")) {
+              window.location.replace("/login");
+            }
           }
         }
         break;

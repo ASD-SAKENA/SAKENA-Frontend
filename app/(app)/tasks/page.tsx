@@ -9,7 +9,11 @@ import { AppIcon } from "@/components/app/app-icon";
 import { SectionCard } from "@/components/app/section-card";
 import { StatusBadge } from "@/components/app/status-badge";
 
-import { useStaffSummaryQuery, useStaffTasksQuery } from "@/queries/tasks";
+import {
+  useCompleteTaskMutation,
+  useStaffSummaryQuery,
+  useStaffTasksQuery,
+} from "@/queries/tasks";
 
 import { cn } from "@/lib/utils";
 
@@ -43,6 +47,7 @@ export default function TasksPage() {
   const [tab, setTab] = useState<StaffTab>("open");
   const { data: tasks = [] } = useStaffTasksQuery();
   const { data: summary = [] } = useStaffSummaryQuery();
+  const completeTask = useCompleteTaskMutation();
 
   const filtered = tasks.filter((t) => {
     if (tab === "open") return !t.done;
@@ -51,7 +56,11 @@ export default function TasksPage() {
   });
 
   const handleDone = (task: StaffTask) => {
-    toast.success(`گزارش انجام کار «${task.title}» ثبت شد`);
+    completeTask.mutate(task.id, {
+      onSuccess: () => {
+        toast.success(`گزارش انجام کار «${task.title}» ثبت شد`);
+      },
+    });
   };
 
   return (
@@ -77,7 +86,7 @@ export default function TasksPage() {
 
         {filtered.map((task) => (
           <div
-            key={task.title}
+            key={task.id}
             className="flex items-start gap-[15px] rounded-2xl border border-app-border bg-app-surface p-[18px] shadow-[var(--ap-shadow-sm)]"
           >
             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-app-surface2">
@@ -102,7 +111,8 @@ export default function TasksPage() {
                 <button
                   type="button"
                   onClick={() => handleDone(task)}
-                  className="flex h-9 items-center gap-1.5 rounded-[9px] bg-app-success px-3.5 text-[13px] font-semibold text-white transition-[filter] hover:brightness-[1.06] active:scale-[.99]"
+                  disabled={task.done || completeTask.isPending}
+                  className="flex h-9 items-center gap-1.5 rounded-[9px] bg-app-success px-3.5 text-[13px] font-semibold text-white transition-[filter] hover:brightness-[1.06] active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <AppIcon name="check" className="size-[17px]" />
                   ثبت انجام

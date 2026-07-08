@@ -42,14 +42,18 @@ export function LoginForm() {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const { role } = await mutation.mutateAsync({
-      identifier: values.identifier,
-      password: values.password,
-      role: values.role,
-    });
-    loginStore(role);
-    toast.success("خوش آمدید");
-    router.push(roleHomePath(role));
+    try {
+      const session = await mutation.mutateAsync({
+        identifier: values.identifier,
+        password: values.password,
+        role: values.role,
+      });
+      loginStore(session.user, session.token);
+      toast.success("خوش آمدید");
+      router.push(roleHomePath(session.user.role));
+    } catch {
+      // The global http interceptor already surfaced the error toast.
+    }
   });
 
   return (

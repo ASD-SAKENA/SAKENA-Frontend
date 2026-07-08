@@ -180,7 +180,8 @@
   --ap-glass-bg: rgba(255, 255, 255, 0.66);
   --ap-glass-brd: rgba(16, 24, 40, 0.08);
   --ap-glass-hi: rgba(255, 255, 255, 0.5);
-  --ap-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
+  --ap-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
   --ap-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
 }
 

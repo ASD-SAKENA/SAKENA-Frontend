@@ -1,3 +1,9 @@
+import http from "@/services/http";
+
+import { formatFaDate } from "@/lib/format-date";
+import { toFaDigits } from "@/lib/persian-number";
+
+import type { TaskApiResponse } from "@/types/tasks.api.type";
 import type { StaffTask, SummaryItem } from "@/types/tasks.type";
 
 export const taskKeys = {
@@ -6,62 +12,69 @@ export const taskKeys = {
   summary: ["tasks", "summary"] as const,
 };
 
-const STAFF_TASKS: StaffTask[] = [
-  {
-    icon: "plumbing",
-    title: "نشتی شیر آب آشپزخانه",
-    unit: "۱۲",
-    date: "امروز ۹:۳۰",
+/**
+ * The backend task is generic (title/description/status). Unit, priority and
+ * icon are not modelled server-side yet, so display defaults fill the gaps.
+ */
+function toStaffTask(task: TaskApiResponse): StaffTask {
+  return {
+    id: task.id,
+    icon: "handyman",
+    title: task.title,
+    unit: "—",
+    date: formatFaDate(task.createdAt),
     priority: "متوسط",
     priorityColor: "warning",
-    done: false,
-  },
-  {
-    icon: "water_damage",
-    title: "گرفتگی لوله فاضلاب",
-    unit: "۷",
-    date: "امروز ۸:۰۰",
-    priority: "فوری",
-    priorityColor: "danger",
-    done: false,
-  },
-  {
-    icon: "bolt",
-    title: "تعویض لامپ‌های راه‌پله",
-    unit: "مشاعات",
-    date: "دیروز",
-    priority: "کم",
-    priorityColor: "success",
-    done: false,
-  },
-  {
-    icon: "ac_unit",
-    title: "سرویس کولر گازی",
-    unit: "۲۸",
-    date: "۲۸ خرداد",
-    priority: "متوسط",
-    priorityColor: "warning",
-    done: true,
-  },
-];
-
-const STAFF_SUMMARY: SummaryItem[] = [
-  {
-    label: "کارهای باز",
-    value: "۳",
-    icon: "pending_actions",
-    color: "warning",
-  },
-  { label: "انجام‌شده امروز", value: "۲", icon: "task_alt", color: "success" },
-  { label: "فوری", value: "۱", icon: "priority_high", color: "danger" },
-];
+    done: task.status === "DONE",
+  };
+}
 
 export async function getStaffTasks(): Promise<StaffTask[]> {
-  // Mock: the real call will be `http.get<StaffTask[]>("/tasks/staff/")`.
-  return STAFF_TASKS;
+  const { data } = await http.get<TaskApiResponse[]>("/tasks");
+  return data.map(toStaffTask);
 }
 
 export async function getStaffSummary(): Promise<SummaryItem[]> {
-  // Mock: the real call will be `http.get<SummaryItem[]>("/tasks/summary/")`.
-  return STAFF_SUMMARY;
+  const { data } = await http.get<TaskApiResponse[]>("/tasks");
+  const open = data.filter((t) => t.status !== "DONE").length;
+  const inProgress = data.filter((t) => t.status === "IN_PROGRESS").length;
+  const done = data.filter((t) => t.status === "DONE").length;
+  return [
+    {
+      label: "کارهای باز",
+      value: toFaDigits(open),
+      icon: "pending_actions",
+      color: "warning",
+    },
+    {
+      label: "در جریان",
+      value: toFaDigits(inProgress),
+      icon: "autorenew",
+      color: "info",
+    },
+    {
+      label: "انجام‌شده",
+      value: toFaDigits(done),
+      icon: "task_alt",
+      color: "success",
+    },
+  ];
+}
+
+export async function createTask(
+  title: string,
+  description?: string,
+): Promise<StaffTask> {
+  const { data } = await http.post<TaskApiResponse>("/tasks", {
+    title,
+    description,
+  });
+  return toStaffTask(data);
+}
+
+export async function completeTask(id: string): Promise<StaffTask> {
+  const { data } = await http.patch<TaskApiResponse>(`/tasks/${id}/status`, {
+    status: "DONE",
+  });
+  return toStaffTask(data);
 }

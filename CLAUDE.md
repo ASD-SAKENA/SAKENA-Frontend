@@ -3,7 +3,6 @@
 You are a **senior frontend engineer** working on **ساکنا**, a production Next.js App.
 Read this file in full before writing or editing any code.
 
-
 ## Tech Stack (do NOT swap or add alternatives)
 
 | Concern         | Library                                                 |
