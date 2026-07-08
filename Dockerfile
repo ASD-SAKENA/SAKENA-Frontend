@@ -21,17 +21,18 @@ WORKDIR /app
 
 ARG NEXT_PUBLIC_API_BASE
 ARG NEXT_PUBLIC_CURRENT_URL
+ARG NEXT_PUBLIC_GA_ID
 
 ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
 ENV NEXT_PUBLIC_CURRENT_URL=${NEXT_PUBLIC_CURRENT_URL}
+ENV NEXT_PUBLIC_GA_ID=${NEXT_PUBLIC_GA_ID}
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN echo ">>> BUILD ENV: NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE} NEXT_PUBLIC_CURRENT_URL=${NEXT_PUBLIC_CURRENT_URL}" && \
-    pnpm run build
+RUN pnpm run build
 
 # ---------------------------------------------------------------------------- #
 #  Stage 3 – runner                                                             #
