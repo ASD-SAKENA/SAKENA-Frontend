@@ -16,7 +16,9 @@ export function RequestCard({ request }: Props) {
       <div className="min-w-0 flex-1">
         <div className="mb-[5px] flex items-center gap-2.5">
           <span className="text-[14.5px] font-bold">{request.title}</span>
-          <span className="text-[11.5px] text-app-muted">#{request.id}</span>
+          <span className="text-[11.5px] text-app-muted">
+            #{request.displayId}
+          </span>
         </div>
         <div className="text-[13px] text-app-muted">{request.description}</div>
       </div>

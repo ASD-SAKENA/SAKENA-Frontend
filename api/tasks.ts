@@ -1,9 +1,10 @@
-import http from "@/services/http";
+import { getAssignedRequests } from "@/api/requests";
 
 import { formatFaDate } from "@/lib/format-date";
 import { toFaDigits } from "@/lib/persian-number";
+import { CATEGORY_GROUP_ICONS } from "@/lib/service-requests";
 
-import type { TaskApiResponse } from "@/types/tasks.api.type";
+import type { ServiceRequestApiResponse } from "@/types/requests.api.type";
 import type { StaffTask, SummaryItem } from "@/types/tasks.type";
 
 export const taskKeys = {
@@ -13,32 +14,35 @@ export const taskKeys = {
 };
 
 /**
- * The backend task is generic (title/description/status). Unit, priority and
- * icon are not modelled server-side yet, so display defaults fill the gaps.
+ * Staff "tasks" are the service requests assigned to the current user.
+ * Priority is not modelled server-side yet — a neutral default fills the gap.
  */
-function toStaffTask(task: TaskApiResponse): StaffTask {
+function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
   return {
-    id: task.id,
-    icon: "handyman",
-    title: task.title,
-    unit: "—",
-    date: formatFaDate(task.createdAt),
+    id: r.id,
+    icon: CATEGORY_GROUP_ICONS[r.categoryGroup] ?? "handyman",
+    title: r.title,
+    unit: r.location ?? "—",
+    date: formatFaDate(r.createdAt),
     priority: "متوسط",
     priorityColor: "warning",
-    done: task.status === "DONE",
+    apiStatus: r.status,
+    done: r.status === "COMPLETED",
   };
 }
 
 export async function getStaffTasks(): Promise<StaffTask[]> {
-  const { data } = await http.get<TaskApiResponse[]>("/tasks");
+  const data = await getAssignedRequests();
   return data.map(toStaffTask);
 }
 
 export async function getStaffSummary(): Promise<SummaryItem[]> {
-  const { data } = await http.get<TaskApiResponse[]>("/tasks");
-  const open = data.filter((t) => t.status !== "DONE").length;
-  const inProgress = data.filter((t) => t.status === "IN_PROGRESS").length;
-  const done = data.filter((t) => t.status === "DONE").length;
+  const data = await getAssignedRequests();
+  const open = data.filter(
+    (r) => r.status !== "COMPLETED" && r.status !== "REJECTED",
+  ).length;
+  const inProgress = data.filter((r) => r.status === "IN_PROGRESS").length;
+  const done = data.filter((r) => r.status === "COMPLETED").length;
   return [
     {
       label: "کارهای باز",
@@ -59,22 +63,4 @@ export async function getStaffSummary(): Promise<SummaryItem[]> {
       color: "success",
     },
   ];
-}
-
-export async function createTask(
-  title: string,
-  description?: string,
-): Promise<StaffTask> {
-  const { data } = await http.post<TaskApiResponse>("/tasks", {
-    title,
-    description,
-  });
-  return toStaffTask(data);
-}
-
-export async function completeTask(id: string): Promise<StaffTask> {
-  const { data } = await http.patch<TaskApiResponse>(`/tasks/${id}/status`, {
-    status: "DONE",
-  });
-  return toStaffTask(data);
 }
