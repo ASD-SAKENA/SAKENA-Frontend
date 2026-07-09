@@ -2,14 +2,29 @@
 
 import { useState } from "react";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
+import { AppField, AppInput } from "@/components/app/form-controls";
+import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
-import { useManagerRequestsQuery } from "@/queries/requests";
+import {
+  useApproveRequestMutation,
+  useAssignRequestMutation,
+  useManagerRequestsQuery,
+} from "@/queries/requests";
 
+import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
+
+import {
+  type AssignWorkerForm,
+  assignWorkerSchema,
+} from "@/schemas/request.schema";
 
 import type { ManagerRequest } from "@/types/requests.type";
 
@@ -26,7 +41,10 @@ function filterRequests(
   requests: ManagerRequest[],
   tab: QueueTab,
 ): ManagerRequest[] {
-  if (tab === "open") return requests.filter((r) => r.status === "باز");
+  if (tab === "open")
+    return requests.filter(
+      (r) => r.status === "باز" || r.status === "تأییدشده",
+    );
   if (tab === "progress")
     return requests.filter(
       (r) => r.status === "در حال انجام" || r.status === "ارجاع‌شده",
@@ -37,13 +55,45 @@ function filterRequests(
 
 export default function QueuePage() {
   const [tab, setTab] = useState<QueueTab>("open");
+  const [assignTarget, setAssignTarget] = useState<ManagerRequest | null>(null);
   const { data: requests = [] } = useManagerRequestsQuery();
+  const approve = useApproveRequestMutation();
+  const assign = useAssignRequestMutation();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AssignWorkerForm>({
+    resolver: zodResolver(assignWorkerSchema),
+    defaultValues: { workerId: "" },
+  });
 
   const rows = filterRequests(requests, tab);
 
-  const handleAssign = (id: string) => {
-    toast.success(`درخواست #${id} به کارکن ارجاع شد`);
+  const handleApprove = (r: ManagerRequest) => {
+    approve.mutate(r.id, {
+      onSuccess: () => {
+        toast.success(`درخواست «${r.title}» تأیید شد`);
+      },
+    });
   };
+
+  const onAssignSubmit = handleSubmit(async (values) => {
+    if (!assignTarget) return;
+    try {
+      await assign.mutateAsync({
+        id: assignTarget.id,
+        workerId: values.workerId,
+      });
+      toast.success(`درخواست «${assignTarget.title}» به کارکن ارجاع شد`);
+      reset();
+      setAssignTarget(null);
+    } catch {
+      // The global http interceptor already surfaced the error toast.
+    }
+  });
 
   return (
     <div className="sk-page">
@@ -72,7 +122,7 @@ export default function QueuePage() {
               <tr className="text-right text-[12.5px] text-app-muted">
                 <th className="px-[18px] py-[13px] font-medium">#</th>
                 <th className="px-[18px] py-[13px] font-medium">موضوع</th>
-                <th className="px-[18px] py-[13px] font-medium">واحد</th>
+                <th className="px-[18px] py-[13px] font-medium">محل</th>
                 <th className="px-[18px] py-[13px] font-medium">اولویت</th>
                 <th className="px-[18px] py-[13px] font-medium">وضعیت</th>
                 <th className="px-[18px] py-[13px] font-medium">عملیات</th>
@@ -84,7 +134,9 @@ export default function QueuePage() {
                   key={r.id}
                   className="border-t border-app-border hover:bg-app-surface2"
                 >
-                  <td className="px-[18px] py-[13px] text-app-muted">{r.id}</td>
+                  <td className="px-[18px] py-[13px] text-app-muted">
+                    {r.displayId}
+                  </td>
                   <td className="px-[18px] py-[13px]">
                     <div className="font-semibold text-app-fg">{r.title}</div>
                     <div className="text-[11.5px] text-app-muted">{r.type}</div>
@@ -99,14 +151,29 @@ export default function QueuePage() {
                     <StatusBadge color={r.statusColor}>{r.status}</StatusBadge>
                   </td>
                   <td className="px-[18px] py-[13px]">
-                    <button
-                      type="button"
-                      onClick={() => handleAssign(r.id)}
-                      className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold"
-                    >
-                      <AppIcon name="person_add" className="size-4" />
-                      ارجاع
-                    </button>
+                    {r.apiStatus === "PENDING" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleApprove(r)}
+                        disabled={approve.isPending}
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-success transition-colors hover:border-app-success disabled:opacity-50"
+                      >
+                        <AppIcon name="check" className="size-4" />
+                        تأیید
+                      </button>
+                    ) : r.apiStatus === "APPROVED" ||
+                      r.apiStatus === "ASSIGNED" ? (
+                      <button
+                        type="button"
+                        onClick={() => setAssignTarget(r)}
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold"
+                      >
+                        <AppIcon name="person_add" className="size-4" />
+                        ارجاع
+                      </button>
+                    ) : (
+                      <span className="text-[12px] text-app-muted">—</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -114,42 +181,44 @@ export default function QueuePage() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-app-border px-[18px] py-[14px] text-[13px] text-app-muted">
-          <span>نمایش ۱ تا ۶ از ۱۸ درخواست</span>
-          <div className="flex gap-1.5">
-            <button
-              type="button"
-              className="flex size-8 items-center justify-center rounded-lg border border-app-border bg-transparent text-app-fg"
-            >
-              <AppIcon name="chevron_right" className="size-4" />
-            </button>
-            <button
-              type="button"
-              className="size-8 rounded-lg bg-app-gold font-bold text-app-gold-fg"
-            >
-              ۱
-            </button>
-            <button
-              type="button"
-              className="size-8 rounded-lg border border-app-border bg-transparent text-app-fg"
-            >
-              ۲
-            </button>
-            <button
-              type="button"
-              className="size-8 rounded-lg border border-app-border bg-transparent text-app-fg"
-            >
-              ۳
-            </button>
-            <button
-              type="button"
-              className="flex size-8 items-center justify-center rounded-lg border border-app-border bg-transparent text-app-fg"
-            >
-              <AppIcon name="chevron_left" className="size-4" />
-            </button>
-          </div>
+        <div className="border-t border-app-border px-[18px] py-[14px] text-[13px] text-app-muted">
+          نمایش {toFaDigits(rows.length)} درخواست
         </div>
       </div>
+
+      <Modal
+        open={assignTarget !== null}
+        onClose={() => setAssignTarget(null)}
+        title="ارجاع به کارکن"
+        description="شناسه (UUID) کارکن را وارد کنید — فهرست کارکنان هنوز در بک‌اند موجود نیست."
+      >
+        <form onSubmit={onAssignSubmit} className="mt-4">
+          <AppField label="شناسه کارکن" error={errors.workerId?.message}>
+            <AppInput
+              dir="ltr"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              {...register("workerId")}
+            />
+          </AppField>
+          <div className="mt-2 flex gap-2.5">
+            <AppButton
+              type="submit"
+              disabled={assign.isPending}
+              className="h-[46px] flex-1"
+            >
+              ارجاع درخواست
+            </AppButton>
+            <AppButton
+              type="button"
+              variant="outline"
+              onClick={() => setAssignTarget(null)}
+              className="h-[46px] px-6"
+            >
+              انصراف
+            </AppButton>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -63,6 +63,21 @@ export const AppInput = forwardRef<HTMLInputElement, InputProps>(
   },
 );
 
+export const AppSelect = forwardRef<
+  HTMLSelectElement,
+  React.SelectHTMLAttributes<HTMLSelectElement>
+>(function AppSelect({ className, children, ...props }, ref) {
+  return (
+    <select
+      ref={ref}
+      className={cn(inputBase, "cursor-pointer px-3.5 text-right", className)}
+      {...props}
+    >
+      {children}
+    </select>
+  );
+});
+
 export const AppTextarea = forwardRef<
   HTMLTextAreaElement,
   React.TextareaHTMLAttributes<HTMLTextAreaElement>

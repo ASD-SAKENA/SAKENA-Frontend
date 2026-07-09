@@ -1,4 +1,5 @@
 import type { StatusColor } from "@/types/app.type";
+import type { ServiceRequestApiStatus } from "@/types/requests.api.type";
 import type { RequestPriority } from "@/types/requests.type";
 
 export interface StaffTask {
@@ -9,6 +10,7 @@ export interface StaffTask {
   date: string;
   priority: RequestPriority;
   priorityColor: StatusColor;
+  apiStatus: ServiceRequestApiStatus;
   done: boolean;
 }
 

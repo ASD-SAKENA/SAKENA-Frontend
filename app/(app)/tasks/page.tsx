@@ -9,16 +9,15 @@ import { AppIcon } from "@/components/app/app-icon";
 import { SectionCard } from "@/components/app/section-card";
 import { StatusBadge } from "@/components/app/status-badge";
 
-import {
-  useCompleteTaskMutation,
-  useStaffSummaryQuery,
-  useStaffTasksQuery,
-} from "@/queries/tasks";
+import { useStartProgressMutation } from "@/queries/requests";
+import { useStaffSummaryQuery, useStaffTasksQuery } from "@/queries/tasks";
 
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
 import type { StaffTask } from "@/types/tasks.type";
+
+import { CompleteTaskModal } from "./components/complete-task-modal";
 
 type StaffTab = "open" | "done" | "all";
 
@@ -47,7 +46,8 @@ export default function TasksPage() {
   const [tab, setTab] = useState<StaffTab>("open");
   const { data: tasks = [] } = useStaffTasksQuery();
   const { data: summary = [] } = useStaffSummaryQuery();
-  const completeTask = useCompleteTaskMutation();
+  const startProgress = useStartProgressMutation();
+  const [completeTarget, setCompleteTarget] = useState<StaffTask | null>(null);
 
   const filtered = tasks.filter((t) => {
     if (tab === "open") return !t.done;
@@ -55,10 +55,10 @@ export default function TasksPage() {
     return true;
   });
 
-  const handleDone = (task: StaffTask) => {
-    completeTask.mutate(task.id, {
+  const handleStart = (task: StaffTask) => {
+    startProgress.mutate(task.id, {
       onSuccess: () => {
-        toast.success(`گزارش انجام کار «${task.title}» ثبت شد`);
+        toast.success(`کار «${task.title}» شروع شد`);
       },
     });
   };
@@ -108,10 +108,21 @@ export default function TasksPage() {
                 واحد {task.unit} · ارجاع: {task.date}
               </div>
               <div className="flex gap-2.5">
+                {task.apiStatus === "ASSIGNED" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleStart(task)}
+                    disabled={startProgress.isPending}
+                    className="flex h-9 items-center gap-1.5 rounded-[9px] bg-app-info px-3.5 text-[13px] font-semibold text-white transition-[filter] hover:brightness-[1.06] active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <AppIcon name="play_arrow" className="size-[17px]" />
+                    شروع کار
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => handleDone(task)}
-                  disabled={task.done || completeTask.isPending}
+                  onClick={() => setCompleteTarget(task)}
+                  disabled={task.apiStatus !== "IN_PROGRESS"}
                   className="flex h-9 items-center gap-1.5 rounded-[9px] bg-app-success px-3.5 text-[13px] font-semibold text-white transition-[filter] hover:brightness-[1.06] active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <AppIcon name="check" className="size-[17px]" />
@@ -152,6 +163,11 @@ export default function TasksPage() {
           </div>
         ))}
       </SectionCard>
+
+      <CompleteTaskModal
+        task={completeTarget}
+        onClose={() => setCompleteTarget(null)}
+      />
     </div>
   );
 }
