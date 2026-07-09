@@ -8,3 +8,10 @@ export const profileSchema = z.object({
 });
 
 export type ProfileForm = z.infer<typeof profileSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "رمز عبور فعلی را وارد کنید."),
+  newPassword: z.string().min(8, "رمز عبور جدید باید حداقل ۸ کاراکتر باشد."),
+});
+
+export type ChangePasswordForm = z.infer<typeof changePasswordSchema>;

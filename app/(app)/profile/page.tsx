@@ -14,6 +14,8 @@ import { useAuthStore } from "@/stores/auth.store";
 
 import { type ProfileForm, profileSchema } from "@/schemas/profile.schema";
 
+import { ChangePasswordCard } from "./components/change-password-card";
+
 const EMPTY: ProfileForm = { name: "", mobile: "", email: "", unit: "" };
 
 export default function ProfilePage() {
@@ -32,8 +34,12 @@ export default function ProfilePage() {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    await updateProfile.mutateAsync(values);
-    toast.success("تغییرات ذخیره شد");
+    try {
+      await updateProfile.mutateAsync(values);
+      toast.success("تغییرات ذخیره شد");
+    } catch {
+      // The global http interceptor already surfaced the error toast.
+    }
   });
 
   return (
@@ -79,6 +85,8 @@ export default function ProfilePage() {
           </AppButton>
         </form>
       </SectionCard>
+
+      <ChangePasswordCard />
     </div>
   );
 }

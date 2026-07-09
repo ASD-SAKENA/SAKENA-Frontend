@@ -2,7 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getProfile, profileKeys, updateProfile } from "@/api/profile";
+import {
+  changePassword,
+  getProfile,
+  profileKeys,
+  updateProfile,
+} from "@/api/profile";
 
 const STALE = 5 * 60 * 1000;
 
@@ -21,5 +26,17 @@ export function useUpdateProfileMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.all });
     },
+  });
+}
+
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: ({
+      currentPassword,
+      newPassword,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => changePassword(currentPassword, newPassword),
   });
 }
