@@ -32,3 +32,25 @@ export const signupSchema = z.object({
 });
 
 export type SignupForm = z.infer<typeof signupSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "ایمیل را وارد کنید.")
+    .email("ایمیل معتبر نیست."),
+});
+
+export type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    newPassword: z.string().min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد."),
+    confirmPassword: z.string().min(1, "تکرار رمز عبور را وارد کنید."),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "تکرار رمز عبور مطابقت ندارد.",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
