@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +18,7 @@ import { roleHomePath } from "@/lib/app-nav";
 
 import { type LoginForm, loginSchema } from "@/schemas/auth.schema";
 
+import { ForgotPasswordModal } from "./forgot-password-modal";
 import { RoleChips } from "./role-chips";
 
 const inputClass =
@@ -25,6 +28,7 @@ export function LoginForm() {
   const router = useRouter();
   const loginStore = useAuthStore((state) => state.login);
   const mutation = useLoginMutation();
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   const {
     control,
@@ -130,9 +134,13 @@ export function LoginForm() {
           />
           مرا به خاطر بسپار
         </label>
-        <a href="#" className="font-medium text-[var(--sk-gold)] no-underline">
+        <button
+          type="button"
+          onClick={() => setForgotOpen(true)}
+          className="font-medium text-[var(--sk-gold)]"
+        >
           فراموشی رمز؟
-        </a>
+        </button>
       </div>
 
       <button
@@ -142,6 +150,11 @@ export function LoginForm() {
       >
         ورود به سامانه
       </button>
+
+      <ForgotPasswordModal
+        open={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+      />
     </form>
   );
 }
