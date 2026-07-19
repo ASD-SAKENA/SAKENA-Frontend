@@ -169,6 +169,11 @@ http.interceptors.response.use(
       case 404:
         toast.error("موردی یافت نشد");
         break;
+      case 409:
+        toast.error(
+          resolveErrorMessage(data, "این عملیات با وضعیت فعلی تداخل دارد"),
+        );
+        break;
       case 422:
         if (!toastValidationDetails(data)) {
           toast.error(
