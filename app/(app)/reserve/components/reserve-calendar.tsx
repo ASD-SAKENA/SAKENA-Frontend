@@ -3,6 +3,11 @@
 import { toast } from "sonner";
 
 import {
+  useCancelBookingMutation,
+  useFacilityBookingsQuery,
+} from "@/queries/reserve";
+
+import {
   ROW,
   SLOTS,
   slotTime,
@@ -12,11 +17,10 @@ import {
 
 import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
-import { toFaDigits } from "@/lib/persian-number";
+import { weekStartDate } from "@/lib/reserve-time";
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
-import type { Booking } from "@/types/reserve.type";
 
 const DAY_NAMES = [
   "شنبه",
@@ -31,40 +35,33 @@ const DAY_NAMES = [
 /** Cycled accent colors for other residents' blocks. */
 const OTHER_PALETTE: StatusColor[] = ["info", "success", "steel", "warning"];
 
-interface RenderBooking extends Booking {
-  mine: boolean;
-}
-
 /** Now-indicator offset: design pins it to 14:20 within the 08–22 grid. */
 const NOW_TOP = Math.round(((14 - START_HOUR) * 2 + 20 / 30) * ROW);
 
 export function ReserveCalendar() {
   const { selected } = useSelectedFacility();
   const weekOffset = useReserveStore((s) => s.weekOffset);
-  const myBookings = useReserveStore((s) => s.myBookings);
   const drag = useReserveStore((s) => s.drag);
   const openComposer = useReserveStore((s) => s.openComposer);
   const startDrag = useReserveStore((s) => s.startDrag);
   const dragTo = useReserveStore((s) => s.dragTo);
   const endDrag = useReserveStore((s) => s.endDrag);
-  const cancelMine = useReserveStore((s) => s.cancelMine);
   const consumeJustDragged = useReserveStore((s) => s.consumeJustDragged);
 
-  const weekStart = 14 + weekOffset * 7;
-  const todayIdx = weekOffset === 0 ? 1 : -1;
+  const { data: bookings = [] } = useFacilityBookingsQuery(
+    selected?.id ?? null,
+    weekOffset,
+  );
+  const cancelBooking = useCancelBookingMutation();
 
-  const mineBk = selected
-    ? myBookings.filter(
-        (b) => b.facilityId === selected.id && b.week === weekOffset,
-      )
-    : [];
-  const allBk: RenderBooking[] = mineBk.map((b) => ({
-    day: b.day,
-    start: b.start,
-    dur: b.dur,
-    who: "",
-    mine: true,
-  }));
+  const weekStart = weekStartDate(weekOffset);
+  const todayIdx = weekOffset === 0 ? (new Date().getDay() + 1) % 7 : -1;
+
+  const dayNumber = (di: number): string => {
+    const date = new Date(weekStart);
+    date.setDate(date.getDate() + di);
+    return date.toLocaleDateString("fa-IR", { day: "numeric" });
+  };
 
   const hourLabels: string[] = [];
   for (let hh = START_HOUR; hh < 22; hh++) {
@@ -74,6 +71,14 @@ export function ReserveCalendar() {
   const handleCellClick = (day: number, slot: number) => {
     if (consumeJustDragged()) return;
     openComposer(day, slot, 2);
+  };
+
+  const handleCancel = (bookingId: string) => {
+    if (!selected || cancelBooking.isPending) return;
+    cancelBooking.mutate(
+      { facilityId: selected.id, bookingId },
+      { onSuccess: () => toast.success("رزرو شما لغو شد") },
+    );
   };
 
   return (
@@ -104,7 +109,7 @@ export function ReserveCalendar() {
                       isToday && "text-app-gold",
                     )}
                   >
-                    {toFaDigits(weekStart + di)}
+                    {dayNumber(di)}
                   </div>
                 </div>
               );
@@ -127,7 +132,7 @@ export function ReserveCalendar() {
             {/* day columns */}
             {DAY_NAMES.map((name, di) => {
               const isToday = di === todayIdx;
-              const dayBlocks = allBk.filter((b) => b.day === di);
+              const dayBlocks = bookings.filter((b) => b.day === di);
               const showDrag = drag.dragging && drag.day === di;
               const dragA = Math.min(drag.start, drag.end);
               const dragB = Math.max(drag.start, drag.end);
@@ -168,17 +173,8 @@ export function ReserveCalendar() {
                     if (b.mine) {
                       return (
                         <div
-                          key={`mine-${b.start}-${b.dur}`}
-                          onClick={() => {
-                            if (!selected) return;
-                            cancelMine({
-                              facilityId: selected.id,
-                              week: weekOffset,
-                              day: b.day,
-                              start: b.start,
-                              dur: b.dur,
-                            });
-                          }}
+                          key={b.id}
+                          onClick={() => handleCancel(b.id)}
                           className="absolute right-1 left-1 z-[3] cursor-pointer overflow-hidden rounded-lg bg-[linear-gradient(155deg,var(--ap-gold-light),var(--ap-gold))] px-2 py-[5px] text-app-gold-fg shadow-[0_4px_12px_rgba(201,162,78,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[filter] hover:brightness-105"
                           style={{ top, height }}
                         >
@@ -194,9 +190,9 @@ export function ReserveCalendar() {
                     const color = OTHER_PALETTE[i % OTHER_PALETTE.length];
                     return (
                       <div
-                        key={`other-${b.start}-${b.who}`}
+                        key={b.id}
                         onClick={() =>
-                          toast(`این بازه توسط ${b.who} رزرو شده است`)
+                          toast("این بازه توسط ساکن دیگری رزرو شده است")
                         }
                         className="absolute right-1 left-1 z-[2] cursor-pointer overflow-hidden rounded-lg border border-[var(--ap-glass-brd)] px-2 py-[5px] text-app-fg backdrop-blur-[6px] transition-[filter] hover:brightness-105"
                         style={{
@@ -208,7 +204,7 @@ export function ReserveCalendar() {
                         }}
                       >
                         <div className="truncate text-[11px] leading-[1.4] font-bold">
-                          {b.who}
+                          رزرو شده
                         </div>
                         <div className="truncate text-[10.5px] leading-[1.4] text-app-muted">
                           {time}
