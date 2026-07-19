@@ -17,6 +17,7 @@ import {
   useAssignRequestMutation,
   useManagerRequestsQuery,
 } from "@/queries/requests";
+import { useSettleRequestMutation } from "@/queries/wallet";
 
 import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
@@ -49,7 +50,10 @@ function filterRequests(
     return requests.filter(
       (r) => r.status === "در حال انجام" || r.status === "ارجاع‌شده",
     );
-  if (tab === "done") return requests.filter((r) => r.status === "انجام‌شده");
+  if (tab === "done")
+    return requests.filter(
+      (r) => r.status === "انجام‌شده" || r.status === "تسویه‌شده",
+    );
   return requests;
 }
 
@@ -59,6 +63,7 @@ export default function QueuePage() {
   const { data: requests = [] } = useManagerRequestsQuery();
   const approve = useApproveRequestMutation();
   const assign = useAssignRequestMutation();
+  const settle = useSettleRequestMutation();
 
   const {
     register,
@@ -76,6 +81,14 @@ export default function QueuePage() {
     approve.mutate(r.id, {
       onSuccess: () => {
         toast.success(`درخواست «${r.title}» تأیید شد`);
+      },
+    });
+  };
+
+  const handleSettle = (r: ManagerRequest) => {
+    settle.mutate(r.id, {
+      onSuccess: () => {
+        toast.success(`دستمزد «${r.title}» تسویه و به کیف پول کارکن واریز شد`);
       },
     });
   };
@@ -170,6 +183,16 @@ export default function QueuePage() {
                       >
                         <AppIcon name="person_add" className="size-4" />
                         ارجاع
+                      </button>
+                    ) : r.apiStatus === "COMPLETED" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSettle(r)}
+                        disabled={settle.isPending}
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold disabled:opacity-50"
+                      >
+                        <AppIcon name="payments" className="size-4" />
+                        پرداخت دستمزد
                       </button>
                     ) : (
                       <span className="text-[12px] text-app-muted">—</span>

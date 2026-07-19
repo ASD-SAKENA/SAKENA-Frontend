@@ -1,7 +1,10 @@
+import http from "@/services/http";
+
 import type { Wallet } from "@/types/wallet.type";
 
 export const walletKeys = {
   all: ["wallet"] as const,
+  me: ["wallet", "me"] as const,
 };
 
 const WALLET: Wallet = {
@@ -77,4 +80,17 @@ const WALLET: Wallet = {
 export async function getWallet(): Promise<Wallet> {
   // Mock: the real call will be `http.get<Wallet>("/wallet/")`.
   return WALLET;
+}
+
+/** Current user's wallet balance (worker wages land here after settlement). */
+export async function getMyWalletBalance(): Promise<number> {
+  const { data } = await http.get<{ balance: number }>("/wallets/me");
+  return data.balance;
+}
+
+/** Manager pays out a completed service request's wage from the building account. */
+export async function settleServiceRequest(
+  serviceRequestId: string,
+): Promise<void> {
+  await http.post(`/wallets/settle/${serviceRequestId}`);
 }
