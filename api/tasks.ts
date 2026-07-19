@@ -1,16 +1,21 @@
 import { getAssignedRequests } from "@/api/requests";
 
 import { formatFaDate } from "@/lib/format-date";
-import { toFaDigits } from "@/lib/persian-number";
+import { faNumber, toFaDigits } from "@/lib/persian-number";
 import { CATEGORY_GROUP_ICONS } from "@/lib/service-requests";
 
 import type { ServiceRequestApiResponse } from "@/types/requests.api.type";
-import type { StaffTask, SummaryItem } from "@/types/tasks.type";
+import type {
+  StaffHistoryItem,
+  StaffTask,
+  SummaryItem,
+} from "@/types/tasks.type";
 
 export const taskKeys = {
   all: ["tasks"] as const,
   staff: ["tasks", "staff"] as const,
   summary: ["tasks", "summary"] as const,
+  history: ["tasks", "history"] as const,
 };
 
 /**
@@ -63,4 +68,25 @@ export async function getStaffSummary(): Promise<SummaryItem[]> {
       color: "success",
     },
   ];
+}
+
+/** The worker's completed jobs, newest first — date, unit and report. */
+export async function getStaffHistory(): Promise<StaffHistoryItem[]> {
+  const data = await getAssignedRequests();
+  return data
+    .filter((r) => r.status === "COMPLETED")
+    .sort(
+      (a, b) =>
+        new Date(b.resolvedAt ?? b.updatedAt).getTime() -
+        new Date(a.resolvedAt ?? a.updatedAt).getTime(),
+    )
+    .map((r) => ({
+      id: r.id,
+      icon: CATEGORY_GROUP_ICONS[r.categoryGroup] ?? "handyman",
+      title: r.title,
+      unit: r.location ?? "—",
+      completedAt: formatFaDate(r.resolvedAt ?? r.updatedAt),
+      report: r.completionReport ?? "گزارشی ثبت نشده است",
+      cost: r.completionCost !== null ? faNumber(r.completionCost) : null,
+    }));
 }

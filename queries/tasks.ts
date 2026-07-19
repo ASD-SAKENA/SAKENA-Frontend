@@ -2,7 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getStaffSummary, getStaffTasks, taskKeys } from "@/api/tasks";
+import {
+  getStaffHistory,
+  getStaffSummary,
+  getStaffTasks,
+  taskKeys,
+} from "@/api/tasks";
 
 const STALE = 5 * 60 * 1000;
 
@@ -18,6 +23,14 @@ export function useStaffSummaryQuery() {
   return useQuery({
     queryKey: taskKeys.summary,
     queryFn: getStaffSummary,
+    staleTime: STALE,
+  });
+}
+
+export function useStaffHistoryQuery() {
+  return useQuery({
+    queryKey: taskKeys.history,
+    queryFn: getStaffHistory,
     staleTime: STALE,
   });
 }

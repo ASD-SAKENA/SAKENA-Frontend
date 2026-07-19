@@ -20,3 +20,14 @@ export interface SummaryItem {
   icon: string;
   color: StatusColor;
 }
+
+/** A completed job in the worker's archive. */
+export interface StaffHistoryItem {
+  id: string;
+  icon: string;
+  title: string;
+  unit: string;
+  completedAt: string;
+  report: string;
+  cost: string | null;
+}
