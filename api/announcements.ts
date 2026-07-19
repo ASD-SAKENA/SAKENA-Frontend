@@ -1,45 +1,42 @@
+import http from "@/services/http";
+
+import { formatFaDate } from "@/lib/format-date";
+
+import type { AnnouncementApiResponse } from "@/types/announcements.api.type";
 import type { Announcement } from "@/types/announcements.type";
+import type { StatusColor } from "@/types/app.type";
 
 export const announcementKeys = {
   list: ["announcements"] as const,
 };
 
-const ANNOUNCEMENTS: Announcement[] = [
-  {
-    id: "a1",
-    title: "قطعی آب گرم — سرویس موتورخانه",
-    date: "۲ تیر ۱۴۰۴",
-    icon: "water_drop",
-    color: "info",
-    body: "به اطلاع ساکنین گرامی می‌رساند روز پنجشنبه ۵ تیر از ساعت ۹ تا ۱۳ آب گرم به دلیل سرویس دوره‌ای موتورخانه قطع خواهد بود.",
-  },
-  {
-    id: "a2",
-    title: "مجمع عمومی سالانه ساختمان",
-    date: "۳۱ خرداد ۱۴۰۴",
-    icon: "groups",
-    color: "gold",
-    body: "جلسه مجمع عمومی روز جمعه ساعت ۱۷ در سالن همایش برگزار می‌شود. حضور نماینده هر واحد الزامی است.",
-  },
-  {
-    id: "a3",
-    title: "به‌روزرسانی سیستم درب پارکینگ",
-    date: "۲۸ خرداد ۱۴۰۴",
-    icon: "garage",
-    color: "success",
-    body: "ریموت‌های جدید درب پارکینگ از واحد مدیریت قابل دریافت است. ریموت‌های قدیمی تا پایان تیر غیرفعال می‌شوند.",
-  },
-  {
-    id: "a4",
-    title: "یادآوری پرداخت شارژ تیرماه",
-    date: "۲۵ خرداد ۱۴۰۴",
-    icon: "payments",
-    color: "warning",
-    body: "مهلت پرداخت شارژ تیرماه تا ۱۰ تیر است. لطفاً نسبت به تسویه از طریق کیف پول اقدام فرمایید.",
-  },
+/**
+ * Icon/accent are presentation-only (the backend stores title/body); rotate
+ * through a fixed palette so consecutive cards stay visually distinct.
+ */
+const CARD_ACCENTS: { icon: string; color: StatusColor }[] = [
+  { icon: "campaign", color: "gold" },
+  { icon: "info", color: "info" },
+  { icon: "notifications", color: "success" },
+  { icon: "priority_high", color: "warning" },
 ];
 
+function toAnnouncement(
+  data: AnnouncementApiResponse,
+  index: number,
+): Announcement {
+  const accent = CARD_ACCENTS[index % CARD_ACCENTS.length];
+  return {
+    id: data.id,
+    title: data.title,
+    body: data.body,
+    date: formatFaDate(data.createdAt),
+    icon: accent.icon,
+    color: accent.color,
+  };
+}
+
 export async function getAnnouncements(): Promise<Announcement[]> {
-  // Mock: the real call will be `http.get<Announcement[]>("/announcements/")`.
-  return ANNOUNCEMENTS;
+  const { data } = await http.get<AnnouncementApiResponse[]>("/announcements");
+  return data.map(toAnnouncement);
 }
