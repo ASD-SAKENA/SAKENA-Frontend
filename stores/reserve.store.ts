@@ -2,23 +2,14 @@
 
 import { create } from "zustand";
 
-import { baseBookingsFor } from "@/api/reserve";
-
 import { toFaDigits } from "@/lib/persian-number";
+import { SLOTS, START_HOUR } from "@/lib/reserve-time";
 
-import type {
-  ComposerState,
-  DragState,
-  FacilityKey,
-  MyBooking,
-  ReserveResult,
-} from "@/types/reserve.type";
+import type { ComposerState, DragState } from "@/types/reserve.type";
 
-export const SLOTS = 28;
+export { SLOTS, START_HOUR };
 export const ROW = 32;
-export const START_HOUR = 8;
 
-const DEFAULT_FACILITY: FacilityKey = "سالن ورزش";
 const DEFAULT_COMPOSER: ComposerState = {
   open: false,
   day: 0,
@@ -33,14 +24,14 @@ const DEFAULT_DRAG: DragState = {
 };
 
 interface ReserveState {
-  selFacility: FacilityKey;
+  /** Selected facility id; null until the facilities list resolves. */
+  selFacilityId: string | null;
   weekOffset: number;
-  myBookings: MyBooking[];
   composer: ComposerState;
   drag: DragState;
   /** Guards a click firing right after a drag-select release. */
   justDragged: boolean;
-  setFacility: (facility: FacilityKey) => void;
+  setFacility: (facilityId: string) => void;
   prevWeek: () => void;
   nextWeek: () => void;
   thisWeek: () => void;
@@ -52,19 +43,16 @@ interface ReserveState {
   endDrag: () => void;
   /** Returns true (and clears the flag) if a click follows a drag-select. */
   consumeJustDragged: () => boolean;
-  confirmReserve: () => ReserveResult;
-  cancelMine: (booking: MyBooking) => void;
 }
 
 export const useReserveStore = create<ReserveState>((set, get) => ({
-  selFacility: DEFAULT_FACILITY,
+  selFacilityId: null,
   weekOffset: 0,
-  myBookings: [],
   composer: DEFAULT_COMPOSER,
   drag: DEFAULT_DRAG,
   justDragged: false,
 
-  setFacility: (facility) => set({ selFacility: facility }),
+  setFacility: (facilityId) => set({ selFacilityId: facilityId }),
   prevWeek: () => set((st) => ({ weekOffset: st.weekOffset - 1 })),
   nextWeek: () => set((st) => ({ weekOffset: st.weekOffset + 1 })),
   thisWeek: () => set({ weekOffset: 0 }),
@@ -98,52 +86,6 @@ export const useReserveStore = create<ReserveState>((set, get) => ({
     set({ justDragged: false });
     return true;
   },
-
-  confirmReserve: () => {
-    const st = get();
-    const base = baseBookingsFor(st.selFacility);
-    const mine = st.myBookings.filter(
-      (b) => b.facility === st.selFacility && b.week === st.weekOffset,
-    );
-    const all = [...base, ...mine];
-    const cs = st.composer.start;
-    const ce = st.composer.start + st.composer.dur;
-    const conflict =
-      ce > SLOTS ||
-      all.some(
-        (b) =>
-          b.day === st.composer.day && cs < b.start + b.dur && b.start < ce,
-      );
-    if (conflict) return { ok: false, conflict: true };
-    set((s) => ({
-      composer: { ...s.composer, open: false },
-      myBookings: [
-        ...s.myBookings,
-        {
-          facility: s.selFacility,
-          week: s.weekOffset,
-          day: s.composer.day,
-          start: s.composer.start,
-          dur: s.composer.dur,
-        },
-      ],
-    }));
-    return { ok: true, conflict: false };
-  },
-
-  cancelMine: (booking) =>
-    set((st) => ({
-      myBookings: st.myBookings.filter(
-        (x) =>
-          !(
-            x.facility === st.selFacility &&
-            x.week === st.weekOffset &&
-            x.day === booking.day &&
-            x.start === booking.start &&
-            x.dur === booking.dur
-          ),
-      ),
-    })),
 }));
 
 /** hh:mm (Persian digits) for the start of half-hour slot `i`. */

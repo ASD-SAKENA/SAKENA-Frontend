@@ -8,6 +8,7 @@ import type { ProfileApiResponse } from "@/types/auth.api.type";
 
 export const profileKeys = {
   all: ["profile"] as const,
+  id: ["profile", "id"] as const,
 };
 
 /**
@@ -52,4 +53,10 @@ export async function changePassword(
     currentPassword,
     newPassword,
   });
+}
+
+/** The backend user id of the signed-in user (used to mark "mine" records). */
+export async function getMyUserId(): Promise<string> {
+  const { data } = await http.get<ProfileApiResponse>("/profile");
+  return data.id;
 }
