@@ -11,7 +11,9 @@ import { StatusBadge } from "@/components/app/status-badge";
 
 import { useStartProgressMutation } from "@/queries/requests";
 import { useStaffSummaryQuery, useStaffTasksQuery } from "@/queries/tasks";
+import { useMyWalletQuery } from "@/queries/wallet";
 
+import { faNumber } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
@@ -46,6 +48,7 @@ export default function TasksPage() {
   const [tab, setTab] = useState<StaffTab>("open");
   const { data: tasks = [] } = useStaffTasksQuery();
   const { data: summary = [] } = useStaffSummaryQuery();
+  const { data: walletBalance } = useMyWalletQuery();
   const startProgress = useStartProgressMutation();
   const [completeTarget, setCompleteTarget] = useState<StaffTask | null>(null);
 
@@ -141,6 +144,22 @@ export default function TasksPage() {
       </div>
 
       <SectionCard title="خلاصه امروز" className="h-fit">
+        <div className="flex items-center gap-3 border-b border-app-border py-3">
+          <div
+            className={cn(
+              "flex size-[38px] items-center justify-center rounded-[10px]",
+              SUMMARY_TINT.gold,
+            )}
+          >
+            <AppIcon name="account_balance_wallet" className="size-5" />
+          </div>
+          <span className="flex-1 text-[13.5px] text-app-fg">
+            موجودی کیف پول (تومان)
+          </span>
+          <span className="text-[18px] font-extrabold text-app-gold">
+            {faNumber(walletBalance ?? 0)}
+          </span>
+        </div>
         {summary.map((item) => (
           <div
             key={item.label}

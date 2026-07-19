@@ -15,6 +15,7 @@ export const REQUEST_STATUS_META: Record<
   ASSIGNED: { label: "ارجاع‌شده", color: "info" },
   IN_PROGRESS: { label: "در حال انجام", color: "info" },
   COMPLETED: { label: "انجام‌شده", color: "success" },
+  SETTLED: { label: "تسویه‌شده", color: "steel" },
   REJECTED: { label: "ردشده", color: "danger" },
 };
 
