@@ -18,3 +18,14 @@ export async function getUsers(
   });
   return data;
 }
+
+export async function updateUserStatus(
+  id: string,
+  active: boolean,
+): Promise<UserSummaryApiResponse> {
+  const { data } = await http.patch<UserSummaryApiResponse>(
+    `/users/${id}/status`,
+    { active },
+  );
+  return data;
+}

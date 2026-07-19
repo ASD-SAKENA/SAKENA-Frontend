@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getUsers, userKeys } from "@/api/users";
+import { getUsers, updateUserStatus, userKeys } from "@/api/users";
 
 import type { UserApiRole } from "@/types/users.api.type";
 
@@ -13,5 +13,16 @@ export function useUsersQuery(role?: UserApiRole) {
     queryKey: userKeys.list(role),
     queryFn: () => getUsers(role),
     staleTime: STALE,
+  });
+}
+
+export function useUpdateUserStatusMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      updateUserStatus(id, active),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
+    },
   });
 }
