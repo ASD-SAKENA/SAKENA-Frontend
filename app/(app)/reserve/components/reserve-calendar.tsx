@@ -2,8 +2,6 @@
 
 import { toast } from "sonner";
 
-import { baseBookingsFor } from "@/api/reserve";
-
 import {
   ROW,
   SLOTS,
@@ -11,6 +9,8 @@ import {
   START_HOUR,
   useReserveStore,
 } from "@/stores/reserve.store";
+
+import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
 import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ interface RenderBooking extends Booking {
 const NOW_TOP = Math.round(((14 - START_HOUR) * 2 + 20 / 30) * ROW);
 
 export function ReserveCalendar() {
-  const selFacility = useReserveStore((s) => s.selFacility);
+  const { selected } = useSelectedFacility();
   const weekOffset = useReserveStore((s) => s.weekOffset);
   const myBookings = useReserveStore((s) => s.myBookings);
   const drag = useReserveStore((s) => s.drag);
@@ -53,20 +53,18 @@ export function ReserveCalendar() {
   const weekStart = 14 + weekOffset * 7;
   const todayIdx = weekOffset === 0 ? 1 : -1;
 
-  const baseBk = baseBookingsFor(selFacility);
-  const mineBk = myBookings.filter(
-    (b) => b.facility === selFacility && b.week === weekOffset,
-  );
-  const allBk: RenderBooking[] = [
-    ...baseBk.map((b) => ({ ...b, mine: false })),
-    ...mineBk.map((b) => ({
-      day: b.day,
-      start: b.start,
-      dur: b.dur,
-      who: "",
-      mine: true,
-    })),
-  ];
+  const mineBk = selected
+    ? myBookings.filter(
+        (b) => b.facilityId === selected.id && b.week === weekOffset,
+      )
+    : [];
+  const allBk: RenderBooking[] = mineBk.map((b) => ({
+    day: b.day,
+    start: b.start,
+    dur: b.dur,
+    who: "",
+    mine: true,
+  }));
 
   const hourLabels: string[] = [];
   for (let hh = START_HOUR; hh < 22; hh++) {
@@ -171,15 +169,16 @@ export function ReserveCalendar() {
                       return (
                         <div
                           key={`mine-${b.start}-${b.dur}`}
-                          onClick={() =>
+                          onClick={() => {
+                            if (!selected) return;
                             cancelMine({
-                              facility: selFacility,
+                              facilityId: selected.id,
                               week: weekOffset,
                               day: b.day,
                               start: b.start,
                               dur: b.dur,
-                            })
-                          }
+                            });
+                          }}
                           className="absolute right-1 left-1 z-[3] cursor-pointer overflow-hidden rounded-lg bg-[linear-gradient(155deg,var(--ap-gold-light),var(--ap-gold))] px-2 py-[5px] text-app-gold-fg shadow-[0_4px_12px_rgba(201,162,78,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[filter] hover:brightness-105"
                           style={{ top, height }}
                         >

@@ -6,9 +6,9 @@ import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { Modal } from "@/components/app/modal";
 
-import { baseBookingsFor } from "@/api/reserve";
-
 import { SLOTS, slotTime, useReserveStore } from "@/stores/reserve.store";
+
+import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
 import { formatToman, toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ const DUR_CHIPS: { dur: number; label: string }[] = [
 ];
 
 export function ReserveComposer() {
-  const selFacility = useReserveStore((s) => s.selFacility);
+  const { selected } = useSelectedFacility();
   const weekOffset = useReserveStore((s) => s.weekOffset);
   const myBookings = useReserveStore((s) => s.myBookings);
   const composer = useReserveStore((s) => s.composer);
@@ -48,26 +48,28 @@ export function ReserveComposer() {
     weekStart + composer.day,
   )} تیر`;
 
-  const base = baseBookingsFor(selFacility);
-  const mine = myBookings.filter(
-    (b) => b.facility === selFacility && b.week === weekOffset,
-  );
+  const mine = selected
+    ? myBookings.filter(
+        (b) => b.facilityId === selected.id && b.week === weekOffset,
+      )
+    : [];
   const conflict =
     cEnd > SLOTS ||
-    [...base, ...mine].some(
+    mine.some(
       (b) =>
         b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
     );
 
   const cost =
-    selFacility === "سالن همایش"
+    selected?.label === "سالن همایش"
       ? formatToman(100000 * cDur)
-      : selFacility === "استخر"
+      : selected?.label === "استخر"
         ? formatToman(40000 * cDur)
         : "رایگان";
 
   const handleConfirm = () => {
-    const result = confirmReserve();
+    if (!selected) return;
+    const result = confirmReserve(selected.id);
     if (result.ok) {
       toast.success("رزرو شما با موفقیت ثبت شد");
     } else if (result.conflict) {
@@ -79,7 +81,7 @@ export function ReserveComposer() {
     <Modal
       open={composer.open}
       onClose={closeComposer}
-      title={`رزرو ${selFacility}`}
+      title={`رزرو ${selected?.label ?? ""}`}
       description={dayLabel}
       icon="event"
     >
