@@ -29,3 +29,14 @@ export async function updateUserStatus(
   );
   return data;
 }
+
+export async function updateUserSpecialty(
+  id: string,
+  specialty: string | null,
+): Promise<UserSummaryApiResponse> {
+  const { data } = await http.patch<UserSummaryApiResponse>(
+    `/users/${id}/specialty`,
+    { specialty },
+  );
+  return data;
+}
