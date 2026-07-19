@@ -1,11 +1,16 @@
 "use client";
 
+import { useState } from "react";
+
+import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 
+import { useAuthStore } from "@/stores/auth.store";
 import { useReserveStore } from "@/stores/reserve.store";
 
 import { toFaDigits } from "@/lib/persian-number";
 
+import { FacilityManageModal } from "./components/facility-manage-modal";
 import { FacilityTabs } from "./components/facility-tabs";
 import { ReserveCalendar } from "./components/reserve-calendar";
 import { ReserveComposer } from "./components/reserve-composer";
@@ -15,6 +20,8 @@ export default function ReservePage() {
   const prevWeek = useReserveStore((s) => s.prevWeek);
   const nextWeek = useReserveStore((s) => s.nextWeek);
   const thisWeek = useReserveStore((s) => s.thisWeek);
+  const role = useAuthStore((s) => s.user?.role);
+  const [manageOpen, setManageOpen] = useState(false);
 
   const weekStart = 14 + weekOffset * 7;
   const weekLabel = `${toFaDigits(weekStart)} – ${toFaDigits(
@@ -26,6 +33,23 @@ export default function ReservePage() {
       {/* toolbar */}
       <div className="mb-[14px] flex flex-wrap items-center gap-[14px]">
         <FacilityTabs />
+
+        {role === "manager" ? (
+          <>
+            <AppButton
+              variant="outline"
+              onClick={() => setManageOpen(true)}
+              className="h-[48px] gap-1.5 px-3.5 text-[13px]"
+            >
+              <AppIcon name="settings" className="size-[18px]" />
+              مدیریت امکانات
+            </AppButton>
+            <FacilityManageModal
+              open={manageOpen}
+              onClose={() => setManageOpen(false)}
+            />
+          </>
+        ) : null}
 
         <div className="mr-auto flex items-center gap-2">
           <button

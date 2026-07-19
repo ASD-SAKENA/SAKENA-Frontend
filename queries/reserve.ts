@@ -1,10 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getBaseBookings, getFacilities, reserveKeys } from "@/api/reserve";
+import {
+  createFacility,
+  deleteFacility,
+  getFacilities,
+  reserveKeys,
+  updateFacility,
+} from "@/api/reserve";
 
-import type { FacilityKey } from "@/types/reserve.type";
+import type { FacilityApiPayload } from "@/types/reserve.api.type";
 
 const STALE = 5 * 60 * 1000;
 
@@ -16,10 +22,38 @@ export function useFacilitiesQuery() {
   });
 }
 
-export function useBaseBookingsQuery(facility: FacilityKey) {
-  return useQuery({
-    queryKey: reserveKeys.bookings(facility),
-    queryFn: () => getBaseBookings(facility),
-    staleTime: STALE,
+function useInvalidateFacilities() {
+  const queryClient = useQueryClient();
+  return () =>
+    queryClient.invalidateQueries({ queryKey: reserveKeys.facilities });
+}
+
+export function useCreateFacilityMutation() {
+  const invalidate = useInvalidateFacilities();
+  return useMutation({
+    mutationFn: createFacility,
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateFacilityMutation() {
+  const invalidate = useInvalidateFacilities();
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: FacilityApiPayload;
+    }) => updateFacility(id, payload),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteFacilityMutation() {
+  const invalidate = useInvalidateFacilities();
+  return useMutation({
+    mutationFn: deleteFacility,
+    onSuccess: invalidate,
   });
 }
