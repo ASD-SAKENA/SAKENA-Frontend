@@ -2,7 +2,10 @@ import http from "@/services/http";
 
 import { formatFaDate } from "@/lib/format-date";
 
-import type { AnnouncementApiResponse } from "@/types/announcements.api.type";
+import type {
+  AnnouncementApiResponse,
+  CreateAnnouncementApiPayload,
+} from "@/types/announcements.api.type";
 import type { Announcement } from "@/types/announcements.type";
 import type { StatusColor } from "@/types/app.type";
 
@@ -39,4 +42,14 @@ function toAnnouncement(
 export async function getAnnouncements(): Promise<Announcement[]> {
   const { data } = await http.get<AnnouncementApiResponse[]>("/announcements");
   return data.map(toAnnouncement);
+}
+
+export async function createAnnouncement(
+  payload: CreateAnnouncementApiPayload,
+): Promise<{ id: string }> {
+  const { data } = await http.post<AnnouncementApiResponse>(
+    "/announcements",
+    payload,
+  );
+  return { id: data.id };
 }
