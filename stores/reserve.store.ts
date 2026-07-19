@@ -3,17 +3,12 @@
 import { create } from "zustand";
 
 import { toFaDigits } from "@/lib/persian-number";
+import { SLOTS, START_HOUR } from "@/lib/reserve-time";
 
-import type {
-  ComposerState,
-  DragState,
-  MyBooking,
-  ReserveResult,
-} from "@/types/reserve.type";
+import type { ComposerState, DragState } from "@/types/reserve.type";
 
-export const SLOTS = 28;
+export { SLOTS, START_HOUR };
 export const ROW = 32;
-export const START_HOUR = 8;
 
 const DEFAULT_COMPOSER: ComposerState = {
   open: false,
@@ -32,7 +27,6 @@ interface ReserveState {
   /** Selected facility id; null until the facilities list resolves. */
   selFacilityId: string | null;
   weekOffset: number;
-  myBookings: MyBooking[];
   composer: ComposerState;
   drag: DragState;
   /** Guards a click firing right after a drag-select release. */
@@ -49,14 +43,11 @@ interface ReserveState {
   endDrag: () => void;
   /** Returns true (and clears the flag) if a click follows a drag-select. */
   consumeJustDragged: () => boolean;
-  confirmReserve: (facilityId: string) => ReserveResult;
-  cancelMine: (booking: MyBooking) => void;
 }
 
 export const useReserveStore = create<ReserveState>((set, get) => ({
   selFacilityId: null,
   weekOffset: 0,
-  myBookings: [],
   composer: DEFAULT_COMPOSER,
   drag: DEFAULT_DRAG,
   justDragged: false,
@@ -95,50 +86,6 @@ export const useReserveStore = create<ReserveState>((set, get) => ({
     set({ justDragged: false });
     return true;
   },
-
-  confirmReserve: (facilityId) => {
-    const st = get();
-    const mine = st.myBookings.filter(
-      (b) => b.facilityId === facilityId && b.week === st.weekOffset,
-    );
-    const cs = st.composer.start;
-    const ce = st.composer.start + st.composer.dur;
-    const conflict =
-      ce > SLOTS ||
-      mine.some(
-        (b) =>
-          b.day === st.composer.day && cs < b.start + b.dur && b.start < ce,
-      );
-    if (conflict) return { ok: false, conflict: true };
-    set((s) => ({
-      composer: { ...s.composer, open: false },
-      myBookings: [
-        ...s.myBookings,
-        {
-          facilityId,
-          week: s.weekOffset,
-          day: s.composer.day,
-          start: s.composer.start,
-          dur: s.composer.dur,
-        },
-      ],
-    }));
-    return { ok: true, conflict: false };
-  },
-
-  cancelMine: (booking) =>
-    set((st) => ({
-      myBookings: st.myBookings.filter(
-        (x) =>
-          !(
-            x.facilityId === booking.facilityId &&
-            x.week === st.weekOffset &&
-            x.day === booking.day &&
-            x.start === booking.start &&
-            x.dur === booking.dur
-          ),
-      ),
-    })),
 }));
 
 /** hh:mm (Persian digits) for the start of half-hour slot `i`. */

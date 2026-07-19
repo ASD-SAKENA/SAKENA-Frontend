@@ -31,7 +31,11 @@ interface Props {
   onClose: () => void;
 }
 
-const EMPTY: FacilityForm = { name: "", icon: "fitness_center" };
+const EMPTY: FacilityForm = {
+  name: "",
+  icon: "fitness_center",
+  capacity: "10",
+};
 
 export function FacilityManageModal({ open, onClose }: Props) {
   const { data: facilities = [] } = useFacilitiesQuery();
@@ -49,7 +53,13 @@ export function FacilityManageModal({ open, onClose }: Props) {
   } = useForm<FacilityForm>({
     resolver: zodResolver(facilitySchema),
     defaultValues: EMPTY,
-    values: editing ? { name: editing.label, icon: editing.icon } : EMPTY,
+    values: editing
+      ? {
+          name: editing.label,
+          icon: editing.icon,
+          capacity: String(editing.capacity),
+        }
+      : EMPTY,
   });
 
   const pending =
@@ -59,14 +69,16 @@ export function FacilityManageModal({ open, onClose }: Props) {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
+      const payload = {
+        name: values.name,
+        icon: values.icon,
+        capacity: Number(values.capacity),
+      };
       if (editing) {
-        await updateFacility.mutateAsync({
-          id: editing.id,
-          payload: { ...values, capacity: editing.capacity },
-        });
+        await updateFacility.mutateAsync({ id: editing.id, payload });
         toast.success("امکان ویرایش شد");
       } else {
-        await createFacility.mutateAsync(values);
+        await createFacility.mutateAsync(payload);
         toast.success("امکان جدید به لیست مشاعات اضافه شد");
       }
       setEditing(null);
@@ -114,6 +126,9 @@ export function FacilityManageModal({ open, onClose }: Props) {
             <AppIcon name={facility.icon} className="size-5 text-app-steel" />
             <span className="flex-1 text-[13.5px] font-semibold text-app-fg">
               {facility.label}
+              <span className="mr-2 text-[11.5px] font-normal text-app-muted">
+                ظرفیت {facility.capacity} نفر
+              </span>
             </span>
             <button
               type="button"
@@ -154,6 +169,10 @@ export function FacilityManageModal({ open, onClose }: Props) {
               </option>
             ))}
           </AppSelect>
+        </AppField>
+
+        <AppField label="ظرفیت هر سانس (نفر)" error={errors.capacity?.message}>
+          <AppInput dir="ltr" placeholder="10" {...register("capacity")} />
         </AppField>
 
         <div className="mt-2 flex gap-2.5">

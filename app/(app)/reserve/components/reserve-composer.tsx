@@ -6,11 +6,17 @@ import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { Modal } from "@/components/app/modal";
 
+import {
+  useCreateBookingMutation,
+  useFacilityBookingsQuery,
+} from "@/queries/reserve";
+
 import { SLOTS, slotTime, useReserveStore } from "@/stores/reserve.store";
 
 import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
 import { formatToman, toFaDigits } from "@/lib/persian-number";
+import { weekStartDate } from "@/lib/reserve-time";
 import { cn } from "@/lib/utils";
 
 const DAY_NAMES = [
@@ -33,32 +39,39 @@ const DUR_CHIPS: { dur: number; label: string }[] = [
 export function ReserveComposer() {
   const { selected } = useSelectedFacility();
   const weekOffset = useReserveStore((s) => s.weekOffset);
-  const myBookings = useReserveStore((s) => s.myBookings);
   const composer = useReserveStore((s) => s.composer);
   const setDur = useReserveStore((s) => s.setDur);
   const closeComposer = useReserveStore((s) => s.closeComposer);
-  const confirmReserve = useReserveStore((s) => s.confirmReserve);
+
+  const { data: bookings = [] } = useFacilityBookingsQuery(
+    selected?.id ?? null,
+    weekOffset,
+  );
+  const createBooking = useCreateBookingMutation();
 
   const cStart = composer.start;
   const cDur = composer.dur;
   const cEnd = cStart + cDur;
 
-  const weekStart = 14 + weekOffset * 7;
-  const dayLabel = `${DAY_NAMES[composer.day]} ${toFaDigits(
-    weekStart + composer.day,
-  )} تیر`;
+  const weekStart = weekStartDate(weekOffset);
+  const composerDate = new Date(weekStart);
+  composerDate.setDate(composerDate.getDate() + composer.day);
+  const dayLabel = `${DAY_NAMES[composer.day]} ${composerDate.toLocaleDateString(
+    "fa-IR",
+    { day: "numeric", month: "long" },
+  )}`;
 
-  const mine = selected
-    ? myBookings.filter(
-        (b) => b.facilityId === selected.id && b.week === weekOffset,
-      )
-    : [];
-  const conflict =
-    cEnd > SLOTS ||
-    mine.some(
-      (b) =>
-        b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
-    );
+  const overlapping = bookings.filter(
+    (b) => b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
+  );
+  const conflictMine = overlapping.some((b) => b.mine);
+  const capacityFull =
+    selected !== null && overlapping.length >= selected.capacity;
+  const blocked = cEnd > SLOTS || conflictMine || capacityFull;
+
+  const remaining = selected
+    ? Math.max(selected.capacity - overlapping.length, 0)
+    : 0;
 
   const cost =
     selected?.label === "سالن همایش"
@@ -68,13 +81,23 @@ export function ReserveComposer() {
         : "رایگان";
 
   const handleConfirm = () => {
-    if (!selected) return;
-    const result = confirmReserve(selected.id);
-    if (result.ok) {
-      toast.success("رزرو شما با موفقیت ثبت شد");
-    } else if (result.conflict) {
-      toast("این بازه با رزرو دیگری تداخل دارد");
-    }
+    if (!selected || createBooking.isPending) return;
+    createBooking.mutate(
+      {
+        facilityId: selected.id,
+        weekOffset,
+        day: composer.day,
+        start: composer.start,
+        dur: composer.dur,
+      },
+      {
+        onSuccess: () => {
+          toast.success("رزرو شما با موفقیت ثبت شد");
+          closeComposer();
+        },
+        // Capacity/conflict rejections surface via the global 409 toast.
+      },
+    );
   };
 
   return (
@@ -123,14 +146,29 @@ export function ReserveComposer() {
         })}
       </div>
 
-      {conflict && (
+      {capacityFull ? (
         <div className="mb-[18px] flex items-center gap-[9px] rounded-[11px] border border-[color-mix(in_srgb,var(--ap-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ap-danger)_12%,transparent)] px-[14px] py-[11px]">
           <AppIcon name="error" className="size-5 text-app-danger" />
           <span className="text-[13px] text-app-danger">
-            این بازه با رزرو دیگری تداخل دارد. مدت یا زمان دیگری انتخاب کنید.
+            ظرفیت این سانس تکمیل شده و قفل است. زمان دیگری انتخاب کنید.
           </span>
         </div>
-      )}
+      ) : conflictMine ? (
+        <div className="mb-[18px] flex items-center gap-[9px] rounded-[11px] border border-[color-mix(in_srgb,var(--ap-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ap-danger)_12%,transparent)] px-[14px] py-[11px]">
+          <AppIcon name="error" className="size-5 text-app-danger" />
+          <span className="text-[13px] text-app-danger">
+            شما در این بازه رزرو دیگری دارید. مدت یا زمان دیگری انتخاب کنید.
+          </span>
+        </div>
+      ) : selected ? (
+        <div className="mb-[18px] flex items-center gap-[9px] rounded-[11px] border border-app-border bg-app-surface2 px-[14px] py-[11px]">
+          <AppIcon name="groups" className="size-5 text-app-steel" />
+          <span className="text-[13px] text-app-muted">
+            ظرفیت باقی‌مانده این سانس: {toFaDigits(remaining)} از{" "}
+            {toFaDigits(selected.capacity)} نفر
+          </span>
+        </div>
+      ) : null}
 
       <div className="mb-[18px] flex items-center justify-between border-t border-app-border py-[14px]">
         <span className="text-[13px] text-app-muted">هزینه</span>
@@ -139,7 +177,7 @@ export function ReserveComposer() {
 
       <AppButton
         variant="gold"
-        disabled={conflict}
+        disabled={blocked || createBooking.isPending}
         onClick={handleConfirm}
         className="h-[46px] w-full text-[14.5px]"
       >

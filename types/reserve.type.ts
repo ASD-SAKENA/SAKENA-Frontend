@@ -11,25 +11,18 @@ export interface Facility {
   capacity: number;
 }
 
-/** A booking rendered on the weekly grid. */
-export interface Booking {
+/** A backend booking projected onto the weekly grid. */
+export interface GridBooking {
+  /** Backend booking UUID — used to cancel. */
+  id: string;
   /** Weekday index 0..6 (شنبه..جمعه). */
   day: number;
   /** Start half-hour slot 0..27 from START_HOUR. */
   start: number;
   /** Duration in half-hour slots. */
   dur: number;
-  /** Reserver display name. */
-  who: string;
-}
-
-/** A booking the current user created, scoped to a facility + week. */
-export interface MyBooking {
-  facilityId: string;
-  week: number;
-  day: number;
-  start: number;
-  dur: number;
+  /** Whether the current user made this booking. */
+  mine: boolean;
 }
 
 /** Composer modal state. */
@@ -46,12 +39,6 @@ export interface DragState {
   day: number;
   start: number;
   end: number;
-}
-
-/** Result of a reservation attempt. */
-export interface ReserveResult {
-  ok: boolean;
-  conflict: boolean;
 }
 
 /** Color pair used to render other residents' booking blocks. */

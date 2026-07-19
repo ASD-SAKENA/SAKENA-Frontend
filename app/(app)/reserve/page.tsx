@@ -8,7 +8,10 @@ import { AppIcon } from "@/components/app/app-icon";
 import { useAuthStore } from "@/stores/auth.store";
 import { useReserveStore } from "@/stores/reserve.store";
 
+import { useSelectedFacility } from "@/hooks/use-selected-facility";
+
 import { toFaDigits } from "@/lib/persian-number";
+import { weekLabel } from "@/lib/reserve-time";
 
 import { FacilityManageModal } from "./components/facility-manage-modal";
 import { FacilityTabs } from "./components/facility-tabs";
@@ -22,11 +25,9 @@ export default function ReservePage() {
   const thisWeek = useReserveStore((s) => s.thisWeek);
   const role = useAuthStore((s) => s.user?.role);
   const [manageOpen, setManageOpen] = useState(false);
+  const { selected } = useSelectedFacility();
 
-  const weekStart = 14 + weekOffset * 7;
-  const weekLabel = `${toFaDigits(weekStart)} – ${toFaDigits(
-    weekStart + 6,
-  )} تیر ۱۴۰۴`;
+  const label = weekLabel(weekOffset);
 
   return (
     <div className="sk-page">
@@ -68,7 +69,7 @@ export default function ReservePage() {
             <AppIcon name="chevron_right" className="size-5" />
           </button>
           <div className="min-w-[150px] text-center text-[14px] font-bold">
-            {weekLabel}
+            {label}
           </div>
           <button
             type="button"
@@ -91,6 +92,12 @@ export default function ReservePage() {
           <span className="size-[13px] rounded bg-[color-mix(in_srgb,var(--ap-info)_40%,transparent)]" />
           رزرو دیگران
         </span>
+        {selected ? (
+          <span className="flex items-center gap-1.5">
+            <AppIcon name="groups" className="size-[17px] text-app-steel" />
+            ظرفیت هر سانس: {toFaDigits(selected.capacity)} نفر
+          </span>
+        ) : null}
         <span className="mr-auto flex items-center gap-1.5">
           <AppIcon
             name="drag_indicator"

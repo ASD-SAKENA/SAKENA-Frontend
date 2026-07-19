@@ -17,6 +17,12 @@ export const facilitySchema = z.object({
     .min(2, "نام امکان را وارد کنید.")
     .max(150, "نام حداکثر ۱۵۰ کاراکتر است."),
   icon: z.string().trim().min(1, "آیکون را انتخاب کنید."),
+  capacity: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "ظرفیت باید عدد باشد.")
+    .refine((value) => Number(value) >= 1, "ظرفیت باید حداقل ۱ باشد.")
+    .refine((value) => Number(value) <= 1000, "ظرفیت حداکثر ۱۰۰۰ است."),
 });
 
 export type FacilityForm = z.infer<typeof facilitySchema>;
