@@ -44,6 +44,7 @@ export function navForRole(role: Role): NavItem[] {
   }
   return [
     { label: "وظایف من", icon: "checklist", href: "/tasks", badge: "۳" },
+    { label: "تاریخچه کارها", icon: "history", href: "/tasks/history" },
     { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
     { label: "پروفایل", icon: "person", href: "/profile" },
   ];
@@ -66,6 +67,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
+  "/tasks/history": ["تاریخچه کارها", "خدمات · آرشیو کارهای انجام‌شده"],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
