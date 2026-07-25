@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
-import { AppField, AppInput } from "@/components/app/form-controls";
+import { AppField, AppSelect } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
@@ -17,6 +17,7 @@ import {
   useAssignRequestMutation,
   useManagerRequestsQuery,
 } from "@/queries/requests";
+import { useUsersQuery } from "@/queries/users";
 
 import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,7 @@ export default function QueuePage() {
   const [tab, setTab] = useState<QueueTab>("open");
   const [assignTarget, setAssignTarget] = useState<ManagerRequest | null>(null);
   const { data: requests = [] } = useManagerRequestsQuery();
+  const { data: allStaff = [] } = useUsersQuery("STAFF");
   const approve = useApproveRequestMutation();
   const assign = useAssignRequestMutation();
 
@@ -71,6 +73,8 @@ export default function QueuePage() {
   });
 
   const rows = filterRequests(requests, tab);
+  // Deactivated workers can no longer act on requests, so they are not assignable.
+  const staff = allStaff.filter((s) => s.active);
 
   const handleApprove = (r: ManagerRequest) => {
     approve.mutate(r.id, {
@@ -190,15 +194,18 @@ export default function QueuePage() {
         open={assignTarget !== null}
         onClose={() => setAssignTarget(null)}
         title="ارجاع به کارکن"
-        description="شناسه (UUID) کارکن را وارد کنید — فهرست کارکنان هنوز در بک‌اند موجود نیست."
+        description="کارکن موردنظر را از فهرست کارکنان انتخاب کنید."
       >
         <form onSubmit={onAssignSubmit} className="mt-4">
-          <AppField label="شناسه کارکن" error={errors.workerId?.message}>
-            <AppInput
-              dir="ltr"
-              placeholder="00000000-0000-0000-0000-000000000000"
-              {...register("workerId")}
-            />
+          <AppField label="کارکن" error={errors.workerId?.message}>
+            <AppSelect {...register("workerId")}>
+              <option value="">انتخاب کارکن</option>
+              {staff.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.username} — {s.specialty ?? "بدون تخصص"}
+                </option>
+              ))}
+            </AppSelect>
           </AppField>
           <div className="mt-2 flex gap-2.5">
             <AppButton
