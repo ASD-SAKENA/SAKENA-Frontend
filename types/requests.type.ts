@@ -10,6 +10,7 @@ export type RequestStatus =
   | "ارجاع‌شده"
   | "در حال انجام"
   | "انجام‌شده"
+  | "تسویه‌شده"
   | "ردشده";
 
 export type RequestPriority = "فوری" | "متوسط" | "کم";

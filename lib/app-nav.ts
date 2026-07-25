@@ -40,6 +40,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
+      { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
     ];
   }
   return [
@@ -66,6 +67,10 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
+  "/building-wallet": [
+    "حساب ساختمان",
+    "مالی · موجودی و دفتر تراکنش‌های ساختمان",
+  ],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
