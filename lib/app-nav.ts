@@ -25,6 +25,7 @@ export function navForRole(role: Role): NavItem[] {
         badge: "۱",
       },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+      { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -42,6 +43,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
       { label: "دوره‌های شارژ", icon: "payments", href: "/billing" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
+      { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
     ];
   }
@@ -80,6 +82,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
     "حساب ساختمان",
     "مالی · موجودی و دفتر تراکنش‌های ساختمان",
   ],
+  "/polls": ["نظرسنجی‌ها", "مشارکت · نظرسنجی‌های ساختمان"],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
