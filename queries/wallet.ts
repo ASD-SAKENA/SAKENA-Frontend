@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getWallet, walletKeys } from "@/api/wallet";
+import { getWallet, recordPayment, walletKeys } from "@/api/wallet";
 
 const STALE = 5 * 60 * 1000;
 
@@ -11,5 +11,15 @@ export function useWalletQuery() {
     queryKey: walletKeys.all,
     queryFn: getWallet,
     staleTime: STALE,
+  });
+}
+
+export function useRecordPaymentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: recordPayment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: walletKeys.all });
+    },
   });
 }

@@ -1,6 +1,7 @@
 import type { StatusColor } from "@/types/app.type";
 
 export interface Transaction {
+  id: string;
   desc: string;
   date: string;
   type: string;

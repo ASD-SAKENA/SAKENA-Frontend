@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "sonner";
+import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
@@ -13,12 +13,11 @@ import { useWalletQuery } from "@/queries/wallet";
 import { faNumber } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
+import { PayChargeModal } from "./components/pay-charge-modal";
+
 export default function WalletPage() {
   const { data } = useWalletQuery();
-
-  const handlePay = () => {
-    toast.success("پرداخت با موفقیت انجام شد");
-  };
+  const [payOpen, setPayOpen] = useState(false);
 
   return (
     <div className="sk-page">
@@ -31,9 +30,10 @@ export default function WalletPage() {
               تومان
             </span>
           </div>
-          <AppButton variant="gold" onClick={handlePay}>
-            افزایش موجودی
+          <AppButton variant="gold" onClick={() => setPayOpen(true)}>
+            ثبت پرداخت
           </AppButton>
+          <PayChargeModal open={payOpen} onClose={() => setPayOpen(false)} />
         </div>
 
         {data?.stats.map((stat) => (
@@ -72,11 +72,8 @@ export default function WalletPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.transactions.map((tx, index) => (
-                <tr
-                  key={`${tx.desc}-${index}`}
-                  className="border-t border-app-border"
-                >
+              {data?.transactions.map((tx) => (
+                <tr key={tx.id} className="border-t border-app-border">
                   <td className="px-5 py-[13px] font-semibold text-app-fg">
                     {tx.desc}
                   </td>
