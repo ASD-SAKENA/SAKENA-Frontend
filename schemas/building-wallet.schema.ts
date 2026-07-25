@@ -1,0 +1,23 @@
+import { z } from "zod";
+
+export const buildingTransactionSchema = z.object({
+  direction: z.enum(["CREDIT", "DEBIT"]),
+  category: z.enum([
+    "CHARGE_COLLECTION",
+    "WAGE_SETTLEMENT",
+    "OPERATING_EXPENSE",
+    "ADJUSTMENT",
+  ]),
+  amount: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "مبلغ باید عدد (تومان) باشد.")
+    .refine((value) => Number(value) > 0, "مبلغ باید بزرگ‌تر از صفر باشد."),
+  description: z
+    .string()
+    .trim()
+    .min(3, "شرح تراکنش را وارد کنید.")
+    .max(300, "شرح حداکثر ۳۰۰ کاراکتر است."),
+});
+
+export type BuildingTransactionForm = z.infer<typeof buildingTransactionSchema>;

@@ -1,10 +1,16 @@
 import http from "@/services/http";
 
+import type {
+  RecordBuildingTransactionApiPayload,
+  WalletTransactionApiResponse,
+} from "@/types/wallet.api.type";
 import type { Wallet } from "@/types/wallet.type";
 
 export const walletKeys = {
   all: ["wallet"] as const,
   me: ["wallet", "me"] as const,
+  building: ["wallet", "building"] as const,
+  buildingLedger: ["wallet", "building", "transactions"] as const,
 };
 
 const WALLET: Wallet = {
@@ -93,4 +99,25 @@ export async function settleServiceRequest(
   serviceRequestId: string,
 ): Promise<void> {
   await http.post(`/wallets/settle/${serviceRequestId}`);
+}
+
+/** Shared building account: collected charges minus what the building spent. */
+export async function getBuildingWalletBalance(): Promise<number> {
+  const { data } = await http.get<{ balance: number }>("/wallets/building");
+  return data.balance;
+}
+
+export async function getBuildingLedger(): Promise<
+  WalletTransactionApiResponse[]
+> {
+  const { data } = await http.get<WalletTransactionApiResponse[]>(
+    "/wallets/building/transactions",
+  );
+  return data;
+}
+
+export async function recordBuildingTransaction(
+  payload: RecordBuildingTransactionApiPayload,
+): Promise<void> {
+  await http.post("/wallets/building/transactions", payload);
 }
