@@ -40,6 +40,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "کاربران", icon: "group", href: "/users" },
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
+      { label: "دوره‌های شارژ", icon: "payments", href: "/billing" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
     ];
@@ -71,6 +72,10 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/users": ["کاربران", "مدیریت · فهرست کاربران سامانه"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
   "/tasks/history": ["تاریخچه کارها", "خدمات · آرشیو کارهای انجام‌شده"],
+  "/billing": [
+    "دوره‌های شارژ",
+    "مالی · تعریف دوره، هزینه‌ها و صورت‌حساب واحدها",
+  ],
   "/building-wallet": [
     "حساب ساختمان",
     "مالی · موجودی و دفتر تراکنش‌های ساختمان",
