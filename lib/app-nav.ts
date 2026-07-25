@@ -26,6 +26,7 @@ export function navForRole(role: Role): NavItem[] {
       },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
+      { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -45,12 +46,14 @@ export function navForRole(role: Role): NavItem[] {
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
+      { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
     ];
   }
   return [
     { label: "وظایف من", icon: "checklist", href: "/tasks", badge: "۳" },
     { label: "تاریخچه کارها", icon: "history", href: "/tasks/history" },
     { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+    { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
     { label: "پروفایل", icon: "person", href: "/profile" },
   ];
 }
@@ -83,6 +86,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
     "مالی · موجودی و دفتر تراکنش‌های ساختمان",
   ],
   "/polls": ["نظرسنجی‌ها", "مشارکت · نظرسنجی‌های ساختمان"],
+  "/chat": ["گفتگوی ساکنین", "ارتباطات · پیام‌رسان داخلی ساختمان"],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
