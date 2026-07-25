@@ -25,6 +25,7 @@ export function navForRole(role: Role): NavItem[] {
         badge: "۱",
       },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+      { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -40,6 +41,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
+      { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
     ];
   }
   return [
@@ -66,6 +68,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
+  "/polls": ["نظرسنجی‌ها", "مشارکت · نظرسنجی‌های ساختمان"],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
