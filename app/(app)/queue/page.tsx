@@ -127,6 +127,7 @@ export default function QueuePage() {
                 <th className="px-[18px] py-[13px] font-medium">#</th>
                 <th className="px-[18px] py-[13px] font-medium">موضوع</th>
                 <th className="px-[18px] py-[13px] font-medium">محل</th>
+                <th className="px-[18px] py-[13px] font-medium">زمان ثبت</th>
                 <th className="px-[18px] py-[13px] font-medium">اولویت</th>
                 <th className="px-[18px] py-[13px] font-medium">وضعیت</th>
                 <th className="px-[18px] py-[13px] font-medium">عملیات</th>
@@ -146,6 +147,9 @@ export default function QueuePage() {
                     <div className="text-[11.5px] text-app-muted">{r.type}</div>
                   </td>
                   <td className="px-[18px] py-[13px] text-app-fg">{r.unit}</td>
+                  <td className="px-[18px] py-[13px] text-app-muted">
+                    {r.date}
+                  </td>
                   <td className="px-[18px] py-[13px]">
                     <StatusBadge color={r.priorityColor}>
                       {r.priority}

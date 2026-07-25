@@ -28,13 +28,14 @@ export interface ServiceRequest {
   date: string;
 }
 
-/** Manager queue view adds unit + priority columns. */
+/** Manager queue view adds unit, submission time and priority columns. */
 export interface ManagerRequest {
   id: string;
   displayId: string;
   title: string;
   type: string;
   unit: string;
+  date: string;
   status: RequestStatus;
   statusColor: StatusColor;
   apiStatus: ServiceRequestApiStatus;
