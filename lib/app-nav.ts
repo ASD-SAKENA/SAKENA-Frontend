@@ -25,6 +25,7 @@ export function navForRole(role: Role): NavItem[] {
         badge: "۱",
       },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+      { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -40,11 +41,13 @@ export function navForRole(role: Role): NavItem[] {
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
+      { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
     ];
   }
   return [
     { label: "وظایف من", icon: "checklist", href: "/tasks", badge: "۳" },
     { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+    { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
     { label: "پروفایل", icon: "person", href: "/profile" },
   ];
 }
@@ -66,6 +69,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
+  "/chat": ["گفتگوی ساکنین", "ارتباطات · پیام‌رسان داخلی ساختمان"],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
