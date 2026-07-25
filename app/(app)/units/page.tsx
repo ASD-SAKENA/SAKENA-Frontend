@@ -11,11 +11,17 @@ import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
 import {
+  useBuildingResidenciesQuery,
+  useEndResidencyMutation,
+} from "@/queries/residency";
+import {
   useBuildingsQuery,
   useDeleteApartmentMutation,
   useDeleteBuildingMutation,
   useUnitsQuery,
 } from "@/queries/units";
+
+import { TENANCY_LABELS } from "@/schemas/residency.schema";
 
 import type { StatusColor } from "@/types/app.type";
 import type { BuildingApiResponse } from "@/types/units.api.type";
@@ -23,6 +29,7 @@ import type { Unit } from "@/types/units.type";
 
 import { ApartmentModal } from "./components/apartment-modal";
 import { BuildingModal } from "./components/building-modal";
+import { ResidencyModal } from "./components/residency-modal";
 
 const BALANCE_COLOR: Record<StatusColor, string> = {
   gold: "text-app-gold",
@@ -47,11 +54,19 @@ export default function UnitsPage() {
     null,
   );
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [residencyTarget, setResidencyTarget] = useState<Unit | null>(null);
 
   const { data: buildings = [] } = useBuildingsQuery();
   const { data: units = [] } = useUnitsQuery(buildingFilter || undefined);
   const deleteApartment = useDeleteApartmentMutation();
   const deleteBuilding = useDeleteBuildingMutation();
+  const { data: residencies = [] } = useBuildingResidenciesQuery(
+    buildingFilter || null,
+  );
+  const endResidency = useEndResidencyMutation();
+
+  const residencyOf = (apartmentId: string) =>
+    residencies.find((residency) => residency.apartmentId === apartmentId);
 
   const selectedBuilding =
     buildings.find((b) => b.id === buildingFilter) ?? null;
@@ -162,63 +177,100 @@ export default function UnitsPage() {
               </tr>
             </thead>
             <tbody>
-              {units.map((u) => (
-                <tr
-                  key={u.id}
-                  className="border-t border-app-border hover:bg-app-surface2"
-                >
-                  <td className="px-[18px] py-[13px] font-bold text-app-fg">
-                    {u.no}
-                  </td>
-                  <td className="px-[18px] py-[13px] text-app-fg">
-                    {u.resident}
-                  </td>
-                  <td className="px-[18px] py-[13px] text-app-muted">
-                    {u.tenancy}
-                  </td>
-                  <td
-                    className={`px-[18px] py-[13px] font-semibold ${BALANCE_COLOR[u.balanceColor]}`}
+              {units.map((u) => {
+                const residency = residencyOf(u.id);
+                return (
+                  <tr
+                    key={u.id}
+                    className="border-t border-app-border hover:bg-app-surface2"
                   >
-                    {u.balance}
-                  </td>
-                  <td className="px-[18px] py-[13px]">
-                    <StatusBadge color={u.statusColor}>{u.status}</StatusBadge>
-                  </td>
-                  <td className="px-[18px] py-[13px]">
-                    <div className="flex gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditUnit(u);
-                          setApartmentModalOpen(true);
-                        }}
-                        className="flex size-8 items-center justify-center rounded-lg border border-app-border text-app-muted transition-colors hover:border-app-gold hover:text-app-gold"
-                        aria-label="ویرایش واحد"
-                      >
-                        <AppIcon name="edit" className="size-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDeleteTarget({
-                            kind: "unit",
-                            id: u.id,
-                            label: `واحد ${u.no}`,
-                          })
-                        }
-                        className="flex size-8 items-center justify-center rounded-lg border border-app-border text-app-muted transition-colors hover:border-app-danger hover:text-app-danger"
-                        aria-label="حذف واحد"
-                      >
-                        <AppIcon name="delete" className="size-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-[18px] py-[13px] font-bold text-app-fg">
+                      {u.no}
+                    </td>
+                    <td className="px-[18px] py-[13px] text-app-fg">
+                      {residency?.residentName ?? (
+                        <span className="text-app-muted">خالی</span>
+                      )}
+                    </td>
+                    <td className="px-[18px] py-[13px] text-app-muted">
+                      {residency
+                        ? `${TENANCY_LABELS[residency.tenancy]} · ${u.tenancy}`
+                        : u.tenancy}
+                    </td>
+                    <td
+                      className={`px-[18px] py-[13px] font-semibold ${BALANCE_COLOR[u.balanceColor]}`}
+                    >
+                      {u.balance}
+                    </td>
+                    <td className="px-[18px] py-[13px]">
+                      <StatusBadge color={u.statusColor}>
+                        {u.status}
+                      </StatusBadge>
+                    </td>
+                    <td className="px-[18px] py-[13px]">
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditUnit(u);
+                            setApartmentModalOpen(true);
+                          }}
+                          className="flex size-8 items-center justify-center rounded-lg border border-app-border text-app-muted transition-colors hover:border-app-gold hover:text-app-gold"
+                          aria-label="ویرایش واحد"
+                        >
+                          <AppIcon name="edit" className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDeleteTarget({
+                              kind: "unit",
+                              id: u.id,
+                              label: `واحد ${u.no}`,
+                            })
+                          }
+                          className="flex size-8 items-center justify-center rounded-lg border border-app-border text-app-muted transition-colors hover:border-app-danger hover:text-app-danger"
+                          aria-label="حذف واحد"
+                        >
+                          <AppIcon name="delete" className="size-4" />
+                        </button>
+                        {residency ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              endResidency.mutate(u.id, {
+                                onSuccess: () =>
+                                  toast.success(`واحد ${u.no} خالی شد`),
+                              })
+                            }
+                            disabled={endResidency.isPending}
+                            className="h-8 rounded-lg border border-app-border px-2.5 text-[12px] font-semibold text-app-muted transition-colors hover:border-app-danger hover:text-app-danger disabled:opacity-50"
+                          >
+                            تخلیه
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setResidencyTarget(u)}
+                            className="h-8 rounded-lg border border-app-border px-2.5 text-[12px] font-semibold text-app-gold transition-colors hover:border-app-gold"
+                          >
+                            تخصیص ساکن
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      <ResidencyModal
+        unit={residencyTarget}
+        onClose={() => setResidencyTarget(null)}
+      />
 
       <ApartmentModal
         open={apartmentModalOpen}

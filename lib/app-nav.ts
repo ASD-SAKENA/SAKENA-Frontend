@@ -38,6 +38,7 @@ export function navForRole(role: Role): NavItem[] {
         badge: "۵",
       },
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
+      { label: "کاربران", icon: "group", href: "/users" },
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
@@ -66,6 +67,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/profile": ["پروفایل", "حساب کاربری · اطلاعات شخصی"],
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
+  "/users": ["کاربران", "مدیریت · فهرست کاربران سامانه"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
   "/building-wallet": [
     "حساب ساختمان",

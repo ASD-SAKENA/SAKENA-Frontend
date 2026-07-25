@@ -56,6 +56,7 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     title: r.title,
     type: subCategoryLabel(r.subCategory),
     unit: r.location ?? "—",
+    date: formatFaDate(r.createdAt),
     status: meta.label,
     statusColor: meta.color,
     apiStatus: r.status,

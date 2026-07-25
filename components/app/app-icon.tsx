@@ -87,6 +87,7 @@ const ICONS: Record<string, LucideIcon> = {
   dark_mode: Moon,
   add: Plus,
   water_drop: Droplet,
+  group: Users,
   groups: Users,
   garage: Warehouse,
   payments: Banknote,
