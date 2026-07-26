@@ -2,12 +2,9 @@
 
 import { create } from "zustand";
 
-import { toFaDigits } from "@/lib/persian-number";
-import { SLOTS, START_HOUR } from "@/lib/reserve-time";
-
 import type { ComposerState, DragState } from "@/types/reserve.type";
 
-export { SLOTS, START_HOUR };
+/** Height of one half-hour row, in pixels. */
 export const ROW = 32;
 
 const DEFAULT_COMPOSER: ComposerState = {
@@ -87,13 +84,3 @@ export const useReserveStore = create<ReserveState>((set, get) => ({
     return true;
   },
 }));
-
-/** hh:mm (Persian digits) for the start of half-hour slot `i`. */
-export function slotTime(i: number): string {
-  const t = START_HOUR * 60 + i * 30;
-  const hh = Math.floor(t / 60);
-  const mm = t % 60;
-  return `${toFaDigits(String(hh).padStart(2, "0"))}:${toFaDigits(
-    String(mm).padStart(2, "0"),
-  )}`;
-}

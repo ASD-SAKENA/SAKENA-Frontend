@@ -7,17 +7,18 @@ import {
   useFacilityBookingsQuery,
 } from "@/queries/reserve";
 
-import {
-  ROW,
-  SLOTS,
-  slotTime,
-  START_HOUR,
-  useReserveStore,
-} from "@/stores/reserve.store";
+import { useAuthStore } from "@/stores/auth.store";
+import { ROW, useReserveStore } from "@/stores/reserve.store";
 
 import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
-import { weekStartDate } from "@/lib/reserve-time";
+import {
+  DEFAULT_RULES,
+  isBeyondAdvanceWindow,
+  isPastSlot,
+  slotTime,
+  weekStartDate,
+} from "@/lib/reserve-time";
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
@@ -35,11 +36,9 @@ const DAY_NAMES = [
 /** Cycled accent colors for other residents' blocks. */
 const OTHER_PALETTE: StatusColor[] = ["info", "success", "steel", "warning"];
 
-/** Now-indicator offset: design pins it to 14:20 within the 08–22 grid. */
-const NOW_TOP = Math.round(((14 - START_HOUR) * 2 + 20 / 30) * ROW);
-
 export function ReserveCalendar() {
   const { selected } = useSelectedFacility();
+  const isManager = useAuthStore((s) => s.user?.role) === "manager";
   const weekOffset = useReserveStore((s) => s.weekOffset);
   const drag = useReserveStore((s) => s.drag);
   const openComposer = useReserveStore((s) => s.openComposer);
@@ -48,9 +47,11 @@ export function ReserveCalendar() {
   const endDrag = useReserveStore((s) => s.endDrag);
   const consumeJustDragged = useReserveStore((s) => s.consumeJustDragged);
 
+  const rules = selected?.rules ?? DEFAULT_RULES;
   const { data: bookings = [] } = useFacilityBookingsQuery(
     selected?.id ?? null,
     weekOffset,
+    rules,
   );
   const cancelBooking = useCancelBookingMutation();
 
@@ -64,20 +65,35 @@ export function ReserveCalendar() {
   };
 
   const hourLabels: string[] = [];
-  for (let hh = START_HOUR; hh < 22; hh++) {
-    hourLabels.push(slotTime((hh - START_HOUR) * 2));
+  for (let hh = rules.startHour; hh < rules.endHour; hh++) {
+    hourLabels.push(slotTime((hh - rules.startHour) * 2, rules.startHour));
   }
+
+  /** The now-indicator only makes sense while the grid is open. */
+  const now = new Date();
+  const nowSlot =
+    (now.getHours() - rules.startHour) * 2 + now.getMinutes() / 30;
+  const nowTop = nowSlot >= 0 && nowSlot <= rules.slots ? nowSlot * ROW : null;
+
+  const isBookable = (day: number, slot: number): boolean =>
+    !rules.closedDays.includes(day) &&
+    !isPastSlot(weekOffset, day, slot, rules.startHour) &&
+    !isBeyondAdvanceWindow(weekOffset, day, slot, rules);
 
   const handleCellClick = (day: number, slot: number) => {
     if (consumeJustDragged()) return;
-    openComposer(day, slot, 2);
+    if (!isBookable(day, slot)) return;
+    openComposer(day, slot, rules.minSlots);
   };
 
-  const handleCancel = (bookingId: string) => {
+  const handleCancel = (bookingId: string, mine: boolean) => {
     if (!selected || cancelBooking.isPending) return;
     cancelBooking.mutate(
       { facilityId: selected.id, bookingId },
-      { onSuccess: () => toast.success("رزرو شما لغو شد") },
+      {
+        onSuccess: () =>
+          toast.success(mine ? "رزرو شما لغو شد" : "رزرو ساکن لغو شد"),
+      },
     );
   };
 
@@ -132,6 +148,7 @@ export function ReserveCalendar() {
             {/* day columns */}
             {DAY_NAMES.map((name, di) => {
               const isToday = di === todayIdx;
+              const isClosed = rules.closedDays.includes(di);
               const dayBlocks = bookings.filter((b) => b.day === di);
               const showDrag = drag.dragging && drag.day === di;
               const dragA = Math.min(drag.start, drag.end);
@@ -142,22 +159,26 @@ export function ReserveCalendar() {
                   key={name}
                   className="relative min-w-0 flex-1 border-l border-app-border"
                 >
-                  {Array.from({ length: SLOTS }, (_, slot) => {
+                  {Array.from({ length: rules.slots }, (_, slot) => {
                     const hourEnd = slot % 2 === 1;
+                    const bookable = isBookable(di, slot);
                     return (
                       <div
                         key={slot}
                         onClick={() => handleCellClick(di, slot)}
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          startDrag(di, slot);
+                          if (bookable) startDrag(di, slot);
                         }}
                         onMouseEnter={() => dragTo(di, slot)}
                         className={cn(
-                          "cursor-pointer transition-[background] duration-100 select-none hover:bg-[var(--ap-gold-soft)]",
+                          "transition-[background] duration-100 select-none",
                           hourEnd
                             ? "border-b border-solid border-app-border"
                             : "border-b border-dashed border-[rgba(150,160,180,0.14)]",
+                          bookable
+                            ? "cursor-pointer hover:bg-[var(--ap-gold-soft)]"
+                            : "cursor-not-allowed bg-[color-mix(in_srgb,var(--ap-muted)_9%,transparent)]",
                         )}
                         style={{ height: ROW }}
                       />
@@ -167,14 +188,15 @@ export function ReserveCalendar() {
                   {dayBlocks.map((b, i) => {
                     const top = b.start * ROW;
                     const height = b.dur * ROW - 3;
-                    const time = `${slotTime(b.start)} – ${slotTime(
+                    const time = `${slotTime(b.start, rules.startHour)} – ${slotTime(
                       b.start + b.dur,
+                      rules.startHour,
                     )}`;
                     if (b.mine) {
                       return (
                         <div
                           key={b.id}
-                          onClick={() => handleCancel(b.id)}
+                          onClick={() => handleCancel(b.id, true)}
                           className="absolute right-1 left-1 z-[3] cursor-pointer overflow-hidden rounded-lg bg-[linear-gradient(155deg,var(--ap-gold-light),var(--ap-gold))] px-2 py-[5px] text-app-gold-fg shadow-[0_4px_12px_rgba(201,162,78,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[filter] hover:brightness-105"
                           style={{ top, height }}
                         >
@@ -192,7 +214,9 @@ export function ReserveCalendar() {
                       <div
                         key={b.id}
                         onClick={() =>
-                          toast("این بازه توسط ساکن دیگری رزرو شده است")
+                          isManager
+                            ? handleCancel(b.id, false)
+                            : toast("این بازه توسط ساکن دیگری رزرو شده است")
                         }
                         className="absolute right-1 left-1 z-[2] cursor-pointer overflow-hidden rounded-lg border border-[var(--ap-glass-brd)] px-2 py-[5px] text-app-fg backdrop-blur-[6px] transition-[filter] hover:brightness-105"
                         style={{
@@ -204,7 +228,7 @@ export function ReserveCalendar() {
                         }}
                       >
                         <div className="truncate text-[11px] leading-[1.4] font-bold">
-                          رزرو شده
+                          {isManager ? "رزرو شده · لغو" : "رزرو شده"}
                         </div>
                         <div className="truncate text-[10.5px] leading-[1.4] text-app-muted">
                           {time}
@@ -221,14 +245,25 @@ export function ReserveCalendar() {
                         height: (dragB - dragA + 1) * ROW,
                       }}
                     >
-                      {`${slotTime(dragA)} – ${slotTime(dragB + 1)}`}
+                      {`${slotTime(dragA, rules.startHour)} – ${slotTime(
+                        dragB + 1,
+                        rules.startHour,
+                      )}`}
                     </div>
                   )}
 
-                  {isToday && (
+                  {isClosed && (
+                    <div className="pointer-events-none absolute inset-0 z-[4] flex items-start justify-center pt-4">
+                      <span className="rounded-md bg-app-surface2 px-2 py-1 text-[11px] font-semibold text-app-muted">
+                        تعطیل
+                      </span>
+                    </div>
+                  )}
+
+                  {isToday && nowTop !== null && (
                     <div
                       className="pointer-events-none absolute right-0 left-0 z-[5] h-0.5 bg-app-danger"
-                      style={{ top: NOW_TOP }}
+                      style={{ top: nowTop }}
                     >
                       <span className="absolute -top-[3px] -right-[3px] size-2 rounded-full bg-app-danger" />
                     </div>

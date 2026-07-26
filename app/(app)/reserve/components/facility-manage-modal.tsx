@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
@@ -18,13 +18,19 @@ import {
   useUpdateFacilityMutation,
 } from "@/queries/reserve";
 
+import { formatToman, toFaDigits } from "@/lib/persian-number";
+import { API_WEEK_DAYS, SLOT_MINUTES } from "@/lib/reserve-time";
+
 import {
   FACILITY_ICONS,
   type FacilityForm,
   facilitySchema,
 } from "@/schemas/facility.schema";
 
+import type { BookingRulesApi } from "@/types/reserve.api.type";
 import type { Facility } from "@/types/reserve.type";
+
+import { FacilityRulesFields } from "./facility-rules-fields";
 
 interface Props {
   open: boolean;
@@ -35,7 +41,50 @@ const EMPTY: FacilityForm = {
   name: "",
   icon: "fitness_center",
   capacity: "10",
+  opensAtHour: "8",
+  closesAtHour: "22",
+  closedDays: [],
+  minDurationMinutes: "30",
+  maxDurationMinutes: "120",
+  maxAdvanceDays: "30",
+  maxPerResidentPerWeek: "0",
+  hourlyPrice: "0",
 };
+
+function toFormValues(facility: Facility): FacilityForm {
+  const { rules } = facility;
+  return {
+    name: facility.label,
+    icon: facility.icon,
+    capacity: String(facility.capacity),
+    opensAtHour: String(rules.startHour),
+    closesAtHour: String(rules.endHour),
+    closedDays: rules.closedDays,
+    minDurationMinutes: String(rules.minSlots * SLOT_MINUTES),
+    maxDurationMinutes: String(rules.maxSlots * SLOT_MINUTES),
+    maxAdvanceDays: String(rules.maxAdvanceDays),
+    maxPerResidentPerWeek: String(rules.maxPerWeek),
+    hourlyPrice: String(rules.hourlyPrice),
+  };
+}
+
+function toRulesPayload(values: FacilityForm): BookingRulesApi {
+  const pad = (hour: string) => `${String(Number(hour)).padStart(2, "0")}:00`;
+  return {
+    opensAt: pad(values.opensAtHour),
+    // A midnight closing is stored as 23:59 — the backend needs closesAt > opensAt.
+    closesAt:
+      Number(values.closesAtHour) >= 24 ? "23:59" : pad(values.closesAtHour),
+    closedDays: values.closedDays
+      .map((day) => API_WEEK_DAYS[day])
+      .filter((day) => day !== undefined),
+    minDurationMinutes: Number(values.minDurationMinutes),
+    maxDurationMinutes: Number(values.maxDurationMinutes),
+    maxAdvanceDays: Number(values.maxAdvanceDays),
+    maxPerResidentPerWeek: Number(values.maxPerResidentPerWeek),
+    hourlyPrice: Number(values.hourlyPrice),
+  };
+}
 
 export function FacilityManageModal({ open, onClose }: Props) {
   const { data: facilities = [] } = useFacilitiesQuery();
@@ -46,26 +95,31 @@ export function FacilityManageModal({ open, onClose }: Props) {
   const [pendingDelete, setPendingDelete] = useState<Facility | null>(null);
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FacilityForm>({
     resolver: zodResolver(facilitySchema),
     defaultValues: EMPTY,
-    values: editing
-      ? {
-          name: editing.label,
-          icon: editing.icon,
-          capacity: String(editing.capacity),
-        }
-      : EMPTY,
+    values: editing ? toFormValues(editing) : EMPTY,
   });
+
+  const closedDays = useWatch({ control, name: "closedDays" });
 
   const pending =
     createFacility.isPending ||
     updateFacility.isPending ||
     deleteFacility.isPending;
+
+  const toggleClosedDay = (day: number) => {
+    const next = closedDays.includes(day)
+      ? closedDays.filter((d) => d !== day)
+      : [...closedDays, day];
+    setValue("closedDays", next, { shouldValidate: true });
+  };
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -73,6 +127,7 @@ export function FacilityManageModal({ open, onClose }: Props) {
         name: values.name,
         icon: values.icon,
         capacity: Number(values.capacity),
+        rules: toRulesPayload(values),
       };
       if (editing) {
         await updateFacility.mutateAsync({ id: editing.id, payload });
@@ -115,7 +170,7 @@ export function FacilityManageModal({ open, onClose }: Props) {
       open={open}
       onClose={handleClose}
       title="مدیریت امکانات رزرو"
-      description="امکانات این لیست در منوی رزرو ساکنین نمایش داده می‌شوند."
+      description="ساعت کاری، مدت مجاز، سقف رزرو و هزینه‌ی هر امکان اینجا تعیین می‌شود."
     >
       <div className="mt-4 mb-5 flex flex-col gap-2">
         {facilities.map((facility) => (
@@ -127,7 +182,12 @@ export function FacilityManageModal({ open, onClose }: Props) {
             <span className="flex-1 text-[13.5px] font-semibold text-app-fg">
               {facility.label}
               <span className="mr-2 text-[11.5px] font-normal text-app-muted">
-                ظرفیت {facility.capacity} نفر
+                ظرفیت {toFaDigits(facility.capacity)} نفر ·{" "}
+                {toFaDigits(facility.rules.startHour)}–
+                {toFaDigits(facility.rules.endHour)} ·{" "}
+                {facility.rules.hourlyPrice > 0
+                  ? `${formatToman(facility.rules.hourlyPrice)} در ساعت`
+                  : "رایگان"}
               </span>
             </span>
             <button
@@ -174,6 +234,13 @@ export function FacilityManageModal({ open, onClose }: Props) {
         <AppField label="ظرفیت هر سانس (نفر)" error={errors.capacity?.message}>
           <AppInput dir="ltr" placeholder="10" {...register("capacity")} />
         </AppField>
+
+        <FacilityRulesFields
+          register={register}
+          errors={errors}
+          closedDays={closedDays}
+          onToggleClosedDay={toggleClosedDay}
+        />
 
         <div className="mt-2 flex gap-2.5">
           <AppButton

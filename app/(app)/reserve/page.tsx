@@ -11,10 +11,12 @@ import { useReserveStore } from "@/stores/reserve.store";
 import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
 import { toFaDigits } from "@/lib/persian-number";
+import { formatToman } from "@/lib/persian-number";
 import { weekLabel } from "@/lib/reserve-time";
 
 import { FacilityManageModal } from "./components/facility-manage-modal";
 import { FacilityTabs } from "./components/facility-tabs";
+import { MyBookingsPanel } from "./components/my-bookings-panel";
 import { ReserveCalendar } from "./components/reserve-calendar";
 import { ReserveComposer } from "./components/reserve-composer";
 
@@ -31,6 +33,8 @@ export default function ReservePage() {
 
   return (
     <div className="sk-page">
+      <MyBookingsPanel />
+
       {/* toolbar */}
       <div className="mb-[14px] flex flex-wrap items-center gap-[14px]">
         <FacilityTabs />
@@ -93,10 +97,23 @@ export default function ReservePage() {
           رزرو دیگران
         </span>
         {selected ? (
-          <span className="flex items-center gap-1.5">
-            <AppIcon name="groups" className="size-[17px] text-app-steel" />
-            ظرفیت هر سانس: {toFaDigits(selected.capacity)} نفر
-          </span>
+          <>
+            <span className="flex items-center gap-1.5">
+              <AppIcon name="groups" className="size-[17px] text-app-steel" />
+              ظرفیت هر سانس: {toFaDigits(selected.capacity)} نفر
+            </span>
+            <span className="flex items-center gap-1.5">
+              <AppIcon name="schedule" className="size-[17px] text-app-steel" />
+              ساعت کاری: {toFaDigits(selected.rules.startHour)} تا{" "}
+              {toFaDigits(selected.rules.endHour)}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <AppIcon name="sell" className="size-[17px] text-app-steel" />
+              {selected.rules.hourlyPrice > 0
+                ? `${formatToman(selected.rules.hourlyPrice)} در ساعت`
+                : "رایگان"}
+            </span>
+          </>
         ) : null}
         <span className="mr-auto flex items-center gap-1.5">
           <AppIcon

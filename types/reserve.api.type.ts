@@ -1,10 +1,35 @@
 /** Response shapes of the Sakena backend facility endpoints (`/api/v1/facilities`). */
 
+/** `java.time.DayOfWeek` as serialized by the backend. */
+export type ApiDayOfWeek =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+
+/** Scheduling policy of a facility, mirroring `BookingRules` on the backend. */
+export interface BookingRulesApi {
+  /** Local `HH:mm[:ss]`. */
+  opensAt: string;
+  closesAt: string;
+  closedDays: ApiDayOfWeek[];
+  minDurationMinutes: number;
+  maxDurationMinutes: number;
+  maxAdvanceDays: number;
+  /** 0 means unlimited. */
+  maxPerResidentPerWeek: number;
+  hourlyPrice: number;
+}
+
 export interface FacilityApiResponse {
   id: string;
   name: string;
   icon: string | null;
   capacity: number;
+  rules: BookingRulesApi;
   createdAt: string;
   updatedAt: string;
 }
@@ -13,6 +38,7 @@ export interface FacilityApiPayload {
   name: string;
   icon?: string;
   capacity?: number;
+  rules?: BookingRulesApi;
 }
 
 export interface BookingApiResponse {
@@ -21,6 +47,16 @@ export interface BookingApiResponse {
   bookedBy: string;
   startsAt: string;
   endsAt: string;
+}
+
+export interface MyBookingApiResponse {
+  id: string;
+  facilityId: string;
+  facilityName: string;
+  facilityIcon: string | null;
+  startsAt: string;
+  endsAt: string;
+  price: number;
 }
 
 export interface CreateBookingApiPayload {

@@ -1,8 +1,40 @@
 import { LOCALE } from "@/app/config";
 
-/** Half-hour slots rendered on the weekly grid (08:00 → 22:00). */
-export const SLOTS = 28;
-export const START_HOUR = 8;
+import { toFaDigits } from "@/lib/persian-number";
+
+import type { ApiDayOfWeek } from "@/types/reserve.api.type";
+import type { FacilityRules } from "@/types/reserve.type";
+
+/** Weekday order of the Persian week, indexed the way the grid is. */
+export const API_WEEK_DAYS: ApiDayOfWeek[] = [
+  "SATURDAY",
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+];
+
+/** Minutes covered by one grid row. */
+export const SLOT_MINUTES = 30;
+
+/** Grid fallback (08:00 → 22:00) used until a facility's rules are known. */
+export const DEFAULT_START_HOUR = 8;
+export const DEFAULT_END_HOUR = 22;
+
+/** Rules the backend applies by default to a facility with no policy set. */
+export const DEFAULT_RULES: FacilityRules = {
+  startHour: DEFAULT_START_HOUR,
+  endHour: DEFAULT_END_HOUR,
+  slots: (DEFAULT_END_HOUR - DEFAULT_START_HOUR) * 2,
+  closedDays: [],
+  minSlots: 1,
+  maxSlots: 4,
+  maxAdvanceDays: 30,
+  maxPerWeek: 0,
+  hourlyPrice: 0,
+};
 
 /** Saturday 00:00 (local time) of the week `weekOffset` weeks from now. */
 export function weekStartDate(weekOffset: number): Date {
@@ -14,15 +46,16 @@ export function weekStartDate(weekOffset: number): Date {
   return start;
 }
 
-/** Absolute time of a grid cell (weekday index + half-hour slot). */
+/** Absolute time of a grid cell (weekday index + slot within the open hours). */
 export function slotToDate(
   weekOffset: number,
   day: number,
   slot: number,
+  startHour: number,
 ): Date {
   const date = weekStartDate(weekOffset);
   date.setDate(date.getDate() + day);
-  date.setMinutes(START_HOUR * 60 + slot * 30);
+  date.setMinutes(startHour * 60 + slot * SLOT_MINUTES);
   return date;
 }
 
@@ -36,12 +69,13 @@ export function weekRange(weekOffset: number): { from: string; to: string } {
 
 /**
  * Maps an absolute booking range back onto the week grid. Returns null when
- * the range falls outside the visible week or the 08–22 slot window.
+ * the range falls outside the visible week or the facility's open hours.
  */
 export function rangeToGrid(
   weekOffset: number,
   startsAt: string,
   endsAt: string,
+  rules: FacilityRules,
 ): { day: number; start: number; dur: number } | null {
   const weekStart = weekStartDate(weekOffset);
   const start = new Date(startsAt);
@@ -54,12 +88,14 @@ export function rangeToGrid(
   const midnight = new Date(weekStart);
   midnight.setDate(midnight.getDate() + day);
   const minutesFromStart =
-    (start.getTime() - midnight.getTime()) / 60_000 - START_HOUR * 60;
-  const slot = Math.round(minutesFromStart / 30);
-  const dur = Math.round((end.getTime() - start.getTime()) / (30 * 60_000));
-  if (slot < 0 || slot >= SLOTS || dur < 1) return null;
+    (start.getTime() - midnight.getTime()) / 60_000 - rules.startHour * 60;
+  const slot = Math.round(minutesFromStart / SLOT_MINUTES);
+  const dur = Math.round(
+    (end.getTime() - start.getTime()) / (SLOT_MINUTES * 60_000),
+  );
+  if (slot < 0 || slot >= rules.slots || dur < 1) return null;
 
-  return { day, start: slot, dur: Math.min(dur, SLOTS - slot) };
+  return { day, start: slot, dur: Math.min(dur, rules.slots - slot) };
 }
 
 /** «۱۴ تیر – ۲۰ تیر» style label for the visible week. */
@@ -70,4 +106,39 @@ export function weekLabel(weekOffset: number): string {
   const fmt = (d: Date) =>
     d.toLocaleDateString(LOCALE, { day: "numeric", month: "long" });
   return `${fmt(start)} – ${fmt(end)}`;
+}
+
+/** hh:mm (Persian digits) for the start of slot `i` within the open hours. */
+export function slotTime(i: number, startHour: number): string {
+  const minutes = startHour * 60 + i * SLOT_MINUTES;
+  const hh = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const mm = String(minutes % 60).padStart(2, "0");
+  return `${toFaDigits(hh)}:${toFaDigits(mm)}`;
+}
+
+/** Price of a slot of `dur` rows, mirroring the backend's hourly formula. */
+export function slotPrice(rules: FacilityRules, dur: number): number {
+  if (rules.hourlyPrice <= 0) return 0;
+  return Math.round((rules.hourlyPrice * dur * SLOT_MINUTES) / 60);
+}
+
+/** Whether a grid cell lies in the past (a booking must start in the future). */
+export function isPastSlot(
+  weekOffset: number,
+  day: number,
+  slot: number,
+  startHour: number,
+): boolean {
+  return slotToDate(weekOffset, day, slot, startHour).getTime() <= Date.now();
+}
+
+/** Whether a grid cell is further ahead than the facility allows. */
+export function isBeyondAdvanceWindow(
+  weekOffset: number,
+  day: number,
+  slot: number,
+  rules: FacilityRules,
+): boolean {
+  const limit = Date.now() + rules.maxAdvanceDays * 24 * 60 * 60 * 1000;
+  return slotToDate(weekOffset, day, slot, rules.startHour).getTime() > limit;
 }
