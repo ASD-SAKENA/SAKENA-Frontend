@@ -114,6 +114,10 @@ export async function approveRequest(id: string): Promise<void> {
   await http.patch(`/service-requests/${id}/approve`);
 }
 
+export async function rejectRequest(id: string): Promise<void> {
+  await http.patch(`/service-requests/${id}/reject`);
+}
+
 export async function assignRequest(
   id: string,
   workerId: string,

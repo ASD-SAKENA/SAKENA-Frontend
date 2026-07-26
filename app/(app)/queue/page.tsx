@@ -16,6 +16,7 @@ import {
   useApproveRequestMutation,
   useAssignRequestMutation,
   useManagerRequestsQuery,
+  useRejectRequestMutation,
 } from "@/queries/requests";
 import { useUsersQuery } from "@/queries/users";
 import { useSettleRequestMutation } from "@/queries/wallet";
@@ -64,6 +65,7 @@ export default function QueuePage() {
   const { data: requests = [] } = useManagerRequestsQuery();
   const { data: allStaff = [] } = useUsersQuery("STAFF");
   const approve = useApproveRequestMutation();
+  const reject = useRejectRequestMutation();
   const assign = useAssignRequestMutation();
   const settle = useSettleRequestMutation();
 
@@ -85,6 +87,14 @@ export default function QueuePage() {
     approve.mutate(r.id, {
       onSuccess: () => {
         toast.success(`درخواست «${r.title}» تأیید شد`);
+      },
+    });
+  };
+
+  const handleReject = (r: ManagerRequest) => {
+    reject.mutate(r.id, {
+      onSuccess: () => {
+        toast.success(`درخواست «${r.title}» رد شد`);
       },
     });
   };
@@ -173,15 +183,26 @@ export default function QueuePage() {
                   </td>
                   <td className="px-[18px] py-[13px]">
                     {r.apiStatus === "PENDING" ? (
-                      <button
-                        type="button"
-                        onClick={() => handleApprove(r)}
-                        disabled={approve.isPending}
-                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-success transition-colors hover:border-app-success disabled:opacity-50"
-                      >
-                        <AppIcon name="check" className="size-4" />
-                        تأیید
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleApprove(r)}
+                          disabled={approve.isPending}
+                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-success transition-colors hover:border-app-success disabled:opacity-50"
+                        >
+                          <AppIcon name="check" className="size-4" />
+                          تأیید
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleReject(r)}
+                          disabled={reject.isPending}
+                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-danger transition-colors hover:border-app-danger disabled:opacity-50"
+                        >
+                          <AppIcon name="close" className="size-4" />
+                          رد
+                        </button>
+                      </div>
                     ) : r.apiStatus === "APPROVED" ||
                       r.apiStatus === "ASSIGNED" ? (
                       <button
