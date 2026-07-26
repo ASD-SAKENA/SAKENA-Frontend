@@ -48,5 +48,7 @@ export interface PaymentBreakdown {
 export interface ManagerDashboard {
   kpis: KpiData[];
   chart: ChartBar[];
+  /** Short note shown next to the chart title, e.g. the rate change. */
+  chartNote: string;
   breakdown: PaymentBreakdown[];
 }
