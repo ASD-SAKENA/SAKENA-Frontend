@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -26,6 +26,8 @@ const iconClass =
 
 export function SignupForm() {
   const router = useRouter();
+  // Invitees arrive via /join?token=…; `next` brings them back after auth.
+  const next = useSearchParams().get("next");
   const loginStore = useAuthStore((state) => state.login);
   const mutation = useSignupMutation();
 
@@ -66,7 +68,7 @@ export function SignupForm() {
       });
       loginStore(session.user, session.token);
       toast.success("حساب شما ساخته شد");
-      router.push(roleHomePath(session.user.role));
+      router.push(next ?? roleHomePath(session.user.role));
     } catch {
       // The global http interceptor already surfaced the error toast.
     }

@@ -28,6 +28,8 @@ import type {
   UserSummaryApiResponse,
 } from "@/types/users.api.type";
 
+import { InvitationList } from "./components/invitation-list";
+
 const ROLE_META: Record<UserApiRole, { label: string; color: StatusColor }> = {
   RESIDENT: { label: "ساکن", color: "info" },
   MANAGER: { label: "مدیر", color: "gold" },
@@ -96,8 +98,10 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="sk-page">
-      <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
+    <div className="sk-page flex flex-col gap-4">
+      <InvitationList />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <AppSelect
           value={roleFilter}
           onChange={(e) => {
