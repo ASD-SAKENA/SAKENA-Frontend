@@ -27,26 +27,16 @@ describe("invitationSchema", () => {
     }
   });
 
-  it("accepts a valid PHONE invitation", () => {
+  it("no longer offers PHONE as an invitation channel", () => {
     const result = invitationSchema.safeParse({
       channel: "PHONE",
       recipient: "09121234567",
       role: "RESIDENT",
       tenancy: "TENANT",
     });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects a PHONE invitation with an invalid number", () => {
-    const result = invitationSchema.safeParse({
-      channel: "PHONE",
-      recipient: "12345",
-      role: "RESIDENT",
-      tenancy: "TENANT",
-    });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.path).toEqual(["recipient"]);
+      expect(result.error.issues[0]?.path).toEqual(["channel"]);
     }
   });
 

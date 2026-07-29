@@ -12,7 +12,7 @@ import { useCreateInvitationMutation } from "@/queries/invitations";
 import { useBuildingsQuery, useUnitsQuery } from "@/queries/units";
 
 import {
-  INVITATION_CHANNEL_LABELS,
+  INVITATION_CHANNEL_OPTIONS,
   type InvitationForm,
   invitationSchema,
 } from "@/schemas/invitation.schema";
@@ -57,7 +57,7 @@ export function InvitationModal({
   const buildingName = buildings.find((b) => b.id === buildingId)?.name;
   // Only residents live in a unit, and an open link has no addressee.
   const showUnit = role === "RESIDENT";
-  const showRecipient = channel !== "LINK";
+  const showRecipient = channel === "EMAIL";
 
   const onSubmit = handleSubmit(async (values) => {
     if (!buildingId) return;
@@ -100,24 +100,21 @@ export function InvitationModal({
       <form onSubmit={onSubmit} className="mt-4">
         <AppField label="روش دعوت" error={errors.channel?.message}>
           <AppSelect {...register("channel")}>
-            {Object.entries(INVITATION_CHANNEL_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
+            {Object.entries(INVITATION_CHANNEL_OPTIONS).map(
+              ([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ),
+            )}
           </AppSelect>
         </AppField>
 
         {showRecipient ? (
-          <AppField
-            label={channel === "EMAIL" ? "ایمیل" : "شماره موبایل"}
-            error={errors.recipient?.message}
-          >
+          <AppField label="ایمیل" error={errors.recipient?.message}>
             <AppInput
               dir="ltr"
-              placeholder={
-                channel === "EMAIL" ? "neighbour@mail.com" : "09120000000"
-              }
+              placeholder="neighbour@mail.com"
               {...register("recipient")}
             />
           </AppField>
