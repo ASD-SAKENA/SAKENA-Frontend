@@ -10,8 +10,10 @@ import {
 } from "@/lib/service-requests";
 
 import type {
+  AssignCostResponsibilityApiPayload,
   CategoryOptionsApiResponse,
   CreateServiceRequestApiPayload,
+  ServiceCostResponsibility,
   ServiceRequestApiResponse,
 } from "@/types/requests.api.type";
 import type {
@@ -78,6 +80,8 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     apiStatus: r.status,
     priority: "نامشخص",
     priorityColor: "muted",
+    costResponsibility: r.costResponsibility,
+    completionCost: r.completionCost,
   };
 }
 
@@ -180,4 +184,13 @@ export async function confirmCompletion(
 
 export async function rejectCompletion(id: string): Promise<void> {
   await http.patch(`/service-requests/${id}/reject-completion`, {});
+}
+
+/** Manager decides how a completed request's cost is paid, before settling it. */
+export async function assignCostResponsibility(
+  id: string,
+  costResponsibility: ServiceCostResponsibility,
+): Promise<void> {
+  const payload: AssignCostResponsibilityApiPayload = { costResponsibility };
+  await http.patch(`/service-requests/${id}/cost-responsibility`, payload);
 }

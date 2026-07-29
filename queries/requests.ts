@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   approveRequest,
+  assignCostResponsibility,
   assignRequest,
   completeRequest,
   confirmCompletion,
@@ -18,6 +19,8 @@ import {
   updateRequest,
 } from "@/api/requests";
 import { taskKeys } from "@/api/tasks";
+
+import type { ServiceCostResponsibility } from "@/types/requests.api.type";
 
 const STALE = 5 * 60 * 1000;
 
@@ -153,6 +156,22 @@ export function useRejectCompletionMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+}
+
+export function useAssignCostResponsibilityMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      costResponsibility,
+    }: {
+      id: string;
+      costResponsibility: ServiceCostResponsibility;
+    }) => assignCostResponsibility(id, costResponsibility),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: requestKeys.all });
     },
   });
 }

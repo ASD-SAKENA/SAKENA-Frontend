@@ -1,6 +1,7 @@
 import type { StatusColor } from "@/types/app.type";
 import type {
   ServiceCategoryGroup,
+  ServiceCostResponsibility,
   ServiceRequestApiStatus,
 } from "@/types/requests.api.type";
 
@@ -53,6 +54,9 @@ export interface ManagerRequest {
   apiStatus: ServiceRequestApiStatus;
   priority: RequestPriority;
   priorityColor: StatusColor;
+  /** Null until the manager picks how the completed request's cost is paid. */
+  costResponsibility: ServiceCostResponsibility | null;
+  completionCost: number | null;
 }
 
 export interface CreateRequestPayload {
