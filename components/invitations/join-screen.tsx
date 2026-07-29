@@ -42,8 +42,14 @@ export function JoinScreen() {
   } = useInvitationPreviewQuery(token);
   const acceptInvitation = useAcceptInvitationMutation();
 
+  // A unit can only be occupied by a resident account. Accepting with any
+  // other role would assign the unit to someone who can never reach the
+  // resident side of the app, so the backend refuses it — mirror that here.
+  const blockedByRole =
+    invitation?.unitNumber != null && user != null && user.role !== "resident";
+
   const handleAccept = () => {
-    if (!token) return;
+    if (!token || blockedByRole) return;
     acceptInvitation.mutate(token, {
       onSuccess: () => {
         toast.success("به ساختمان خوش آمدید!");
@@ -125,7 +131,24 @@ export function JoinScreen() {
             </div>
           </dl>
 
-          {isAuthenticated ? (
+          {isAuthenticated && blockedByRole ? (
+            <div className="rounded-xl border border-app-warning/40 bg-[color-mix(in_srgb,var(--ap-warning)_12%,transparent)] px-4 py-3.5">
+              <div className="mb-1.5 flex items-center gap-2">
+                <AppIcon
+                  name="error"
+                  className="size-[17px] text-app-warning"
+                />
+                <span className="text-[13px] font-bold text-app-fg">
+                  با این حساب نمی‌توانید واحد بگیرید
+                </span>
+              </div>
+              <p className="text-[12.5px] leading-[1.9] text-app-muted">
+                شما با حساب <b>{user.roleLabel}</b> وارد شده‌اید و واحد فقط به
+                حساب ساکن تخصیص داده می‌شود. برای پیوستن به‌عنوان ساکن، با یک
+                حساب ساکن وارد شوید و دوباره این لینک را باز کنید.
+              </p>
+            </div>
+          ) : isAuthenticated ? (
             <AppButton
               variant="gold"
               onClick={handleAccept}

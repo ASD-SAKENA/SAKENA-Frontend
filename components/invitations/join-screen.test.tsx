@@ -123,4 +123,56 @@ describe("JoinScreen", () => {
     await waitFor(() => expect(toast.success).toHaveBeenCalled());
     expect(push).toHaveBeenCalledWith("/dashboard");
   });
+
+  it("refuses to assign a unit to a manager account", () => {
+    useAuthStore.setState({
+      isAuthenticated: true,
+      user: buildAppUser("manager", "Moeein"),
+    });
+    previewState = {
+      isPending: false,
+      isError: false,
+      data: {
+        buildingName: "برج",
+        role: "RESIDENT",
+        unitNumber: "12",
+        channel: "LINK",
+        recipientHint: null,
+        expiresAt: "2026-04-01T00:00:00Z",
+      },
+    };
+    render(<JoinScreen />);
+
+    expect(
+      screen.getByText("با این حساب نمی‌توانید واحد بگیرید"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "پذیرش دعوت و پیوستن" }),
+    ).not.toBeInTheDocument();
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it("still lets a manager accept an invitation that assigns no unit", () => {
+    useAuthStore.setState({
+      isAuthenticated: true,
+      user: buildAppUser("manager", "Moeein"),
+    });
+    previewState = {
+      isPending: false,
+      isError: false,
+      data: {
+        buildingName: "برج",
+        role: "STAFF",
+        unitNumber: null,
+        channel: "LINK",
+        recipientHint: null,
+        expiresAt: "2026-04-01T00:00:00Z",
+      },
+    };
+    render(<JoinScreen />);
+
+    expect(
+      screen.getByRole("button", { name: "پذیرش دعوت و پیوستن" }),
+    ).toBeInTheDocument();
+  });
 });
