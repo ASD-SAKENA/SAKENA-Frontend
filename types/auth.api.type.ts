@@ -11,6 +11,7 @@ export interface AuthApiResponse {
 export interface ProfileApiResponse {
   id: string;
   username: string;
+  mobile: string;
   email: string;
   role: ApiRole;
   createdAt: string;

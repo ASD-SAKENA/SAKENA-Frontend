@@ -19,7 +19,7 @@ function toProfileForm(data: ProfileApiResponse): ProfileForm {
   const stored = useAuthStore.getState().user;
   return {
     name: stored?.name ?? data.username,
-    mobile: data.username,
+    mobile: data.mobile,
     email: data.email,
     unit: stored?.unit ?? "—",
   };
@@ -34,12 +34,12 @@ export async function updateProfile(
   payload: ProfileForm,
 ): Promise<ProfileForm> {
   const { data } = await http.put<ProfileApiResponse>("/profile", {
-    username: payload.mobile,
+    username: payload.name,
     email: payload.email,
   });
   return {
     ...payload,
-    mobile: data.username,
+    name: data.username,
     email: data.email,
   };
 }
