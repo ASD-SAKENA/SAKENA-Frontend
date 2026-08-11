@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   changePassword,
+  getMyUserId,
   getProfile,
   profileKeys,
   updateProfile,
@@ -38,5 +39,13 @@ export function useChangePasswordMutation() {
       currentPassword: string;
       newPassword: string;
     }) => changePassword(currentPassword, newPassword),
+  });
+}
+
+export function useMyUserIdQuery() {
+  return useQuery({
+    queryKey: profileKeys.id,
+    queryFn: getMyUserId,
+    staleTime: STALE,
   });
 }

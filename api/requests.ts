@@ -56,6 +56,7 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     title: r.title,
     type: subCategoryLabel(r.subCategory),
     unit: r.location ?? "—",
+    date: formatFaDate(r.createdAt),
     status: meta.label,
     statusColor: meta.color,
     apiStatus: r.status,
@@ -111,6 +112,10 @@ export async function createRequest(
 
 export async function approveRequest(id: string): Promise<void> {
   await http.patch(`/service-requests/${id}/approve`);
+}
+
+export async function rejectRequest(id: string): Promise<void> {
+  await http.patch(`/service-requests/${id}/reject`);
 }
 
 export async function assignRequest(

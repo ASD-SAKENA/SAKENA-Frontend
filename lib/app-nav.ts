@@ -25,6 +25,8 @@ export function navForRole(role: Role): NavItem[] {
         badge: "۱",
       },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+      { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
+      { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -38,13 +40,20 @@ export function navForRole(role: Role): NavItem[] {
         badge: "۵",
       },
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
+      { label: "کاربران", icon: "group", href: "/users" },
       { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
+      { label: "دوره‌های شارژ", icon: "payments", href: "/billing" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
+      { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
+      { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
+      { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
     ];
   }
   return [
     { label: "وظایف من", icon: "checklist", href: "/tasks", badge: "۳" },
+    { label: "تاریخچه کارها", icon: "history", href: "/tasks/history" },
     { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
+    { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
     { label: "پروفایل", icon: "person", href: "/profile" },
   ];
 }
@@ -65,7 +74,19 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/profile": ["پروفایل", "حساب کاربری · اطلاعات شخصی"],
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
+  "/users": ["کاربران", "مدیریت · فهرست کاربران سامانه"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
+  "/tasks/history": ["تاریخچه کارها", "خدمات · آرشیو کارهای انجام‌شده"],
+  "/billing": [
+    "دوره‌های شارژ",
+    "مالی · تعریف دوره، هزینه‌ها و صورت‌حساب واحدها",
+  ],
+  "/building-wallet": [
+    "حساب ساختمان",
+    "مالی · موجودی و دفتر تراکنش‌های ساختمان",
+  ],
+  "/polls": ["نظرسنجی‌ها", "مشارکت · نظرسنجی‌های ساختمان"],
+  "/chat": ["گفتگوی ساکنین", "ارتباطات · پیام‌رسان داخلی ساختمان"],
   "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 

@@ -23,7 +23,7 @@ export function ManagerDashboard() {
 
   if (!data) return null;
 
-  const { kpis, chart, breakdown } = data;
+  const { kpis, chart, chartNote, breakdown } = data;
 
   return (
     <>
@@ -43,15 +43,20 @@ export function ManagerDashboard() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
         <SectionCard
-          title="روند وصولی شارژ (۶ ماه اخیر)"
+          title="روند وصولی شارژ (دوره‌های اخیر)"
           bodyClassName="pt-6"
           action={
             <span className="text-[12.5px] font-semibold text-app-success">
-              +۸٪ نسبت به فصل قبل
+              {chartNote}
             </span>
           }
         >
           <div className="flex h-[180px] items-end gap-3.5 pt-2.5">
+            {chart.length === 0 ? (
+              <p className="w-full text-center text-[13px] text-app-muted">
+                هنوز دوره‌ی شارژی صادر نشده است.
+              </p>
+            ) : null}
             {chart.map((bar) => (
               <div
                 key={bar.label}

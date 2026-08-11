@@ -6,11 +6,25 @@ import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { Modal } from "@/components/app/modal";
 
-import { baseBookingsFor } from "@/api/reserve";
+import {
+  useCreateBookingMutation,
+  useFacilityBookingsQuery,
+} from "@/queries/reserve";
 
-import { SLOTS, slotTime, useReserveStore } from "@/stores/reserve.store";
+import { useReserveStore } from "@/stores/reserve.store";
+
+import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
 import { formatToman, toFaDigits } from "@/lib/persian-number";
+import {
+  DEFAULT_RULES,
+  isBeyondAdvanceWindow,
+  isPastSlot,
+  SLOT_MINUTES,
+  slotPrice,
+  slotTime,
+  weekStartDate,
+} from "@/lib/reserve-time";
 import { cn } from "@/lib/utils";
 
 const DAY_NAMES = [
@@ -23,70 +37,130 @@ const DAY_NAMES = [
   "جمعه",
 ];
 
-const DUR_CHIPS: { dur: number; label: string }[] = [
-  { dur: 1, label: "۳۰ دقیقه" },
-  { dur: 2, label: "۱ ساعت" },
-  { dur: 3, label: "۱.۵ ساعت" },
-  { dur: 4, label: "۲ ساعت" },
-];
+/** «۳۰ دقیقه» / «۱ ساعت» / «۱.۵ ساعت» for a duration in half-hour rows. */
+function durLabel(dur: number): string {
+  const minutes = dur * SLOT_MINUTES;
+  if (minutes < 60) return `${toFaDigits(minutes)} دقیقه`;
+  const hours = minutes / 60;
+  const shown = Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
+  return `${toFaDigits(shown)} ساعت`;
+}
 
 export function ReserveComposer() {
-  const selFacility = useReserveStore((s) => s.selFacility);
+  const { selected } = useSelectedFacility();
   const weekOffset = useReserveStore((s) => s.weekOffset);
-  const myBookings = useReserveStore((s) => s.myBookings);
   const composer = useReserveStore((s) => s.composer);
   const setDur = useReserveStore((s) => s.setDur);
   const closeComposer = useReserveStore((s) => s.closeComposer);
-  const confirmReserve = useReserveStore((s) => s.confirmReserve);
+
+  const rules = selected?.rules ?? DEFAULT_RULES;
+  const { data: bookings = [] } = useFacilityBookingsQuery(
+    selected?.id ?? null,
+    weekOffset,
+    rules,
+  );
+  const createBooking = useCreateBookingMutation();
 
   const cStart = composer.start;
-  const cDur = composer.dur;
+  const cDur = Math.min(Math.max(composer.dur, rules.minSlots), rules.maxSlots);
   const cEnd = cStart + cDur;
 
-  const weekStart = 14 + weekOffset * 7;
-  const dayLabel = `${DAY_NAMES[composer.day]} ${toFaDigits(
-    weekStart + composer.day,
-  )} تیر`;
+  const weekStart = weekStartDate(weekOffset);
+  const composerDate = new Date(weekStart);
+  composerDate.setDate(composerDate.getDate() + composer.day);
+  const dayLabel = `${DAY_NAMES[composer.day]} ${composerDate.toLocaleDateString(
+    "fa-IR",
+    { day: "numeric", month: "long" },
+  )}`;
 
-  const base = baseBookingsFor(selFacility);
-  const mine = myBookings.filter(
-    (b) => b.facility === selFacility && b.week === weekOffset,
+  const durChoices: number[] = [];
+  for (let dur = rules.minSlots; dur <= rules.maxSlots; dur++) {
+    durChoices.push(dur);
+  }
+
+  const overlapping = bookings.filter(
+    (b) => b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
   );
-  const conflict =
-    cEnd > SLOTS ||
-    [...base, ...mine].some(
-      (b) =>
-        b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
-    );
+  const conflictMine = overlapping.some((b) => b.mine);
+  const capacityFull =
+    selected !== null && overlapping.length >= selected.capacity;
+  const closedDay = rules.closedDays.includes(composer.day);
+  const pastSlot = isPastSlot(
+    weekOffset,
+    composer.day,
+    cStart,
+    rules.startHour,
+  );
+  const tooFarAhead = isBeyondAdvanceWindow(
+    weekOffset,
+    composer.day,
+    cStart,
+    rules,
+  );
+  const overrunsClosing = cEnd > rules.slots;
+  const blocked =
+    overrunsClosing ||
+    conflictMine ||
+    capacityFull ||
+    closedDay ||
+    pastSlot ||
+    tooFarAhead;
 
-  const cost =
-    selFacility === "سالن همایش"
-      ? formatToman(100000 * cDur)
-      : selFacility === "استخر"
-        ? formatToman(40000 * cDur)
-        : "رایگان";
+  const remaining = selected
+    ? Math.max(selected.capacity - overlapping.length, 0)
+    : 0;
+
+  const price = slotPrice(rules, cDur);
+
+  const warning = closedDay
+    ? "این امکان در این روز تعطیل است."
+    : pastSlot
+      ? "زمان انتخاب‌شده گذشته است؛ بازه‌ای در آینده انتخاب کنید."
+      : tooFarAhead
+        ? `رزرو حداکثر تا ${toFaDigits(rules.maxAdvanceDays)} روز آینده ممکن است.`
+        : overrunsClosing
+          ? "پایان رزرو از ساعت کاری این امکان فراتر می‌رود."
+          : capacityFull
+            ? "ظرفیت این سانس تکمیل شده و قفل است. زمان دیگری انتخاب کنید."
+            : conflictMine
+              ? "شما در این بازه رزرو دیگری دارید. مدت یا زمان دیگری انتخاب کنید."
+              : null;
 
   const handleConfirm = () => {
-    const result = confirmReserve();
-    if (result.ok) {
-      toast.success("رزرو شما با موفقیت ثبت شد");
-    } else if (result.conflict) {
-      toast("این بازه با رزرو دیگری تداخل دارد");
-    }
+    if (!selected || blocked || createBooking.isPending) return;
+    createBooking.mutate(
+      {
+        facilityId: selected.id,
+        weekOffset,
+        day: composer.day,
+        start: cStart,
+        dur: cDur,
+        startHour: rules.startHour,
+      },
+      {
+        onSuccess: () => {
+          toast.success("رزرو شما با موفقیت ثبت شد");
+          closeComposer();
+        },
+        // Capacity/conflict rejections surface via the global 409 toast.
+      },
+    );
   };
 
   return (
     <Modal
       open={composer.open}
       onClose={closeComposer}
-      title={`رزرو ${selFacility}`}
+      title={`رزرو ${selected?.label ?? ""}`}
       description={dayLabel}
       icon="event"
     >
       <div className="mt-[18px] mb-5 flex gap-2.5">
         <div className="flex-1 rounded-xl bg-app-surface2 px-[15px] py-[13px]">
           <div className="mb-[5px] text-[12px] text-app-muted">شروع</div>
-          <div className="text-[18px] font-extrabold">{slotTime(cStart)}</div>
+          <div className="text-[18px] font-extrabold">
+            {slotTime(cStart, rules.startHour)}
+          </div>
         </div>
         <div className="flex items-center text-app-muted">
           <AppIcon name="arrow_back" className="size-5" />
@@ -94,50 +168,61 @@ export function ReserveComposer() {
         <div className="flex-1 rounded-xl bg-app-surface2 px-[15px] py-[13px]">
           <div className="mb-[5px] text-[12px] text-app-muted">پایان</div>
           <div className="text-[18px] font-extrabold text-app-gold">
-            {slotTime(cEnd)}
+            {slotTime(cEnd, rules.startHour)}
           </div>
         </div>
       </div>
 
       <label className="mb-[9px] block text-[13px] font-medium">مدت رزرو</label>
-      <div className="mb-[18px] flex gap-2">
-        {DUR_CHIPS.map((chip) => {
-          const active = cDur === chip.dur;
+      <div className="mb-[18px] flex flex-wrap gap-2">
+        {durChoices.map((dur) => {
+          const active = cDur === dur;
           return (
             <button
-              key={chip.dur}
+              key={dur}
               type="button"
-              onClick={() => setDur(chip.dur)}
+              onClick={() => setDur(dur)}
               className={cn(
-                "h-10 flex-1 rounded-[10px] border text-[12.5px] font-semibold transition-[border-color,background,color]",
+                "h-10 min-w-[84px] flex-1 rounded-[10px] border text-[12.5px] font-semibold transition-[border-color,background,color]",
                 active
                   ? "border-app-gold bg-[var(--ap-gold-soft)] text-app-gold"
                   : "border-app-border bg-transparent text-app-fg hover:border-app-gold",
               )}
             >
-              {chip.label}
+              {durLabel(dur)}
             </button>
           );
         })}
       </div>
 
-      {conflict && (
+      {warning ? (
         <div className="mb-[18px] flex items-center gap-[9px] rounded-[11px] border border-[color-mix(in_srgb,var(--ap-danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--ap-danger)_12%,transparent)] px-[14px] py-[11px]">
           <AppIcon name="error" className="size-5 text-app-danger" />
-          <span className="text-[13px] text-app-danger">
-            این بازه با رزرو دیگری تداخل دارد. مدت یا زمان دیگری انتخاب کنید.
+          <span className="text-[13px] text-app-danger">{warning}</span>
+        </div>
+      ) : selected ? (
+        <div className="mb-[18px] flex items-center gap-[9px] rounded-[11px] border border-app-border bg-app-surface2 px-[14px] py-[11px]">
+          <AppIcon name="groups" className="size-5 text-app-steel" />
+          <span className="text-[13px] text-app-muted">
+            ظرفیت باقی‌مانده این سانس: {toFaDigits(remaining)} از{" "}
+            {toFaDigits(selected.capacity)} نفر
+            {rules.maxPerWeek > 0
+              ? ` · سقف رزرو هر ساکن در هفته: ${toFaDigits(rules.maxPerWeek)}`
+              : ""}
           </span>
         </div>
-      )}
+      ) : null}
 
       <div className="mb-[18px] flex items-center justify-between border-t border-app-border py-[14px]">
         <span className="text-[13px] text-app-muted">هزینه</span>
-        <span className="text-[15px] font-bold text-app-gold">{cost}</span>
+        <span className="text-[15px] font-bold text-app-gold">
+          {price > 0 ? formatToman(price) : "رایگان"}
+        </span>
       </div>
 
       <AppButton
         variant="gold"
-        disabled={conflict}
+        disabled={blocked || createBooking.isPending}
         onClick={handleConfirm}
         className="h-[46px] w-full text-[14.5px]"
       >

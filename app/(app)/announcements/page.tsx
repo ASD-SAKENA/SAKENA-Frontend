@@ -1,12 +1,19 @@
 "use client";
 
+import { useState } from "react";
+
+import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 
 import { useAnnouncementsQuery } from "@/queries/announcements";
 
+import { useAuthStore } from "@/stores/auth.store";
+
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
+
+import { AnnouncementModal } from "./components/announcement-modal";
 
 const ACCENT: Record<StatusColor, string> = {
   gold: "border-r-app-gold",
@@ -35,9 +42,23 @@ const CHIP: Record<StatusColor, string> = {
 
 export default function AnnouncementsPage() {
   const { data: announcements = [] } = useAnnouncementsQuery();
+  const role = useAuthStore((s) => s.user?.role);
+  const [composerOpen, setComposerOpen] = useState(false);
 
   return (
     <div className="sk-page flex max-w-[820px] flex-col gap-3.5">
+      {role === "manager" ? (
+        <div className="flex justify-end">
+          <AppButton variant="gold" onClick={() => setComposerOpen(true)}>
+            <AppIcon name="add" className="size-[19px]" />
+            انتشار اطلاعیه
+          </AppButton>
+          <AnnouncementModal
+            open={composerOpen}
+            onClose={() => setComposerOpen(false)}
+          />
+        </div>
+      ) : null}
       {announcements.map((a) => (
         <div
           key={a.id}

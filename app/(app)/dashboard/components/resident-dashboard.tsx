@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { toast } from "sonner";
-
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { KpiCard } from "@/components/app/kpi-card";
@@ -94,16 +92,16 @@ export function ResidentDashboard() {
             <AppButton
               variant="gold"
               className="h-[46px] flex-1"
-              onClick={() => toast.success("پرداخت با موفقیت انجام شد")}
+              onClick={() => router.push("/wallet")}
             >
-              پرداخت از کیف پول
+              پرداخت شارژ
             </AppButton>
             <AppButton
               variant="outline"
               className="h-[46px]"
-              onClick={() => router.push("/wallet")}
+              onClick={() => router.push("/billing")}
             >
-              جزئیات
+              جزئیات دوره
             </AppButton>
           </div>
         </div>

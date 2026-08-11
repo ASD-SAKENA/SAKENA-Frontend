@@ -6,6 +6,7 @@ export type ServiceRequestApiStatus =
   | "ASSIGNED"
   | "IN_PROGRESS"
   | "COMPLETED"
+  | "SETTLED"
   | "REJECTED";
 
 export type ServiceCategoryGroup =

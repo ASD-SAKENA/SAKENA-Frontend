@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
-import { AppField, AppInput } from "@/components/app/form-controls";
+import { AppField, AppSelect } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
@@ -16,7 +16,10 @@ import {
   useApproveRequestMutation,
   useAssignRequestMutation,
   useManagerRequestsQuery,
+  useRejectRequestMutation,
 } from "@/queries/requests";
+import { useUsersQuery } from "@/queries/users";
+import { useSettleRequestMutation } from "@/queries/wallet";
 
 import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
@@ -49,7 +52,10 @@ function filterRequests(
     return requests.filter(
       (r) => r.status === "در حال انجام" || r.status === "ارجاع‌شده",
     );
-  if (tab === "done") return requests.filter((r) => r.status === "انجام‌شده");
+  if (tab === "done")
+    return requests.filter(
+      (r) => r.status === "انجام‌شده" || r.status === "تسویه‌شده",
+    );
   return requests;
 }
 
@@ -57,8 +63,11 @@ export default function QueuePage() {
   const [tab, setTab] = useState<QueueTab>("open");
   const [assignTarget, setAssignTarget] = useState<ManagerRequest | null>(null);
   const { data: requests = [] } = useManagerRequestsQuery();
+  const { data: allStaff = [] } = useUsersQuery("STAFF");
   const approve = useApproveRequestMutation();
+  const reject = useRejectRequestMutation();
   const assign = useAssignRequestMutation();
+  const settle = useSettleRequestMutation();
 
   const {
     register,
@@ -71,11 +80,29 @@ export default function QueuePage() {
   });
 
   const rows = filterRequests(requests, tab);
+  // Deactivated workers can no longer act on requests, so they are not assignable.
+  const staff = allStaff.filter((s) => s.active);
 
   const handleApprove = (r: ManagerRequest) => {
     approve.mutate(r.id, {
       onSuccess: () => {
         toast.success(`درخواست «${r.title}» تأیید شد`);
+      },
+    });
+  };
+
+  const handleReject = (r: ManagerRequest) => {
+    reject.mutate(r.id, {
+      onSuccess: () => {
+        toast.success(`درخواست «${r.title}» رد شد`);
+      },
+    });
+  };
+
+  const handleSettle = (r: ManagerRequest) => {
+    settle.mutate(r.id, {
+      onSuccess: () => {
+        toast.success(`دستمزد «${r.title}» تسویه و به کیف پول کارکن واریز شد`);
       },
     });
   };
@@ -123,6 +150,7 @@ export default function QueuePage() {
                 <th className="px-[18px] py-[13px] font-medium">#</th>
                 <th className="px-[18px] py-[13px] font-medium">موضوع</th>
                 <th className="px-[18px] py-[13px] font-medium">محل</th>
+                <th className="px-[18px] py-[13px] font-medium">زمان ثبت</th>
                 <th className="px-[18px] py-[13px] font-medium">اولویت</th>
                 <th className="px-[18px] py-[13px] font-medium">وضعیت</th>
                 <th className="px-[18px] py-[13px] font-medium">عملیات</th>
@@ -142,6 +170,9 @@ export default function QueuePage() {
                     <div className="text-[11.5px] text-app-muted">{r.type}</div>
                   </td>
                   <td className="px-[18px] py-[13px] text-app-fg">{r.unit}</td>
+                  <td className="px-[18px] py-[13px] text-app-muted">
+                    {r.date}
+                  </td>
                   <td className="px-[18px] py-[13px]">
                     <StatusBadge color={r.priorityColor}>
                       {r.priority}
@@ -152,15 +183,26 @@ export default function QueuePage() {
                   </td>
                   <td className="px-[18px] py-[13px]">
                     {r.apiStatus === "PENDING" ? (
-                      <button
-                        type="button"
-                        onClick={() => handleApprove(r)}
-                        disabled={approve.isPending}
-                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-success transition-colors hover:border-app-success disabled:opacity-50"
-                      >
-                        <AppIcon name="check" className="size-4" />
-                        تأیید
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleApprove(r)}
+                          disabled={approve.isPending}
+                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-success transition-colors hover:border-app-success disabled:opacity-50"
+                        >
+                          <AppIcon name="check" className="size-4" />
+                          تأیید
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleReject(r)}
+                          disabled={reject.isPending}
+                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-danger transition-colors hover:border-app-danger disabled:opacity-50"
+                        >
+                          <AppIcon name="close" className="size-4" />
+                          رد
+                        </button>
+                      </div>
                     ) : r.apiStatus === "APPROVED" ||
                       r.apiStatus === "ASSIGNED" ? (
                       <button
@@ -170,6 +212,16 @@ export default function QueuePage() {
                       >
                         <AppIcon name="person_add" className="size-4" />
                         ارجاع
+                      </button>
+                    ) : r.apiStatus === "COMPLETED" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSettle(r)}
+                        disabled={settle.isPending}
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold disabled:opacity-50"
+                      >
+                        <AppIcon name="payments" className="size-4" />
+                        پرداخت دستمزد
                       </button>
                     ) : (
                       <span className="text-[12px] text-app-muted">—</span>
@@ -190,15 +242,18 @@ export default function QueuePage() {
         open={assignTarget !== null}
         onClose={() => setAssignTarget(null)}
         title="ارجاع به کارکن"
-        description="شناسه (UUID) کارکن را وارد کنید — فهرست کارکنان هنوز در بک‌اند موجود نیست."
+        description="کارکن موردنظر را از فهرست کارکنان انتخاب کنید."
       >
         <form onSubmit={onAssignSubmit} className="mt-4">
-          <AppField label="شناسه کارکن" error={errors.workerId?.message}>
-            <AppInput
-              dir="ltr"
-              placeholder="00000000-0000-0000-0000-000000000000"
-              {...register("workerId")}
-            />
+          <AppField label="کارکن" error={errors.workerId?.message}>
+            <AppSelect {...register("workerId")}>
+              <option value="">انتخاب کارکن</option>
+              {staff.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.username} — {s.specialty ?? "بدون تخصص"}
+                </option>
+              ))}
+            </AppSelect>
           </AppField>
           <div className="mt-2 flex gap-2.5">
             <AppButton

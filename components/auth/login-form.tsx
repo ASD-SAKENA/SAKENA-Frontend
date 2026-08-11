@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -26,6 +26,8 @@ const inputClass =
 
 export function LoginForm() {
   const router = useRouter();
+  // Invitees arrive via /join?token=…; `next` brings them back after auth.
+  const next = useSearchParams().get("next");
   const loginStore = useAuthStore((state) => state.login);
   const mutation = useLoginMutation();
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -54,7 +56,7 @@ export function LoginForm() {
       });
       loginStore(session.user, session.token);
       toast.success("خوش آمدید");
-      router.push(roleHomePath(session.user.role));
+      router.push(next ?? roleHomePath(session.user.role));
     } catch {
       // The global http interceptor already surfaced the error toast.
     }

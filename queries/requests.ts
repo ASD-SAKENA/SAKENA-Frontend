@@ -10,6 +10,7 @@ import {
   getManagerRequests,
   getRequestCategories,
   getResidentRequests,
+  rejectRequest,
   requestKeys,
   startRequestProgress,
 } from "@/api/requests";
@@ -55,6 +56,16 @@ export function useApproveRequestMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: approveRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: requestKeys.all });
+    },
+  });
+}
+
+export function useRejectRequestMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: rejectRequest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
     },

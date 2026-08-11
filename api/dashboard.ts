@@ -1,6 +1,21 @@
+import http from "@/services/http";
+
+import { faNumber, toFaDigits } from "@/lib/persian-number";
+
 import type {
+  InvoiceSummaryApiResponse,
+  ManagerDashboardApiResponse,
+  ResidentDashboardApiResponse,
+  ResidentUnitApiResponse,
+  TenancyTypeApi,
+} from "@/types/dashboard.api.type";
+import type {
+  ChargeSummary,
+  KpiData,
   ManagerDashboard,
+  PaymentBreakdown,
   ResidentDashboard,
+  UnitInfoRow,
 } from "@/types/dashboard.type";
 
 export const dashboardKeys = {
@@ -8,108 +23,207 @@ export const dashboardKeys = {
   manager: ["dashboard", "manager"] as const,
 };
 
-const RESIDENT_DASHBOARD: ResidentDashboard = {
-  kpis: [
+const TENANCY_LABELS: Record<TenancyTypeApi, string> = {
+  OWNER_OCCUPIER: "مالک ساکن",
+  TENANT: "مستأجر",
+  COMMERCIAL: "تجاری",
+};
+
+const FA_DATE = new Intl.DateTimeFormat("fa-IR", {
+  day: "numeric",
+  month: "long",
+});
+
+function dueLabel(invoice: InvoiceSummaryApiResponse): string {
+  return `سررسید ${FA_DATE.format(new Date(invoice.dueOn))}`;
+}
+
+/** «۳ مرداد · ۱۸:۰۰» for a booking start time. */
+function bookingLabel(startsAt: string): string {
+  const date = new Date(startsAt);
+  return `${FA_DATE.format(date)} · ${date.toLocaleTimeString("fa-IR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
+function unitRows(unit: ResidentUnitApiResponse | null): UnitInfoRow[] {
+  if (!unit) {
+    return [{ label: "واحد", value: "هنوز واحدی به شما اختصاص نیافته است" }];
+  }
+  return [
+    { label: "ساختمان", value: unit.buildingName },
+    {
+      label: "شماره واحد",
+      value: `${toFaDigits(unit.unitNumber)} — طبقه ${toFaDigits(unit.floorNumber)}`,
+    },
+    { label: "متراژ", value: `${toFaDigits(unit.areaSquareMeters)} متر مربع` },
+    { label: "تعداد خواب", value: `${toFaDigits(unit.bedrooms)} خواب` },
+    { label: "وضعیت سکونت", value: TENANCY_LABELS[unit.tenancy] },
+  ];
+}
+
+function residentKpis(data: ResidentDashboardApiResponse): KpiData[] {
+  const invoice = data.currentInvoice;
+  const nextBooking = data.upcomingBookings[0];
+  return [
     {
       label: "مانده کیف پول",
-      value: "۲٬۴۵۰٬۰۰۰",
+      value: faNumber(data.walletBalance),
       icon: "account_balance_wallet",
       color: "gold",
       sub: "تومان",
     },
     {
-      label: "شارژ این ماه",
-      value: "۸۵۰٬۰۰۰",
+      label: "بدهی شارژ",
+      value: invoice ? faNumber(invoice.remaining) : "۰",
       icon: "receipt_long",
-      color: "warning",
-      sub: "سررسید ۱۰ تیر",
+      color: invoice && invoice.remaining > 0 ? "warning" : "success",
+      sub: invoice ? dueLabel(invoice) : "بدهی ندارید",
     },
     {
       label: "درخواست‌های باز",
-      value: "۱",
+      value: toFaDigits(data.openRequestCount),
       icon: "handyman",
-      color: "info",
-      sub: "در حال بررسی",
+      color: data.openRequestCount > 0 ? "info" : "muted",
+      sub: data.openRequestCount > 0 ? "در حال بررسی" : "موردی نیست",
     },
     {
       label: "رزروهای پیش‌رو",
-      value: "۲",
+      value: toFaDigits(data.upcomingBookings.length),
       icon: "event_available",
       color: "success",
-      sub: "سالن ورزش، آلاچیق",
+      sub: nextBooking
+        ? `${nextBooking.facilityName} · ${bookingLabel(nextBooking.startsAt)}`
+        : "رزروی ندارید",
     },
-  ],
-  unitInfo: [
-    { label: "شماره واحد", value: "۱۲ — طبقه ۴" },
-    { label: "متراژ", value: "۱۲۵ متر مربع" },
-    { label: "تعداد پارکینگ", value: "۱ واحد" },
-    { label: "وضعیت سکونت", value: "مالک ساکن" },
-  ],
-  charge: {
-    title: "شارژ ماهانه — تیر ۱۴۰۴",
-    amount: 850000,
-    dueLabel: "سررسید ۱۰ تیر",
-    progressPct: 64,
-    walletBalance: 2450000,
-  },
-};
+  ];
+}
 
-const MANAGER_DASHBOARD: ManagerDashboard = {
-  kpis: [
+function chargeSummary(data: ResidentDashboardApiResponse): ChargeSummary {
+  const invoice = data.currentInvoice;
+  if (!invoice) {
+    return {
+      title: "شارژ ماهانه",
+      amount: 0,
+      dueLabel: "صورتحسابی صادر نشده",
+      progressPct: 0,
+      walletBalance: data.walletBalance,
+    };
+  }
+  return {
+    title: invoice.periodTitle,
+    amount: invoice.remaining,
+    dueLabel: dueLabel(invoice),
+    progressPct:
+      invoice.amount > 0
+        ? Math.round((invoice.paidAmount / invoice.amount) * 100)
+        : 0,
+    walletBalance: data.walletBalance,
+  };
+}
+
+export async function getResidentDashboard(): Promise<ResidentDashboard> {
+  const { data } = await http.get<ResidentDashboardApiResponse>(
+    "/dashboard/resident",
+  );
+  return {
+    kpis: residentKpis(data),
+    unitInfo: unitRows(data.unit),
+    charge: chargeSummary(data),
+  };
+}
+
+function managerKpis(data: ManagerDashboardApiResponse): KpiData[] {
+  const rateDelta =
+    data.previousCollectionRatePct === null
+      ? null
+      : data.collectionRatePct - data.previousCollectionRatePct;
+  return [
     {
       label: "کل واحدها",
-      value: "۴۸",
+      value: toFaDigits(data.totalUnits),
       icon: "apartment",
       color: "info",
-      sub: "۴۵ سکونت فعال",
+      sub: `${toFaDigits(data.occupiedUnits)} سکونت فعال`,
       subColor: "muted",
     },
     {
-      label: "وصولی این ماه",
-      value: "۳۲٫۴ م",
+      label: "وصولی این دوره",
+      value: faNumber(data.collectedThisPeriod),
       icon: "payments",
       color: "gold",
-      sub: "۸۵٪ از هدف",
-      subColor: "success",
+      sub: `از ${faNumber(data.billedThisPeriod)} تومان`,
+      subColor: "muted",
     },
     {
       label: "درخواست‌های باز",
-      value: "۵",
+      value: toFaDigits(data.openRequestCount),
       icon: "assignment",
-      color: "warning",
-      sub: "۲ فوری",
-      subColor: "danger",
+      color: data.openRequestCount > 0 ? "warning" : "muted",
+      sub: `${toFaDigits(data.pendingRequestCount)} در انتظار بررسی`,
+      subColor: data.pendingRequestCount > 0 ? "danger" : "muted",
     },
     {
       label: "نرخ وصول",
-      value: "٪۸۹",
+      value: `٪${toFaDigits(data.collectionRatePct)}`,
       icon: "trending_up",
-      color: "success",
-      sub: "+۸٪ نسبت به ماه قبل",
-      subColor: "success",
+      color: data.collectionRatePct >= 80 ? "success" : "warning",
+      sub:
+        rateDelta === null
+          ? "دوره‌ی قبلی ندارد"
+          : `${rateDelta >= 0 ? "+" : "−"}${toFaDigits(Math.abs(rateDelta))}٪ نسبت به دوره قبل`,
+      subColor: rateDelta !== null && rateDelta < 0 ? "danger" : "success",
     },
-  ],
-  chart: [
-    { label: "بهمن", heightPct: 52 },
-    { label: "اسفند", heightPct: 64 },
-    { label: "فروردین", heightPct: 48 },
-    { label: "اردیبهشت", heightPct: 78 },
-    { label: "خرداد", heightPct: 70 },
-    { label: "تیر", heightPct: 92 },
-  ],
-  breakdown: [
-    { label: "پرداخت‌شده", count: "۴۰ واحد", pct: 83, color: "success" },
-    { label: "در انتظار", count: "۵ واحد", pct: 10, color: "warning" },
-    { label: "معوق", count: "۳ واحد", pct: 7, color: "danger" },
-  ],
-};
+  ];
+}
 
-export async function getResidentDashboard(): Promise<ResidentDashboard> {
-  // Mock: the real call will be `http.get<ResidentDashboard>("/dashboard/resident/")`.
-  return RESIDENT_DASHBOARD;
+function invoiceBreakdown(
+  data: ManagerDashboardApiResponse,
+): PaymentBreakdown[] {
+  const { paid, partiallyPaid, unpaid, total } = data.invoiceBreakdown;
+  const pct = (count: number) =>
+    total > 0 ? Math.round((count / total) * 100) : 0;
+  return [
+    {
+      label: "پرداخت‌شده",
+      count: `${toFaDigits(paid)} واحد`,
+      pct: pct(paid),
+      color: "success",
+    },
+    {
+      label: "پرداخت ناقص",
+      count: `${toFaDigits(partiallyPaid)} واحد`,
+      pct: pct(partiallyPaid),
+      color: "warning",
+    },
+    {
+      label: "پرداخت‌نشده",
+      count: `${toFaDigits(unpaid)} واحد`,
+      pct: pct(unpaid),
+      color: "danger",
+    },
+  ];
 }
 
 export async function getManagerDashboard(): Promise<ManagerDashboard> {
-  // Mock: the real call will be `http.get<ManagerDashboard>("/dashboard/manager/")`.
-  return MANAGER_DASHBOARD;
+  const { data } =
+    await http.get<ManagerDashboardApiResponse>("/dashboard/manager");
+  const peak = Math.max(...data.periods.map((p) => p.collected), 0);
+  const delta =
+    data.previousCollectionRatePct === null
+      ? null
+      : data.collectionRatePct - data.previousCollectionRatePct;
+  return {
+    kpis: managerKpis(data),
+    chartNote:
+      delta === null
+        ? `نرخ وصول ٪${toFaDigits(data.collectionRatePct)}`
+        : `${delta >= 0 ? "+" : "−"}${toFaDigits(Math.abs(delta))}٪ نسبت به دوره قبل`,
+    chart: data.periods.map((period) => ({
+      label: period.title,
+      heightPct: peak > 0 ? Math.round((period.collected / peak) * 100) : 0,
+    })),
+    breakdown: invoiceBreakdown(data),
+  };
 }

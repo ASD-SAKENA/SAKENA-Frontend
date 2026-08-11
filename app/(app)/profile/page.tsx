@@ -9,10 +9,12 @@ import { AppField, AppInput } from "@/components/app/form-controls";
 import { SectionCard } from "@/components/app/section-card";
 
 import { useProfileQuery, useUpdateProfileMutation } from "@/queries/profile";
+import { useMyResidencyQuery } from "@/queries/residency";
 
 import { useAuthStore } from "@/stores/auth.store";
 
 import { type ProfileForm, profileSchema } from "@/schemas/profile.schema";
+import { TENANCY_LABELS } from "@/schemas/residency.schema";
 
 import { ChangePasswordCard } from "./components/change-password-card";
 
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const { data: profile } = useProfileQuery();
   const updateProfile = useUpdateProfileMutation();
+  const { data: residency } = useMyResidencyQuery();
 
   const {
     register,
@@ -54,7 +57,8 @@ export default function ProfilePage() {
               {user?.name}
             </div>
             <div className="mt-[3px] text-[13px] text-app-muted">
-              {user?.roleLabel} · واحد ۱۲
+              {user?.roleLabel}
+              {residency ? ` · ${TENANCY_LABELS[residency.tenancy]}` : null}
             </div>
           </div>
         </div>
@@ -72,8 +76,22 @@ export default function ProfilePage() {
             <AppInput {...register("email")} />
           </AppField>
 
-          <AppField label="واحد" error={errors.unit?.message}>
-            <AppInput {...register("unit")} />
+          <AppField label="واحد">
+            <AppInput
+              readOnly
+              value={
+                residency
+                  ? [
+                      residency.unitNumber
+                        ? `واحد ${residency.unitNumber}`
+                        : null,
+                      residency.buildingName,
+                    ]
+                      .filter(Boolean)
+                      .join(" — ")
+                  : "واحدی به شما تخصیص داده نشده است"
+              }
+            />
           </AppField>
 
           <AppButton
