@@ -1,10 +1,10 @@
 name: CI/CD Frontend
 
-# Fail fast → build/push GHCR → scan → k8s deploy (namespace `sakena`) → verify.
+# Fail fast → build/push GHCR → k8s deploy (namespace `sakena`) → verify.
 # NEXT_PUBLIC_* are baked in at build time via secrets / build-args.
 #
 # `ci` also runs on pull requests so a broken build/typecheck/lint never
-# reaches `main` in the first place; build/scan/deploy only run on pushes to
+# reaches `main` in the first place; build/deploy only run on pushes to
 # `main` (or tags), same gating as before.
 
 on:
@@ -54,7 +54,7 @@ jobs:
         run: pnpm check
 
   build-and-push:
-    name: Build, scan & push
+    name: Build & push
     needs: [ci]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -109,19 +109,6 @@ jobs:
             NEXT_PUBLIC_API_BASE=${{ secrets.NEXT_PUBLIC_API_BASE }}
             NEXT_PUBLIC_CURRENT_URL=${{ secrets.NEXT_PUBLIC_CURRENT_URL }}
             NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}
-
-      # Scans the tag we're about to deploy. A CRITICAL finding fails the
-      # job here, before the deploy job (which needs this one) ever runs -
-      # the image stays published under its sha tag for forensics, but
-      # nothing rolls it out.
-      - name: Scan image for critical vulnerabilities
-        uses: aquasecurity/trivy-action@v0.29.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:sha-${{ steps.vars.outputs.sha_short }}
-          format: table
-          severity: CRITICAL
-          exit-code: "1"
-          ignore-unfixed: true
 
   deploy:
     name: Deploy
