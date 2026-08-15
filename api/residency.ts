@@ -8,8 +8,8 @@ import type {
 export const residencyKeys = {
   all: ["residencies"] as const,
   mine: ["residencies", "me"] as const,
-  byBuilding: (buildingId: string) =>
-    ["residencies", "building", buildingId] as const,
+  byBuilding: (buildingId: string | null) =>
+    ["residencies", "building", buildingId ?? "all"] as const,
 };
 
 /** The unit the signed-in resident occupies; null while none is assigned. */
@@ -19,11 +19,12 @@ export async function getMyResidency(): Promise<ResidencyApiResponse | null> {
   return data === "" ? null : data;
 }
 
+/** Active residencies of one building, or of every building when buildingId is null. */
 export async function getBuildingResidencies(
-  buildingId: string,
+  buildingId: string | null,
 ): Promise<ResidencyApiResponse[]> {
   const { data } = await http.get<ResidencyApiResponse[]>("/residencies", {
-    params: { buildingId },
+    params: buildingId ? { buildingId } : undefined,
   });
   return data;
 }
