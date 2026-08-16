@@ -6,6 +6,7 @@ import {
   deleteMessage,
   editMessage,
   getMessages,
+  getMessagesSince,
   sendAttachment,
   sendMessage,
 } from "./chat";
@@ -29,15 +30,25 @@ describe("getMessages", () => {
     vi.mocked(http.get).mockResolvedValue({ data: [] });
     await getMessages("b1");
     expect(http.get).toHaveBeenCalledWith("/buildings/b1/chat/messages", {
-      params: { limit: 50 },
+      params: { limit: 50, before: undefined },
     });
   });
 
-  it("accepts a custom limit", async () => {
+  it("accepts a custom limit and a before cursor", async () => {
     vi.mocked(http.get).mockResolvedValue({ data: [] });
-    await getMessages("b1", 20);
+    await getMessages("b1", { limit: 20, before: "2026-01-01T00:00:00Z" });
     expect(http.get).toHaveBeenCalledWith("/buildings/b1/chat/messages", {
-      params: { limit: 20 },
+      params: { limit: 20, before: "2026-01-01T00:00:00Z" },
+    });
+  });
+});
+
+describe("getMessagesSince", () => {
+  it("gets the polling tail after a timestamp", async () => {
+    vi.mocked(http.get).mockResolvedValue({ data: [] });
+    await getMessagesSince("b1", "2026-01-01T00:00:00Z");
+    expect(http.get).toHaveBeenCalledWith("/buildings/b1/chat/messages/since", {
+      params: { since: "2026-01-01T00:00:00Z" },
     });
   });
 });
