@@ -10,7 +10,7 @@ export const authKeys = {
 };
 
 export interface LoginPayload {
-  identifier: string;
+  username: string;
   password: string;
 }
 
@@ -37,7 +37,7 @@ function toAppRole(role: string): Role {
 
 export async function login(payload: LoginPayload): Promise<AuthSession> {
   const { data } = await http.post<AuthApiResponse>("/auth/login", {
-    username: payload.identifier,
+    username: payload.username,
     password: payload.password,
   });
   return {

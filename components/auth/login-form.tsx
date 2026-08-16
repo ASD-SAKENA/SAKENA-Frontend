@@ -38,7 +38,7 @@ export function LoginForm() {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      identifier: "",
+      username: "",
       password: "",
       remember: false,
     },
@@ -47,7 +47,7 @@ export function LoginForm() {
   const onSubmit = handleSubmit(async (values) => {
     try {
       const session = await mutation.mutateAsync({
-        identifier: values.identifier,
+        username: values.username,
         password: values.password,
       });
       loginStore(session.user, session.token);
@@ -68,7 +68,7 @@ export function LoginForm() {
       </p>
 
       <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
-        ایمیل یا شماره موبایل
+        نام کاربری
       </label>
       <div className="relative mb-4">
         <AppIcon
@@ -76,15 +76,15 @@ export function LoginForm() {
           className="pointer-events-none absolute top-1/2 right-[13px] size-[19px] -translate-y-1/2 text-[#7A8294]"
         />
         <input
-          {...register("identifier")}
+          {...register("username")}
           dir="ltr"
-          placeholder="example@mail.com"
+          placeholder="username"
           className={inputClass}
         />
       </div>
-      {errors.identifier ? (
+      {errors.username ? (
         <p className="-mt-2.5 mb-3 text-[12px] text-[var(--sk-text-muted)]">
-          {errors.identifier.message}
+          {errors.username.message}
         </p>
       ) : null}
 
