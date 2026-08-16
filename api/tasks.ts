@@ -20,7 +20,8 @@ export const taskKeys = {
 
 /**
  * Staff "tasks" are the service requests assigned to the current user.
- * Priority is not modelled server-side yet — a neutral default fills the gap.
+ * Priority is not modelled server-side yet — shown as "نامشخص" rather than
+ * a fabricated level.
  */
 function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
   return {
@@ -29,8 +30,8 @@ function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
     title: r.title,
     unit: r.location ?? "—",
     date: formatFaDate(r.createdAt),
-    priority: "متوسط",
-    priorityColor: "warning",
+    priority: "نامشخص",
+    priorityColor: "muted",
     apiStatus: r.status,
     done: r.status === "COMPLETED",
   };

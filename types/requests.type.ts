@@ -13,7 +13,7 @@ export type RequestStatus =
   | "تسویه‌شده"
   | "ردشده";
 
-export type RequestPriority = "فوری" | "متوسط" | "کم";
+export type RequestPriority = "فوری" | "متوسط" | "کم" | "نامشخص";
 
 export interface ServiceRequest {
   /** Backend UUID — used for actions; display uses `displayId`. */
