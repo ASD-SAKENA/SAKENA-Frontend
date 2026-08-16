@@ -41,17 +41,6 @@ export function AppTopbar() {
         </div>
       </div>
 
-      <div className="relative flex max-w-[280px] flex-1 items-center max-[880px]:hidden">
-        <AppIcon
-          name="search"
-          className="absolute right-3 size-5 text-app-muted"
-        />
-        <input
-          placeholder="جستجو…"
-          className="h-10 w-full rounded-[10px] border border-app-border bg-app-bg pr-9 pl-3 text-right text-[13.5px] text-app-fg outline-none focus:border-app-gold"
-        />
-      </div>
-
       <button
         type="button"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
