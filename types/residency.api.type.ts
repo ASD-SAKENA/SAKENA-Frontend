@@ -9,6 +9,9 @@ export interface ResidencyApiResponse {
   residentName: string;
   unitNumber: string | null;
   buildingName: string | null;
+  floorNumber: number | null;
+  areaSquareMeters: number | null;
+  bedrooms: number | null;
   tenancy: TenancyTypeApi;
   movedInAt: string;
   movedOutAt: string | null;

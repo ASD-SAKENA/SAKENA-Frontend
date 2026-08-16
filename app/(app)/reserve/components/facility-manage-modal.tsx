@@ -76,9 +76,7 @@ function toRulesPayload(values: FacilityForm): BookingRulesApi {
     opensAt: pad(values.opensAtHour),
     // A midnight closing is stored as 23:59 — the backend needs closesAt > opensAt.
     closesAt:
-      Number(values.closesAtHour) >= 24
-        ? "23:59:00"
-        : pad(values.closesAtHour),
+      Number(values.closesAtHour) >= 24 ? "23:59:00" : pad(values.closesAtHour),
     closedDays: values.closedDays
       .map((day) => API_WEEK_DAYS[day])
       .filter((day) => day !== undefined),

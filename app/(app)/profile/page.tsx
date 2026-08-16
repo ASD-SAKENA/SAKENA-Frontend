@@ -13,6 +13,8 @@ import { useMyResidencyQuery } from "@/queries/residency";
 
 import { useAuthStore } from "@/stores/auth.store";
 
+import { toFaDigits } from "@/lib/persian-number";
+
 import { type ProfileForm, profileSchema } from "@/schemas/profile.schema";
 import { TENANCY_LABELS } from "@/schemas/residency.schema";
 
@@ -89,6 +91,44 @@ export default function ProfilePage() {
               }
             />
           </AppField>
+
+          {residency &&
+          (residency.floorNumber !== null ||
+            residency.areaSquareMeters !== null ||
+            residency.bedrooms !== null) ? (
+            <div className="mb-4 grid grid-cols-3 gap-2.5">
+              {residency.floorNumber !== null ? (
+                <div className="rounded-xl border border-app-border bg-app-surface2 p-3 text-center">
+                  <div className="text-[16px] font-extrabold text-app-fg">
+                    {toFaDigits(residency.floorNumber)}
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] text-app-muted">
+                    طبقه
+                  </div>
+                </div>
+              ) : null}
+              {residency.areaSquareMeters !== null ? (
+                <div className="rounded-xl border border-app-border bg-app-surface2 p-3 text-center">
+                  <div className="text-[16px] font-extrabold text-app-fg">
+                    {toFaDigits(residency.areaSquareMeters)}
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] text-app-muted">
+                    متراژ (متر)
+                  </div>
+                </div>
+              ) : null}
+              {residency.bedrooms !== null ? (
+                <div className="rounded-xl border border-app-border bg-app-surface2 p-3 text-center">
+                  <div className="text-[16px] font-extrabold text-app-fg">
+                    {toFaDigits(residency.bedrooms)}
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] text-app-muted">
+                    تعداد اتاق
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <AppButton
             type="submit"
