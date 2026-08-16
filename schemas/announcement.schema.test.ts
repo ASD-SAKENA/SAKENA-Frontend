@@ -13,8 +13,7 @@ describe("announcementSchema", () => {
 
   it("rejects a title shorter than 3 characters", () => {
     expect(
-      announcementSchema.safeParse({ title: "ab", body: "1234567890" })
-        .success,
+      announcementSchema.safeParse({ title: "ab", body: "1234567890" }).success,
     ).toBe(false);
   });
 

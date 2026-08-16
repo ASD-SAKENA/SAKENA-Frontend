@@ -61,9 +61,7 @@ describe("signupSchema", () => {
   });
 
   it("rejects a name shorter than 2 characters", () => {
-    expect(
-      signupSchema.safeParse({ ...valid, name: "A" }).success,
-    ).toBe(false);
+    expect(signupSchema.safeParse({ ...valid, name: "A" }).success).toBe(false);
   });
 
   it("rejects an invalid email", () => {
@@ -79,9 +77,9 @@ describe("signupSchema", () => {
   });
 
   it("rejects when agree is false", () => {
-    expect(
-      signupSchema.safeParse({ ...valid, agree: false }).success,
-    ).toBe(false);
+    expect(signupSchema.safeParse({ ...valid, agree: false }).success).toBe(
+      false,
+    );
   });
 
   it("allows buildingCode to be omitted", () => {
@@ -93,9 +91,9 @@ describe("signupSchema", () => {
 
 describe("forgotPasswordSchema", () => {
   it("accepts a valid email", () => {
-    expect(
-      forgotPasswordSchema.safeParse({ email: "a@b.com" }).success,
-    ).toBe(true);
+    expect(forgotPasswordSchema.safeParse({ email: "a@b.com" }).success).toBe(
+      true,
+    );
   });
 
   it("rejects an invalid email", () => {

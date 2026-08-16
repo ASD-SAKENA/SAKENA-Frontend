@@ -13,8 +13,7 @@ describe("buildingSchema", () => {
 
   it("rejects a name shorter than 2 characters", () => {
     expect(
-      buildingSchema.safeParse({ name: "ا", address: "آدرس کامل تست" })
-        .success,
+      buildingSchema.safeParse({ name: "ا", address: "آدرس کامل تست" }).success,
     ).toBe(false);
   });
 
@@ -46,8 +45,7 @@ describe("apartmentSchema", () => {
 
   it("rejects a non-uuid buildingId", () => {
     expect(
-      apartmentSchema.safeParse({ ...valid, buildingId: "not-a-uuid" })
-        .success,
+      apartmentSchema.safeParse({ ...valid, buildingId: "not-a-uuid" }).success,
     ).toBe(false);
   });
 

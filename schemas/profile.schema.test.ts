@@ -24,15 +24,13 @@ describe("profileSchema", () => {
   });
 
   it("rejects an invalid email", () => {
-    expect(
-      profileSchema.safeParse({ ...valid, email: "bad" }).success,
-    ).toBe(false);
+    expect(profileSchema.safeParse({ ...valid, email: "bad" }).success).toBe(
+      false,
+    );
   });
 
   it("rejects an empty unit", () => {
-    expect(profileSchema.safeParse({ ...valid, unit: "" }).success).toBe(
-      false,
-    );
+    expect(profileSchema.safeParse({ ...valid, unit: "" }).success).toBe(false);
   });
 });
 

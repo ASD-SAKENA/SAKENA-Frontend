@@ -13,7 +13,9 @@ describe("messageTime", () => {
   });
 
   it("formats a valid ISO timestamp as hh:mm with Persian digits", () => {
-    expect(messageTime("2026-03-05T10:32:00Z")).toMatch(/^[۰-۹]{1,2}:[۰-۹]{2}$/);
+    expect(messageTime("2026-03-05T10:32:00Z")).toMatch(
+      /^[۰-۹]{1,2}:[۰-۹]{2}$/,
+    );
   });
 });
 
@@ -44,7 +46,9 @@ describe("messageDayLabel", () => {
   });
 
   it("formats older dates as a full date", () => {
-    const label = messageDayLabel(new Date("2026-02-01T08:00:00").toISOString());
+    const label = messageDayLabel(
+      new Date("2026-02-01T08:00:00").toISOString(),
+    );
     expect(label).not.toBe("امروز");
     expect(label).not.toBe("دیروز");
     expect(label.length).toBeGreaterThan(0);

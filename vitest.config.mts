@@ -24,12 +24,7 @@ export default defineConfig({
         "hooks/**/*.ts",
         "lib/**/*.ts",
       ],
-      exclude: [
-        "**/*.test.{ts,tsx}",
-        "**/*.d.ts",
-        "ui/**",
-        ".next/**",
-      ],
+      exclude: ["**/*.test.{ts,tsx}", "**/*.d.ts", "ui/**", ".next/**"],
     },
   },
 });

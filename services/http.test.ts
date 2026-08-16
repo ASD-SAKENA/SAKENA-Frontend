@@ -2,11 +2,11 @@ import MockAdapter from "axios-mock-adapter";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import http, { setSuppressAuthErrorToasts } from "./http";
+import { useAuthStore } from "@/stores/auth.store";
 
 import { getQueryClient } from "@/lib/query-client";
 
-import { useAuthStore } from "@/stores/auth.store";
+import http, { setSuppressAuthErrorToasts } from "./http";
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
@@ -117,7 +117,9 @@ describe("response interceptor - error status handling", () => {
     mock.onGet("/x").reply(500);
 
     await expect(http.get("/x")).rejects.toBeTruthy();
-    expect(toast.error).toHaveBeenCalledWith("خطای سرور. لطفاً دوباره تلاش کنید");
+    expect(toast.error).toHaveBeenCalledWith(
+      "خطای سرور. لطفاً دوباره تلاش کنید",
+    );
   });
 
   it("shows a connectivity message when there is no response at all", async () => {
@@ -130,9 +132,7 @@ describe("response interceptor - error status handling", () => {
   it("respects suppressToast and shows no toast", async () => {
     mock.onGet("/x").reply(400, {});
 
-    await expect(
-      http.get("/x", { suppressToast: true }),
-    ).rejects.toBeTruthy();
+    await expect(http.get("/x", { suppressToast: true })).rejects.toBeTruthy();
     expect(toast.error).not.toHaveBeenCalled();
   });
 

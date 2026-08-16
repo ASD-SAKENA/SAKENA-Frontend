@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  LATIN_DIGITS_ONLY_MESSAGE,
   hasNonLatinDigits,
+  LATIN_DIGITS_ONLY_MESSAGE,
   normalizeToLatinDigits,
   validateOtpAsciiDigits,
 } from "./latin-digits";

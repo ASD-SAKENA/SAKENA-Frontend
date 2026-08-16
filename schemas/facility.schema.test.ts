@@ -22,9 +22,9 @@ describe("facilitySchema", () => {
   });
 
   it("rejects a capacity of 0", () => {
-    expect(
-      facilitySchema.safeParse({ ...valid, capacity: "0" }).success,
-    ).toBe(false);
+    expect(facilitySchema.safeParse({ ...valid, capacity: "0" }).success).toBe(
+      false,
+    );
   });
 
   it("rejects closesAtHour not after opensAtHour", () => {
@@ -62,9 +62,9 @@ describe("facilitySchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(
-        result.error.issues.some((i) => i.path[0] === "closedDays"),
-      ).toBe(true);
+      expect(result.error.issues.some((i) => i.path[0] === "closedDays")).toBe(
+        true,
+      );
     }
   });
 
@@ -76,8 +76,7 @@ describe("facilitySchema", () => {
 
   it("rejects a minDurationMinutes below 15", () => {
     expect(
-      facilitySchema.safeParse({ ...valid, minDurationMinutes: "10" })
-        .success,
+      facilitySchema.safeParse({ ...valid, minDurationMinutes: "10" }).success,
     ).toBe(false);
   });
 });

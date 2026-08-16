@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useVoiceRecorder } from "./use-voice-recorder";
+import { useVoiceRecorder, type VoiceRecording } from "./use-voice-recorder";
 
 type Listener = (event: unknown) => void;
 
@@ -45,6 +45,10 @@ function fakeStream() {
 let lastRecorder: FakeMediaRecorder | null = null;
 let getUserMediaMock: ReturnType<typeof vi.fn>;
 
+function registerRecorder(recorder: FakeMediaRecorder) {
+  lastRecorder = recorder;
+}
+
 beforeEach(() => {
   lastRecorder = null;
   vi.useFakeTimers();
@@ -54,7 +58,7 @@ beforeEach(() => {
     class extends FakeMediaRecorder {
       constructor(stream: MediaStream, options?: { mimeType?: string }) {
         super(stream, options);
-        lastRecorder = this;
+        registerRecorder(this);
       }
     },
   );
@@ -108,10 +112,7 @@ describe("useVoiceRecorder", () => {
       await result.current.start();
     });
 
-    let stopped: unknown;
-    await act(async () => {
-      stopped = await result.current.stop();
-    });
+    const stopped = await act(() => result.current.stop());
 
     expect(stopped).toBeNull();
     expect(result.current.recording).toBe(false);
@@ -129,14 +130,14 @@ describe("useVoiceRecorder", () => {
       });
     });
 
-    let stopped: Awaited<ReturnType<typeof result.current.stop>> = null;
-    await act(async () => {
-      stopped = await result.current.stop();
-    });
+    const stopped: VoiceRecording | null = await act(() =>
+      result.current.stop(),
+    );
 
-    expect(stopped?.file).toBeInstanceOf(File);
-    expect(stopped?.file.name).toMatch(/^voice-note\./);
-    expect(stopped?.durationSeconds).toBeGreaterThanOrEqual(1);
+    if (stopped === null) throw new Error("expected a recorded file");
+    expect(stopped.file).toBeInstanceOf(File);
+    expect(stopped.file.name).toMatch(/^voice-note\./);
+    expect(stopped.durationSeconds).toBeGreaterThanOrEqual(1);
   });
 
   it("stop() resolves null immediately when never started", async () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { TENANCY_LABELS, residencySchema } from "./residency.schema";
+import { residencySchema, TENANCY_LABELS } from "./residency.schema";
 
 describe("residencySchema", () => {
   it("accepts a valid resident id and tenancy", () => {

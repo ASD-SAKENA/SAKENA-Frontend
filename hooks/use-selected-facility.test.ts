@@ -1,9 +1,9 @@
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useSelectedFacility } from "./use-selected-facility";
-
 import { useReserveStore } from "@/stores/reserve.store";
+
+import { useSelectedFacility } from "./use-selected-facility";
 
 const { useFacilitiesQueryMock } = vi.hoisted(() => ({
   useFacilitiesQueryMock: vi.fn(),

@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   DEFAULT_RULES,
-  SLOT_MINUTES,
   isBeyondAdvanceWindow,
   isPastSlot,
   rangeToGrid,
+  SLOT_MINUTES,
   slotPrice,
   slotTime,
   slotToDate,

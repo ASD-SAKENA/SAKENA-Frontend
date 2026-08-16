@@ -10,9 +10,12 @@ import {
 describe("getTehranGregorianParts", () => {
   it("reads a fixed instant in Asia/Tehran (UTC+3:30)", () => {
     // 2026-03-05T21:00:00Z -> 2026-03-06 00:30 in Tehran.
-    expect(getTehranGregorianParts(new Date("2026-03-05T21:00:00Z"))).toEqual(
-      { year: 2026, month: 3, day: 6, hour: 0 },
-    );
+    expect(getTehranGregorianParts(new Date("2026-03-05T21:00:00Z"))).toEqual({
+      year: 2026,
+      month: 3,
+      day: 6,
+      hour: 0,
+    });
   });
 });
 
