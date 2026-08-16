@@ -2,7 +2,7 @@ import { getAssignedRequests } from "@/api/requests";
 
 import { formatFaDate } from "@/lib/format-date";
 import { faNumber, toFaDigits } from "@/lib/persian-number";
-import { CATEGORY_GROUP_ICONS } from "@/lib/service-requests";
+import { CATEGORY_GROUP_ICONS, subCategoryLabel } from "@/lib/service-requests";
 
 import type { ServiceRequestApiResponse } from "@/types/requests.api.type";
 import type {
@@ -28,6 +28,8 @@ function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
     id: r.id,
     icon: CATEGORY_GROUP_ICONS[r.categoryGroup] ?? "handyman",
     title: r.title,
+    type: subCategoryLabel(r.subCategory),
+    description: r.description,
     unit: r.location ?? "—",
     date: formatFaDate(r.createdAt),
     priority: "نامشخص",

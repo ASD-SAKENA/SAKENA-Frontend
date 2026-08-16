@@ -22,7 +22,6 @@ export function navForRole(role: Role): NavItem[] {
         label: "درخواست‌های خدماتی",
         icon: "handyman",
         href: "/requests",
-        badge: "۱",
       },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
@@ -37,7 +36,6 @@ export function navForRole(role: Role): NavItem[] {
         label: "صف درخواست‌ها",
         icon: "assignment",
         href: "/queue",
-        badge: "۵",
       },
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "کاربران", icon: "group", href: "/users" },
@@ -51,7 +49,7 @@ export function navForRole(role: Role): NavItem[] {
     ];
   }
   return [
-    { label: "وظایف من", icon: "checklist", href: "/tasks", badge: "۳" },
+    { label: "وظایف من", icon: "checklist", href: "/tasks" },
     { label: "تاریخچه کارها", icon: "history", href: "/tasks/history" },
     { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
     { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },

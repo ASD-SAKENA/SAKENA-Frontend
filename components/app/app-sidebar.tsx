@@ -4,13 +4,46 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import {
+  useManagerRequestsQuery,
+  useResidentRequestsQuery,
+} from "@/queries/requests";
+import { useStaffTasksQuery } from "@/queries/tasks";
+
 import { useAppUiStore } from "@/stores/app-ui.store";
 import { useAuthStore } from "@/stores/auth.store";
 
 import { navForRole } from "@/lib/app-nav";
+import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
 import { AppIcon } from "./app-icon";
+
+function useNavBadges(role: "resident" | "manager" | "staff") {
+  const residentRequests = useResidentRequestsQuery({
+    enabled: role === "resident",
+  });
+  const managerRequests = useManagerRequestsQuery({
+    enabled: role === "manager",
+  });
+  const staffTasks = useStaffTasksQuery({ enabled: role === "staff" });
+
+  if (role === "resident") {
+    const open =
+      residentRequests.data?.filter(
+        (r) => r.apiStatus !== "COMPLETED" && r.apiStatus !== "REJECTED",
+      ).length ?? 0;
+    return { "/requests": open };
+  }
+  if (role === "manager") {
+    const pending =
+      managerRequests.data?.filter((r) => r.apiStatus === "PENDING").length ??
+      0;
+    return { "/queue": pending };
+  }
+  const open = staffTasks.data?.filter((t) => !t.done).length ?? 0;
+  return { "/tasks": open };
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -21,7 +54,11 @@ export function AppSidebar() {
   const closeNav = useAppUiStore((s) => s.closeNav);
 
   const role = user?.role ?? "resident";
-  const items = navForRole(role);
+  const badges = useNavBadges(role);
+  const items = navForRole(role).map((item) => {
+    const count = badges[item.href as keyof typeof badges];
+    return count ? { ...item, badge: toFaDigits(count) } : item;
+  });
 
   const onLogout = () => {
     logout();

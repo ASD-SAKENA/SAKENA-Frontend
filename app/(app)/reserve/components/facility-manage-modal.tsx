@@ -69,12 +69,14 @@ function toFormValues(facility: Facility): FacilityForm {
 }
 
 function toRulesPayload(values: FacilityForm): BookingRulesApi {
-  const pad = (hour: string) => `${String(Number(hour)).padStart(2, "0")}:00`;
+  // Backend deserializes LocalTime with a strict HH:mm:ss pattern — "HH:mm" is rejected outright.
+  const pad = (hour: string) =>
+    `${String(Number(hour)).padStart(2, "0")}:00:00`;
   return {
     opensAt: pad(values.opensAtHour),
     // A midnight closing is stored as 23:59 — the backend needs closesAt > opensAt.
     closesAt:
-      Number(values.closesAtHour) >= 24 ? "23:59" : pad(values.closesAtHour),
+      Number(values.closesAtHour) >= 24 ? "23:59:00" : pad(values.closesAtHour),
     closedDays: values.closedDays
       .map((day) => API_WEEK_DAYS[day])
       .filter((day) => day !== undefined),

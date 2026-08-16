@@ -6,6 +6,8 @@ export interface StaffTask {
   id: string;
   icon: string;
   title: string;
+  type: string;
+  description: string;
   unit: string;
   date: string;
   priority: RequestPriority;

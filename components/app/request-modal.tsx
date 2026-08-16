@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   useCreateRequestMutation,
   useRequestCategoriesQuery,
+  useUpdateRequestMutation,
 } from "@/queries/requests";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
@@ -27,11 +28,21 @@ function groupIcon(value: string): string {
   return CATEGORY_GROUP_ICONS[value as ServiceCategoryGroup] ?? "handyman";
 }
 
+const EMPTY: RequestForm = {
+  categoryGroup: "FACILITIES",
+  subCategory: "",
+  title: "",
+  description: "",
+};
+
 export function RequestModal() {
   const open = useAppUiStore((s) => s.requestModalOpen);
   const close = useAppUiStore((s) => s.closeRequestModal);
+  const editingRequest = useAppUiStore((s) => s.editingRequest);
   const createRequest = useCreateRequestMutation();
+  const updateRequest = useUpdateRequestMutation();
   const { data: categoryData } = useRequestCategoriesQuery();
+  const pending = createRequest.isPending || updateRequest.isPending;
 
   const {
     control,
@@ -42,12 +53,15 @@ export function RequestModal() {
     formState: { errors },
   } = useForm<RequestForm>({
     resolver: zodResolver(requestSchema),
-    defaultValues: {
-      categoryGroup: "FACILITIES",
-      subCategory: "",
-      title: "",
-      description: "",
-    },
+    defaultValues: EMPTY,
+    values: editingRequest
+      ? {
+          categoryGroup: editingRequest.categoryGroup,
+          subCategory: editingRequest.subCategory,
+          title: editingRequest.title,
+          description: editingRequest.description,
+        }
+      : EMPTY,
   });
 
   const groups = categoryData?.categories ?? [];
@@ -56,14 +70,20 @@ export function RequestModal() {
     groups.find((g) => g.value === selectedGroup)?.subCategories ?? [];
 
   const onSubmit = handleSubmit(async (values) => {
+    const payload = {
+      categoryGroup: values.categoryGroup as ServiceCategoryGroup,
+      subCategory: values.subCategory,
+      title: values.title,
+      description: values.description,
+    };
     try {
-      await createRequest.mutateAsync({
-        categoryGroup: values.categoryGroup as ServiceCategoryGroup,
-        subCategory: values.subCategory,
-        title: values.title,
-        description: values.description,
-      });
-      toast.success("درخواست شما ثبت شد و در صف بررسی قرار گرفت");
+      if (editingRequest) {
+        await updateRequest.mutateAsync({ id: editingRequest.id, payload });
+        toast.success("درخواست شما ویرایش شد");
+      } else {
+        await createRequest.mutateAsync(payload);
+        toast.success("درخواست شما ثبت شد و در صف بررسی قرار گرفت");
+      }
       reset();
       close();
     } catch {
@@ -75,8 +95,12 @@ export function RequestModal() {
     <Modal
       open={open}
       onClose={close}
-      title="ثبت درخواست خدماتی"
-      description="درخواست شما پس از ثبت توسط مدیر بررسی و به کارکن ارجاع می‌شود."
+      title={editingRequest ? "ویرایش درخواست خدماتی" : "ثبت درخواست خدماتی"}
+      description={
+        editingRequest
+          ? "فقط درخواست‌های در وضعیت «باز» قابل ویرایش هستند."
+          : "درخواست شما پس از ثبت توسط مدیر بررسی و به کارکن ارجاع می‌شود."
+      }
     >
       <form onSubmit={onSubmit} className="mt-4">
         <AppField label="دسته" error={errors.categoryGroup?.message}>
@@ -145,10 +169,10 @@ export function RequestModal() {
         <div className="mt-2 flex gap-2.5">
           <AppButton
             type="submit"
-            disabled={createRequest.isPending}
+            disabled={pending}
             className="h-[46px] flex-1"
           >
-            ثبت درخواست
+            {editingRequest ? "ذخیره تغییرات" : "ثبت درخواست"}
           </AppButton>
           <AppButton
             type="button"
