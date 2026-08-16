@@ -13,21 +13,62 @@ interface Props {
   canModerate: boolean;
   onEdit: (message: ChatMessageApiResponse) => void;
   onDelete: (message: ChatMessageApiResponse) => void;
+  hasMoreOlder: boolean;
+  isLoadingOlder: boolean;
+  onLoadOlder: () => void;
 }
+
+/** Below this distance from the bottom, a new message still auto-scrolls. */
+const NEAR_BOTTOM_PX = 120;
 
 export function MessageList({
   messages,
   canModerate,
   onEdit,
   onDelete,
+  hasMoreOlder,
+  isLoadingOlder,
+  onLoadOlder,
 }: Props) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const wasNearBottom = useRef(true);
+  const prevScrollHeight = useRef(0);
+  const prevMessageCount = useRef(0);
   const lastId = messages.at(-1)?.id;
 
-  // Follow the conversation as it grows, the way a messenger does.
+  // A poll only pulls the scroll view along when the reader is already at
+  // the bottom — scrolling up to read history must not get yanked away.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    const grew = messages.length > prevMessageCount.current;
+    prevMessageCount.current = messages.length;
+    if (grew && wasNearBottom.current) {
+      bottomRef.current?.scrollIntoView({ block: "end" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastId]);
+
+  // Prepending older history must not shift what the reader is looking at.
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || prevScrollHeight.current === 0) return;
+    container.scrollTop += container.scrollHeight - prevScrollHeight.current;
+    prevScrollHeight.current = 0;
+  }, [messages]);
+
+  const handleScroll = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    wasNearBottom.current = distanceFromBottom < NEAR_BOTTOM_PX;
+  };
+
+  const handleLoadOlder = () => {
+    if (scrollRef.current)
+      prevScrollHeight.current = scrollRef.current.scrollHeight;
+    onLoadOlder();
+  };
 
   if (messages.length === 0) {
     return (
@@ -50,7 +91,23 @@ export function MessageList({
   });
 
   return (
-    <div className="sk-scroll flex flex-1 flex-col gap-2.5 overflow-y-auto p-4">
+    <div
+      ref={scrollRef}
+      onScroll={handleScroll}
+      className="sk-scroll flex flex-1 flex-col gap-2.5 overflow-y-auto p-4"
+    >
+      {hasMoreOlder ? (
+        <div className="flex justify-center pb-1">
+          <button
+            type="button"
+            onClick={handleLoadOlder}
+            disabled={isLoadingOlder}
+            className="rounded-full border border-app-border bg-app-surface2 px-3.5 py-1.5 text-[12px] font-semibold text-app-muted transition-colors hover:text-app-fg disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isLoadingOlder ? "در حال بارگذاری…" : "بارگذاری پیام‌های قدیمی‌تر"}
+          </button>
+        </div>
+      ) : null}
       {rows.map(({ message, day, showDay }) => {
         return (
           <div key={message.id} className="flex flex-col gap-2.5">
