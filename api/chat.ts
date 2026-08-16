@@ -14,13 +14,26 @@ function messagesPath(buildingId: string): string {
   return `/buildings/${buildingId}/chat/messages`;
 }
 
+/** The newest page of history, oldest-first; pass `before` to page further back. */
 export async function getMessages(
   buildingId: string,
-  limit = 50,
+  options: { limit?: number; before?: string } = {},
 ): Promise<ChatMessageApiResponse[]> {
   const { data } = await http.get<ChatMessageApiResponse[]>(
     messagesPath(buildingId),
-    { params: { limit } },
+    { params: { limit: options.limit ?? 50, before: options.before } },
+  );
+  return data;
+}
+
+/** Messages sent after `since` — the polling tail. */
+export async function getMessagesSince(
+  buildingId: string,
+  since: string,
+): Promise<ChatMessageApiResponse[]> {
+  const { data } = await http.get<ChatMessageApiResponse[]>(
+    `${messagesPath(buildingId)}/since`,
+    { params: { since } },
   );
   return data;
 }

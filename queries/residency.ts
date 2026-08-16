@@ -15,11 +15,12 @@ import type { StartResidencyApiPayload } from "@/types/residency.api.type";
 
 const STALE = 5 * 60 * 1000;
 
-export function useMyResidencyQuery() {
+export function useMyResidencyQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: residencyKeys.mine,
     queryFn: getMyResidency,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 
