@@ -198,5 +198,9 @@ export function addJalaliMonth(
   delta: number,
 ): { jy: number; jm: number } {
   const zeroBased = jm - 1 + delta;
-  return { jy: jy + Math.floor(zeroBased / 12), jm: mod(zeroBased, 12) + 1 };
+  // `mod` above truncates toward zero (matches the ported algorithm's own
+  // needs elsewhere in this file); a negative delta crossing a year needs a
+  // true floor-mod, or it lands on month 0 instead of wrapping to month 12.
+  const yearOffset = Math.floor(zeroBased / 12);
+  return { jy: jy + yearOffset, jm: zeroBased - yearOffset * 12 + 1 };
 }
