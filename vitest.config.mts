@@ -14,8 +14,11 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
+      // app/** (routes and their page-local components) is deliberately out
+      // of scope for this unit-test pass - it's covered in the next,
+      // integration-test stage instead. Including it here would just dilute
+      // the number with files nothing was ever meant to touch yet.
       include: [
-        "app/**/*.{ts,tsx}",
         "components/**/*.{ts,tsx}",
         "api/**/*.ts",
         "queries/**/*.ts",
@@ -23,6 +26,7 @@ export default defineConfig({
         "stores/**/*.ts",
         "hooks/**/*.ts",
         "lib/**/*.ts",
+        "services/**/*.ts",
       ],
       exclude: ["**/*.test.{ts,tsx}", "**/*.d.ts", "ui/**", ".next/**"],
     },

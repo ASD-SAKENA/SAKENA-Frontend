@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated Vitest coverage report
+    "coverage/**",
     // Auto-generated service worker files
     "public/workbox-*.js",
     "public/sw.js",
