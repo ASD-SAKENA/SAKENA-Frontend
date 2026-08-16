@@ -12,7 +12,7 @@ export type ApiDayOfWeek =
 
 /** Scheduling policy of a facility, mirroring `BookingRules` on the backend. */
 export interface BookingRulesApi {
-  /** Local `HH:mm[:ss]`. */
+  /** Local `HH:mm:ss` — backend's LocalTime deserializer rejects any other format. */
   opensAt: string;
   closesAt: string;
   closedDays: ApiDayOfWeek[];
