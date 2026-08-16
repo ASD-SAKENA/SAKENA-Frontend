@@ -12,7 +12,6 @@ export const authKeys = {
 export interface LoginPayload {
   identifier: string;
   password: string;
-  role: Role;
 }
 
 export interface SignupPayload {

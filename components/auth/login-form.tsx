@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { AppIcon } from "@/components/app/app-icon";
@@ -19,7 +19,6 @@ import { roleHomePath } from "@/lib/app-nav";
 import { type LoginForm, loginSchema } from "@/schemas/auth.schema";
 
 import { ForgotPasswordModal } from "./forgot-password-modal";
-import { RoleChips } from "./role-chips";
 
 const inputClass =
   "h-[46px] w-full rounded-[11px] border border-[#2A3548] bg-[#10172A] pr-[42px] pl-3.5 text-right text-[14px] text-[#ECEEF3] outline-none transition-[border-color,box-shadow] placeholder:text-[#7A8294] focus:border-[var(--sk-gold)] focus:shadow-[0_0_0_3px_rgba(201,162,78,.18)]";
@@ -33,7 +32,6 @@ export function LoginForm() {
   const [forgotOpen, setForgotOpen] = useState(false);
 
   const {
-    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -42,7 +40,6 @@ export function LoginForm() {
     defaultValues: {
       identifier: "",
       password: "",
-      role: "resident",
       remember: false,
     },
   });
@@ -52,7 +49,6 @@ export function LoginForm() {
       const session = await mutation.mutateAsync({
         identifier: values.identifier,
         password: values.password,
-        role: values.role,
       });
       loginStore(session.user, session.token);
       toast.success("خوش آمدید");
@@ -68,21 +64,8 @@ export function LoginForm() {
         ورود به حساب
       </h1>
       <p className="mb-[26px] text-[14px] text-[var(--sk-text-muted)]">
-        نقش خود را انتخاب و وارد شوید.
+        نام کاربری و رمز عبور خود را وارد کنید.
       </p>
-
-      <div className="mb-[9px] text-[13px] font-medium text-[#D4D8E0]">
-        ورود به‌عنوان
-      </div>
-      <div className="mb-[22px]">
-        <Controller
-          control={control}
-          name="role"
-          render={({ field }) => (
-            <RoleChips value={field.value} onChange={field.onChange} />
-          )}
-        />
-      </div>
 
       <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
         ایمیل یا شماره موبایل

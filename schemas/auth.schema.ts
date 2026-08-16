@@ -5,7 +5,6 @@ export const roleEnum = z.enum(["resident", "manager", "staff"]);
 export const loginSchema = z.object({
   identifier: z.string().trim().min(1, "ایمیل یا شماره موبایل را وارد کنید."),
   password: z.string().min(1, "رمز عبور را وارد کنید."),
-  role: roleEnum,
   remember: z.boolean().optional(),
 });
 
