@@ -20,6 +20,7 @@ import type { StatusColor } from "@/types/app.type";
 import type { StaffTask } from "@/types/tasks.type";
 
 import { CompleteTaskModal } from "./components/complete-task-modal";
+import { TaskDetailModal } from "./components/task-detail-modal";
 
 type StaffTab = "open" | "done" | "all";
 
@@ -51,6 +52,7 @@ export default function TasksPage() {
   const { data: walletBalance } = useMyWalletQuery();
   const startProgress = useStartProgressMutation();
   const [completeTarget, setCompleteTarget] = useState<StaffTask | null>(null);
+  const [detailTarget, setDetailTarget] = useState<StaffTask | null>(null);
 
   const filtered = tasks.filter((t) => {
     if (tab === "open") return !t.done;
@@ -133,6 +135,7 @@ export default function TasksPage() {
                 </button>
                 <AppButton
                   variant="outline"
+                  onClick={() => setDetailTarget(task)}
                   className="h-9 rounded-[9px] px-3.5 text-[13px] font-normal"
                 >
                   جزئیات
@@ -186,6 +189,10 @@ export default function TasksPage() {
       <CompleteTaskModal
         task={completeTarget}
         onClose={() => setCompleteTarget(null)}
+      />
+      <TaskDetailModal
+        task={detailTarget}
+        onClose={() => setDetailTarget(null)}
       />
     </div>
   );
