@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { requestKeys } from "@/api/requests";
 import {
+  fundWallet,
   getBuildingLedger,
   getBuildingWalletBalance,
   getMyWalletBalance,
@@ -57,6 +58,14 @@ export function useRecordPaymentMutation() {
   const invalidate = useInvalidateWallet();
   return useMutation({
     mutationFn: recordPayment,
+    onSuccess: invalidate,
+  });
+}
+
+export function useFundWalletMutation() {
+  const invalidate = useInvalidateWallet();
+  return useMutation({
+    mutationFn: fundWallet,
     onSuccess: invalidate,
   });
 }

@@ -14,10 +14,12 @@ import { faNumber } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
 import { PayChargeModal } from "./components/pay-charge-modal";
+import { TopUpWalletModal } from "./components/top-up-wallet-modal";
 
 export default function WalletPage() {
   const { data } = useWalletQuery();
   const [payOpen, setPayOpen] = useState(false);
+  const [topUpOpen, setTopUpOpen] = useState(false);
 
   return (
     <div className="sk-page">
@@ -30,9 +32,18 @@ export default function WalletPage() {
               تومان
             </span>
           </div>
-          <AppButton variant="gold" onClick={() => setPayOpen(true)}>
-            ثبت پرداخت
-          </AppButton>
+          <div className="flex flex-wrap gap-2.5">
+            <AppButton variant="gold" onClick={() => setTopUpOpen(true)}>
+              شارژ کیف پول
+            </AppButton>
+            <AppButton variant="outline" onClick={() => setPayOpen(true)}>
+              ثبت پرداخت
+            </AppButton>
+          </div>
+          <TopUpWalletModal
+            open={topUpOpen}
+            onClose={() => setTopUpOpen(false)}
+          />
           <PayChargeModal open={payOpen} onClose={() => setPayOpen(false)} />
         </div>
 

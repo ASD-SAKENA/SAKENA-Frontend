@@ -7,6 +7,7 @@ import type {
   PaymentApiResponse,
   RecordBuildingTransactionApiPayload,
   RecordPaymentApiPayload,
+  WalletBalanceApiResponse,
   WalletTransactionApiResponse,
 } from "@/types/wallet.api.type";
 import type { Transaction, Wallet } from "@/types/wallet.type";
@@ -31,15 +32,18 @@ function toTransaction(payment: PaymentApiResponse): Transaction {
 }
 
 /**
- * The backend models the resident's payment history; wallet balance and
- * debt are not modelled server-side yet, so those stats derive from the
- * payments (total paid) or stay placeholders until a wallet context lands.
+ * Balance comes from the real wallet endpoint; the stats/history below still
+ * derive from payment records until a full transaction ledger lands for
+ * residents (buildings already have one - see getBuildingLedger).
  */
 export async function getWallet(): Promise<Wallet> {
-  const { data } = await http.get<PaymentApiResponse[]>("/payments");
+  const [{ data }, balance] = await Promise.all([
+    http.get<PaymentApiResponse[]>("/payments"),
+    getMyWalletBalance(),
+  ]);
   const totalPaid = data.reduce((sum, p) => sum + p.amount, 0);
   return {
-    balance: 0,
+    balance,
     stats: [
       {
         label: "مجموع پرداختی‌ها",
@@ -69,7 +73,16 @@ export async function recordPayment(
 
 /** Current user's wallet balance (worker wages land here after settlement). */
 export async function getMyWalletBalance(): Promise<number> {
-  const { data } = await http.get<{ balance: number }>("/wallets/me");
+  const { data } = await http.get<WalletBalanceApiResponse>("/wallets/me");
+  return data.balance;
+}
+
+/** Resident tops up their own wallet; returns the new balance. */
+export async function fundWallet(amount: number): Promise<number> {
+  const { data } = await http.post<WalletBalanceApiResponse>(
+    "/wallets/me/top-ups",
+    { amount },
+  );
   return data.balance;
 }
 

@@ -45,8 +45,9 @@ function toServiceRequest(r: ServiceRequestApiResponse): ServiceRequest {
 }
 
 /**
- * Priority is not modelled server-side yet — the queue shows a neutral
- * default until the backend adds it. `unit` maps to the request location.
+ * Priority is not modelled server-side yet — shown as "نامشخص" rather than
+ * a fabricated level, so the queue doesn't imply data that doesn't exist.
+ * `unit` maps to the request location.
  */
 function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
   const meta = REQUEST_STATUS_META[r.status];
@@ -60,8 +61,8 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     status: meta.label,
     statusColor: meta.color,
     apiStatus: r.status,
-    priority: "متوسط",
-    priorityColor: "warning",
+    priority: "نامشخص",
+    priorityColor: "muted",
   };
 }
 

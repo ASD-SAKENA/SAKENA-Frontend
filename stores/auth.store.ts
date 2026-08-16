@@ -39,8 +39,6 @@ interface AuthState {
   token: string | null;
   login: (user: AppUser, token: string) => void;
   logout: () => void;
-  /** Preview-only role switch (keeps the real name/token, swaps the role). */
-  setRole: (role: Role) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -51,10 +49,6 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       login: (user, token) => set({ isAuthenticated: true, user, token }),
       logout: () => set({ isAuthenticated: false, user: null, token: null }),
-      setRole: (role) =>
-        set((state) => ({
-          user: buildAppUser(role, state.user?.name ?? ROLE_LABELS[role]),
-        })),
     }),
     {
       name: "sakena-auth",

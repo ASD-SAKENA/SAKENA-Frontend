@@ -37,3 +37,7 @@ export interface RecordBuildingTransactionApiPayload {
   amount: number;
   description: string;
 }
+
+export interface WalletBalanceApiResponse {
+  balance: number;
+}

@@ -18,7 +18,7 @@ import { TENANCY_LABELS } from "@/schemas/residency.schema";
 
 import { ChangePasswordCard } from "./components/change-password-card";
 
-const EMPTY: ProfileForm = { name: "", mobile: "", email: "", unit: "" };
+const EMPTY: ProfileForm = { name: "", email: "", unit: "" };
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -66,10 +66,6 @@ export default function ProfilePage() {
         <form onSubmit={onSubmit}>
           <AppField label="نام و نام خانوادگی" error={errors.name?.message}>
             <AppInput {...register("name")} />
-          </AppField>
-
-          <AppField label="شماره موبایل" error={errors.mobile?.message}>
-            <AppInput {...register("mobile")} />
           </AppField>
 
           <AppField label="ایمیل" error={errors.email?.message}>

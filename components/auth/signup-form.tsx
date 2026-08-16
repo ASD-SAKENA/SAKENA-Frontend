@@ -40,7 +40,6 @@ export function SignupForm() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
-      mobile: "",
       buildingCode: "",
       email: "",
       password: "",
@@ -48,19 +47,18 @@ export function SignupForm() {
     },
   });
 
-  const [name, mobile, password, agree] = useWatch({
+  const [name, email, password, agree] = useWatch({
     control,
-    name: ["name", "mobile", "password", "agree"],
+    name: ["name", "email", "password", "agree"],
   });
   const ready = Boolean(
-    name?.trim() && mobile?.trim() && password?.trim() && agree,
+    name?.trim() && email?.trim() && password?.trim() && agree,
   );
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       const session = await mutation.mutateAsync({
         name: values.name,
-        mobile: values.mobile,
         email: values.email,
         buildingCode: values.buildingCode || undefined,
         password: values.password,
@@ -97,41 +95,18 @@ export function SignupForm() {
         />
       </div>
 
-      <div className="mb-[15px] grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
-            شماره موبایل
-          </label>
-          <div className="relative">
-            <AppIcon name="smartphone" className={iconClass} />
-            <input
-              {...register("mobile")}
-              dir="ltr"
-              placeholder="09120000000"
-              className={inputClass}
-            />
-          </div>
-        </div>
-        <div>
-          <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
-            کد مجتمع / دعوت
-          </label>
-          <div className="relative">
-            <AppIcon name="apartment" className={iconClass} />
-            <input
-              {...register("buildingCode")}
-              dir="ltr"
-              placeholder="SKN-1024"
-              className={inputClass}
-            />
-          </div>
-        </div>
+      <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
+        کد مجتمع / دعوت
+      </label>
+      <div className="relative mb-[15px]">
+        <AppIcon name="apartment" className={iconClass} />
+        <input
+          {...register("buildingCode")}
+          dir="ltr"
+          placeholder="SKN-1024"
+          className={inputClass}
+        />
       </div>
-      {errors.mobile ? (
-        <p className="-mt-2.5 mb-3 text-[12px] text-[var(--sk-text-muted)]">
-          {errors.mobile.message}
-        </p>
-      ) : null}
 
       <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
         ایمیل
