@@ -12,10 +12,6 @@ export type LoginForm = z.infer<typeof loginSchema>;
 
 export const signupSchema = z.object({
   name: z.string().trim().min(2, "نام و نام خانوادگی را وارد کنید."),
-  mobile: z
-    .string()
-    .trim()
-    .regex(/^0?9\d{9}$/, "شماره موبایل معتبر نیست."),
   buildingCode: z.string().trim().optional(),
   // Required by the backend register endpoint (used for password recovery).
   email: z

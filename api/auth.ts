@@ -16,7 +16,6 @@ export interface LoginPayload {
 
 export interface SignupPayload {
   name: string;
-  mobile: string;
   email: string;
   buildingCode?: string;
   password: string;
@@ -47,12 +46,11 @@ export async function login(payload: LoginPayload): Promise<AuthSession> {
 }
 
 export async function signup(payload: SignupPayload): Promise<AuthSession> {
-  // The backend identifies users by a unique `username`; we register with the
-  // mobile number so users log in with it. `buildingCode` has no backend
+  // The backend identifies users by a unique `username`; we register with
+  // the entered name so users log in with it. `buildingCode` has no backend
   // support yet and is ignored.
   const { data } = await http.post<AuthApiResponse>("/auth/register", {
     username: payload.name,
-    mobile: payload.mobile,
     email: payload.email,
     password: payload.password,
     role: payload.role.toUpperCase(),

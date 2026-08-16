@@ -12,15 +12,13 @@ export const profileKeys = {
 };
 
 /**
- * The backend profile stores `username` (the registered mobile number) and
- * `email`. `name` and `unit` are not modelled server-side yet, so they come
- * from the local session and stay client-only until the backend adds them.
+ * `name` and `unit` are not modelled server-side yet, so they come from the
+ * local session and stay client-only until the backend adds them.
  */
 function toProfileForm(data: ProfileApiResponse): ProfileForm {
   const stored = useAuthStore.getState().user;
   return {
     name: stored?.name ?? data.username,
-    mobile: data.mobile,
     email: data.email,
     unit: stored?.unit ?? "—",
   };
