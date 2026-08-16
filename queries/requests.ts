@@ -18,19 +18,21 @@ import { taskKeys } from "@/api/tasks";
 
 const STALE = 5 * 60 * 1000;
 
-export function useResidentRequestsQuery() {
+export function useResidentRequestsQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: requestKeys.resident,
     queryFn: getResidentRequests,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 
-export function useManagerRequestsQuery() {
+export function useManagerRequestsQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: requestKeys.manager,
     queryFn: getManagerRequests,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 

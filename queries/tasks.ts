@@ -11,11 +11,12 @@ import {
 
 const STALE = 5 * 60 * 1000;
 
-export function useStaffTasksQuery() {
+export function useStaffTasksQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: taskKeys.staff,
     queryFn: getStaffTasks,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 
