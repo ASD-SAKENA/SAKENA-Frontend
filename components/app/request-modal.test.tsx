@@ -12,8 +12,13 @@ vi.mock("sonner", () => ({
 }));
 
 const mutateAsync = vi.fn();
+const updateMutateAsync = vi.fn();
 vi.mock("@/queries/requests", () => ({
   useCreateRequestMutation: () => ({ mutateAsync, isPending: false }),
+  useUpdateRequestMutation: () => ({
+    mutateAsync: updateMutateAsync,
+    isPending: false,
+  }),
   useRequestCategoriesQuery: () => ({
     data: {
       categories: [
@@ -29,7 +34,7 @@ vi.mock("@/queries/requests", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  useAppUiStore.setState({ requestModalOpen: false });
+  useAppUiStore.setState({ requestModalOpen: false, editingRequest: null });
 });
 
 describe("RequestModal", () => {
@@ -76,6 +81,44 @@ describe("RequestModal", () => {
     await user.click(screen.getByRole("button", { name: "ثبت درخواست" }));
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    expect(toast.success).toHaveBeenCalled();
+    expect(useAppUiStore.getState().requestModalOpen).toBe(false);
+  });
+
+  it("prefills and submits an edit for the request in editingRequest", async () => {
+    updateMutateAsync.mockResolvedValue(undefined);
+    useAppUiStore.setState({
+      requestModalOpen: true,
+      editingRequest: {
+        id: "r1",
+        displayId: "aaaa1111",
+        icon: "handyman",
+        title: "نشتی آب",
+        type: "استخر",
+        description: "توضیح اولیه",
+        categoryGroup: "FACILITIES",
+        subCategory: "POOL",
+        status: "باز",
+        statusColor: "warning",
+        apiStatus: "PENDING",
+        date: "۱۴۰۴/۰۱/۰۱",
+        completionReport: null,
+        completionCost: null,
+      },
+    });
+    const user = userEvent.setup();
+    render(<RequestModal />);
+
+    expect(screen.getByText("ویرایش درخواست خدماتی")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("نشتی آب")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "ذخیره تغییرات" }));
+
+    await waitFor(() => expect(updateMutateAsync).toHaveBeenCalled());
+    expect(updateMutateAsync).toHaveBeenCalledWith({
+      id: "r1",
+      payload: expect.objectContaining({ title: "نشتی آب" }),
+    });
     expect(toast.success).toHaveBeenCalled();
     expect(useAppUiStore.getState().requestModalOpen).toBe(false);
   });
