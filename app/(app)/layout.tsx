@@ -8,7 +8,6 @@ import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { RequestModal } from "@/components/app/request-modal";
-import { RoleStrip } from "@/components/app/role-strip";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -52,7 +51,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar />
-        <RoleStrip />
         <main className="flex-1 px-6 py-[26px] pb-10 max-[880px]:px-4 max-[880px]:pb-24">
           {children}
         </main>
