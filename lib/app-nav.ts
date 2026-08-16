@@ -47,6 +47,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
       { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
+      { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
   return [
