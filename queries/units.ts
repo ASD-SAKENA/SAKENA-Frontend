@@ -26,11 +26,12 @@ export function useUnitsQuery(buildingId?: string) {
   });
 }
 
-export function useBuildingsQuery() {
+export function useBuildingsQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: unitKeys.buildings,
     queryFn: getBuildings,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 

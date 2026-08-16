@@ -8,6 +8,7 @@ export interface ResidencyApiResponse {
   residentId: string;
   residentName: string;
   unitNumber: string | null;
+  buildingId: string | null;
   buildingName: string | null;
   floorNumber: number | null;
   areaSquareMeters: number | null;
