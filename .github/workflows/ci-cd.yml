@@ -3,9 +3,9 @@ name: CI/CD Frontend
 # Fail fast → build/push GHCR → k8s deploy (namespace `sakena`) → verify.
 # NEXT_PUBLIC_* are baked in at build time via secrets / build-args.
 #
-# `ci` also runs on pull requests so a broken build/typecheck/lint never
-# reaches `main` in the first place; build/deploy only run on pushes to
-# `main` (or tags), same gating as before.
+# `ci` and `test` also run on pull requests so a broken build/typecheck/
+# lint/unit-test never reaches `main` in the first place; build/deploy only
+# run on pushes to `main` (or tags), same gating as before.
 
 on:
   push:
@@ -53,9 +53,41 @@ jobs:
       - name: Typecheck, lint, format
         run: pnpm check
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
   build-and-push:
     name: Build & push
-    needs: [ci]
+    needs: [ci, test]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
