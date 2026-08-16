@@ -166,7 +166,7 @@ export function ResidentDashboard() {
           action={
             <button
               type="button"
-              onClick={openRequestModal}
+              onClick={() => openRequestModal()}
               className="flex items-center gap-1 text-[12.5px] text-app-gold hover:brightness-110"
             >
               <AppIcon name="add" className="size-[17px]" />

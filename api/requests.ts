@@ -37,10 +37,14 @@ function toServiceRequest(r: ServiceRequestApiResponse): ServiceRequest {
     title: r.title,
     type: subCategoryLabel(r.subCategory),
     description: r.description,
+    categoryGroup: r.categoryGroup,
+    subCategory: r.subCategory,
     status: meta.label,
     statusColor: meta.color,
     apiStatus: r.status,
     date: formatFaDate(r.createdAt),
+    completionReport: r.completionReport,
+    completionCost: r.completionCost,
   };
 }
 
@@ -109,6 +113,19 @@ export async function createRequest(
     body,
   );
   return { id: data.id };
+}
+
+export async function updateRequest(
+  id: string,
+  payload: CreateRequestPayload,
+): Promise<void> {
+  const body: CreateServiceRequestApiPayload = {
+    title: payload.title,
+    description: payload.description,
+    categoryGroup: payload.categoryGroup,
+    subCategory: payload.subCategory,
+  };
+  await http.patch(`/service-requests/${id}`, body);
 }
 
 export async function approveRequest(id: string): Promise<void> {

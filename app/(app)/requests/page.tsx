@@ -52,7 +52,7 @@ export default function RequestsPage() {
             </button>
           ))}
         </div>
-        <AppButton variant="gold" onClick={openRequestModal}>
+        <AppButton variant="gold" onClick={() => openRequestModal()}>
           <AppIcon name="add" className="size-[19px]" />
           ثبت درخواست
         </AppButton>

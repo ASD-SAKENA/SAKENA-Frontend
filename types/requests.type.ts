@@ -23,10 +23,14 @@ export interface ServiceRequest {
   title: string;
   type: string;
   description: string;
+  categoryGroup: ServiceCategoryGroup;
+  subCategory: string;
   status: RequestStatus;
   statusColor: StatusColor;
   apiStatus: ServiceRequestApiStatus;
   date: string;
+  completionReport: string | null;
+  completionCost: number | null;
 }
 
 /** Manager queue view adds unit, submission time and priority columns. */

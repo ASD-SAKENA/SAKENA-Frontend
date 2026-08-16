@@ -2,14 +2,20 @@
 
 import { create } from "zustand";
 
+import type { ServiceRequest } from "@/types/requests.type";
+
 interface AppUiState {
   /** Mobile sidebar drawer. */
   navOpen: boolean;
   openNav: () => void;
   closeNav: () => void;
-  /** Shared "new service request" modal, openable from any page. */
+  /**
+   * Shared "service request" modal, openable from any page. `editingRequest`
+   * set means the modal is in edit mode for that request; null means create.
+   */
   requestModalOpen: boolean;
-  openRequestModal: () => void;
+  editingRequest: ServiceRequest | null;
+  openRequestModal: (editingRequest?: ServiceRequest) => void;
   closeRequestModal: () => void;
 }
 
@@ -18,6 +24,9 @@ export const useAppUiStore = create<AppUiState>((set) => ({
   openNav: () => set({ navOpen: true }),
   closeNav: () => set({ navOpen: false }),
   requestModalOpen: false,
-  openRequestModal: () => set({ requestModalOpen: true }),
-  closeRequestModal: () => set({ requestModalOpen: false }),
+  editingRequest: null,
+  openRequestModal: (editingRequest) =>
+    set({ requestModalOpen: true, editingRequest: editingRequest ?? null }),
+  closeRequestModal: () =>
+    set({ requestModalOpen: false, editingRequest: null }),
 }));

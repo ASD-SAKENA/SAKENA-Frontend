@@ -13,6 +13,7 @@ import {
   rejectRequest,
   requestKeys,
   startRequestProgress,
+  updateRequest,
 } from "@/api/requests";
 import { taskKeys } from "@/api/tasks";
 
@@ -48,6 +49,22 @@ export function useCreateRequestMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: requestKeys.all });
+    },
+  });
+}
+
+export function useUpdateRequestMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Parameters<typeof updateRequest>[1];
+    }) => updateRequest(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
     },
