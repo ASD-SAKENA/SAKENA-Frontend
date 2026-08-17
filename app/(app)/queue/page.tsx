@@ -214,6 +214,10 @@ export default function QueuePage() {
                         ارجاع
                       </button>
                     ) : r.apiStatus === "COMPLETED" ? (
+                      <span className="text-[12px] text-app-muted">
+                        در انتظار تایید ساکن
+                      </span>
+                    ) : r.apiStatus === "CONFIRMED" ? (
                       <button
                         type="button"
                         onClick={() => handleSettle(r)}
@@ -250,7 +254,10 @@ export default function QueuePage() {
               <option value="">انتخاب کارکن</option>
               {staff.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.username} — {s.specialty ?? "بدون تخصص"}
+                  {s.username} — {s.specialty ?? "بدون تخصص"} ·{" "}
+                  {s.averageRating !== null
+                    ? `⭐ ${s.averageRating.toFixed(1)}`
+                    : "بدون امتیاز"}
                 </option>
               ))}
             </AppSelect>

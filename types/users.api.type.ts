@@ -10,3 +10,12 @@ export interface UserSummaryApiResponse {
   active: boolean;
   specialty: string | null;
 }
+
+/** Response shape of GET /api/v1/staff — narrower than UserSummaryApiResponse, manager-facing. */
+export interface StaffSummaryApiResponse {
+  id: string;
+  username: string;
+  specialty: string | null;
+  active: boolean;
+  averageRating: number | null;
+}
