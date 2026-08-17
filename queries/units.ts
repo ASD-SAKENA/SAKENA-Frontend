@@ -4,9 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   createApartment,
-  createBuilding,
   deleteApartment,
-  deleteBuilding,
   getBuildings,
   getUnits,
   unitKeys,
@@ -65,27 +63,11 @@ export function useDeleteApartmentMutation() {
   });
 }
 
-export function useCreateBuildingMutation() {
-  const invalidate = useInvalidateUnits();
-  return useMutation({
-    mutationFn: createBuilding,
-    onSuccess: invalidate,
-  });
-}
-
 export function useUpdateBuildingMutation() {
   const invalidate = useInvalidateUnits();
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: BuildingForm }) =>
       updateBuilding(id, payload),
-    onSuccess: invalidate,
-  });
-}
-
-export function useDeleteBuildingMutation() {
-  const invalidate = useInvalidateUnits();
-  return useMutation({
-    mutationFn: deleteBuilding,
     onSuccess: invalidate,
   });
 }

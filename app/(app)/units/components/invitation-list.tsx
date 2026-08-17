@@ -6,7 +6,6 @@ import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
-import { AppSelect } from "@/components/app/form-controls";
 import { SectionCard } from "@/components/app/section-card";
 import { StatusBadge } from "@/components/app/status-badge";
 
@@ -14,7 +13,6 @@ import {
   useBuildingInvitationsQuery,
   useRevokeInvitationMutation,
 } from "@/queries/invitations";
-import { useBuildingsQuery } from "@/queries/units";
 
 import { formatFaDate } from "@/lib/format-date";
 
@@ -27,6 +25,10 @@ import type { StatusColor } from "@/types/app.type";
 import type { InvitationStatusApi } from "@/types/invitations.api.type";
 
 import { InvitationModal } from "./invitation-modal";
+
+interface Props {
+  buildingId: string | null;
+}
 
 const STATUS_COLORS: Record<InvitationStatusApi, StatusColor> = {
   PENDING: "warning",
@@ -45,13 +47,9 @@ async function copyLink(url: string) {
   }
 }
 
-export function InvitationList() {
-  const { data: buildings = [] } = useBuildingsQuery();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function InvitationList({ buildingId }: Props) {
   const [composerOpen, setComposerOpen] = useState(false);
 
-  const buildingId =
-    buildings.find((b) => b.id === selectedId)?.id ?? buildings[0]?.id ?? null;
   const { data: invitations = [] } = useBuildingInvitationsQuery(buildingId);
   const revokeInvitation = useRevokeInvitationMutation();
 
@@ -60,30 +58,15 @@ export function InvitationList() {
       title="دعوت‌نامه‌ها"
       bodyClassName="p-0"
       action={
-        <div className="flex items-center gap-2">
-          {buildings.length > 1 ? (
-            <AppSelect
-              value={buildingId ?? ""}
-              onChange={(event) => setSelectedId(event.target.value)}
-              className="h-9 w-auto min-w-[160px] text-[13px]"
-            >
-              {buildings.map((building) => (
-                <option key={building.id} value={building.id}>
-                  {building.name}
-                </option>
-              ))}
-            </AppSelect>
-          ) : null}
-          <AppButton
-            variant="gold"
-            onClick={() => setComposerOpen(true)}
-            disabled={buildingId === null}
-            className="h-9 gap-1.5 px-3.5 text-[13px]"
-          >
-            <AppIcon name="person_add" className="size-[18px]" />
-            دعوت کاربر
-          </AppButton>
-        </div>
+        <AppButton
+          variant="gold"
+          onClick={() => setComposerOpen(true)}
+          disabled={buildingId === null}
+          className="h-9 gap-1.5 px-3.5 text-[13px]"
+        >
+          <AppIcon name="person_add" className="size-[18px]" />
+          دعوت کاربر
+        </AppButton>
       }
     >
       {buildingId === null ? (

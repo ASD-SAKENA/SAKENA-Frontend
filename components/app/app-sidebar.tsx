@@ -17,9 +17,11 @@ import { navForRole } from "@/lib/app-nav";
 import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
+import type { Role } from "@/types/app.type";
+
 import { AppIcon } from "./app-icon";
 
-function useNavBadges(role: "resident" | "manager" | "staff") {
+function useNavBadges(role: Role) {
   const residentRequests = useResidentRequestsQuery({
     enabled: role === "resident",
   });
@@ -41,6 +43,7 @@ function useNavBadges(role: "resident" | "manager" | "staff") {
       0;
     return { "/queue": pending };
   }
+  if (role === "admin") return {};
   const open = staffTasks.data?.filter((t) => !t.done).length ?? 0;
   return { "/tasks": open };
 }

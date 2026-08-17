@@ -4,9 +4,7 @@ import http from "@/services/http";
 
 import {
   createApartment,
-  createBuilding,
   deleteApartment,
-  deleteBuilding,
   getBuildings,
   getUnits,
   updateApartment,
@@ -99,23 +97,10 @@ describe("building mutations", () => {
     expect(http.get).toHaveBeenCalledWith("/buildings");
   });
 
-  it("createBuilding posts the payload", async () => {
-    vi.mocked(http.post).mockResolvedValue({ data: { id: "b1" } });
-    const payload = { name: "برج نیلوفر", address: "تهران" };
-    await createBuilding(payload);
-    expect(http.post).toHaveBeenCalledWith("/buildings", payload);
-  });
-
   it("updateBuilding puts to the building's route", async () => {
     vi.mocked(http.put).mockResolvedValue({ data: { id: "b1" } });
     const payload = { name: "برج نیلوفر", address: "تهران" };
     await updateBuilding("b1", payload);
     expect(http.put).toHaveBeenCalledWith("/buildings/b1", payload);
-  });
-
-  it("deleteBuilding deletes by id", async () => {
-    vi.mocked(http.delete).mockResolvedValue({ data: {} });
-    await deleteBuilding("b1");
-    expect(http.delete).toHaveBeenCalledWith("/buildings/b1");
   });
 });

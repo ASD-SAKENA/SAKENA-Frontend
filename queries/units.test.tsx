@@ -3,18 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { unitKeys } from "@/api/units";
 import {
-  createBuilding,
   deleteApartment,
   getBuildings,
   getUnits,
+  updateBuilding,
 } from "@/api/units";
 
 import { createTestQueryClient, createWrapper } from "./test-utils";
 import {
   useBuildingsQuery,
-  useCreateBuildingMutation,
   useDeleteApartmentMutation,
   useUnitsQuery,
+  useUpdateBuildingMutation,
 } from "./units";
 
 vi.mock("@/api/units", () => ({
@@ -28,9 +28,7 @@ vi.mock("@/api/units", () => ({
   createApartment: vi.fn(),
   updateApartment: vi.fn(),
   deleteApartment: vi.fn(),
-  createBuilding: vi.fn(),
   updateBuilding: vi.fn(),
-  deleteBuilding: vi.fn(),
 }));
 
 beforeEach(() => {
@@ -70,8 +68,8 @@ describe("mutations invalidate the shared units.all key", () => {
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: unitKeys.all });
   });
 
-  it("useCreateBuildingMutation", async () => {
-    vi.mocked(createBuilding).mockResolvedValue({
+  it("useUpdateBuildingMutation", async () => {
+    vi.mocked(updateBuilding).mockResolvedValue({
       id: "b1",
       name: "برج",
       address: "تهران",
@@ -81,10 +79,13 @@ describe("mutations invalidate the shared units.all key", () => {
     const client = createTestQueryClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
 
-    const { result } = renderHook(() => useCreateBuildingMutation(), {
+    const { result } = renderHook(() => useUpdateBuildingMutation(), {
       wrapper: createWrapper(client),
     });
-    result.current.mutate({ name: "برج", address: "تهران" });
+    result.current.mutate({
+      id: "b1",
+      payload: { name: "برج", address: "تهران" },
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: unitKeys.all });

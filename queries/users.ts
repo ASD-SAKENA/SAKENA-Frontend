@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   getUsers,
+  updateUserRole,
   updateUserSpecialty,
   updateUserStatus,
   userKeys,
@@ -37,6 +38,22 @@ export function useUpdateUserSpecialtyMutation() {
   return useMutation({
     mutationFn: ({ id, specialty }: { id: string; specialty: string | null }) =>
       updateUserSpecialty(id, specialty),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
+    },
+  });
+}
+
+export function useUpdateUserRoleMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      role,
+    }: {
+      id: string;
+      role: Exclude<UserApiRole, "MANAGER">;
+    }) => updateUserRole(id, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },

@@ -1,6 +1,6 @@
 /** Shared app-wide domain types. */
 
-export type Role = "resident" | "manager" | "staff";
+export type Role = "resident" | "manager" | "staff" | "admin";
 
 /** Semantic status colors mapped to the app palette tokens. */
 export type StatusColor =

@@ -76,13 +76,6 @@ export async function getBuildings(): Promise<BuildingApiResponse[]> {
   return data;
 }
 
-export async function createBuilding(
-  payload: BuildingForm,
-): Promise<BuildingApiResponse> {
-  const { data } = await http.post<BuildingApiResponse>("/buildings", payload);
-  return data;
-}
-
 export async function updateBuilding(
   id: string,
   payload: BuildingForm,
@@ -92,8 +85,4 @@ export async function updateBuilding(
     payload,
   );
   return data;
-}
-
-export async function deleteBuilding(id: string): Promise<void> {
-  await http.delete(`/buildings/${id}`);
 }

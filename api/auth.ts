@@ -30,7 +30,13 @@ export interface AuthSession {
 /** Backend roles are uppercase (`RESIDENT`); the app uses lowercase unions. */
 function toAppRole(role: string): Role {
   const normalized = role.toLowerCase();
-  if (normalized === "manager" || normalized === "staff") return normalized;
+  if (
+    normalized === "manager" ||
+    normalized === "staff" ||
+    normalized === "admin"
+  ) {
+    return normalized;
+  }
   return "resident";
 }
 

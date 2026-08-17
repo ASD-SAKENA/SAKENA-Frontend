@@ -12,6 +12,7 @@ import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
 import {
+  useUpdateUserRoleMutation,
   useUpdateUserSpecialtyMutation,
   useUpdateUserStatusMutation,
   useUsersQuery,
@@ -28,12 +29,11 @@ import type {
   UserSummaryApiResponse,
 } from "@/types/users.api.type";
 
-import { InvitationList } from "./components/invitation-list";
-
 const ROLE_META: Record<UserApiRole, { label: string; color: StatusColor }> = {
   RESIDENT: { label: "ساکن", color: "info" },
   MANAGER: { label: "مدیر", color: "gold" },
   STAFF: { label: "کارکن", color: "steel" },
+  ADMIN: { label: "مدیر سامانه", color: "danger" },
 };
 
 const ROLE_FILTERS: { value: UserApiRole | ""; label: string }[] = [
@@ -41,6 +41,14 @@ const ROLE_FILTERS: { value: UserApiRole | ""; label: string }[] = [
   { value: "RESIDENT", label: "ساکن" },
   { value: "MANAGER", label: "مدیر" },
   { value: "STAFF", label: "کارکن" },
+  { value: "ADMIN", label: "مدیر سامانه" },
+];
+
+/** Reassigning MANAGER also provisions a building, so it isn't offered here. */
+const ASSIGNABLE_ROLES: Exclude<UserApiRole, "MANAGER">[] = [
+  "RESIDENT",
+  "STAFF",
+  "ADMIN",
 ];
 
 export default function UsersPage() {
@@ -50,6 +58,7 @@ export default function UsersPage() {
   const { data: users = [] } = useUsersQuery(roleFilter || undefined);
   const updateStatus = useUpdateUserStatusMutation();
   const updateSpecialty = useUpdateUserSpecialtyMutation();
+  const updateRole = useUpdateUserRoleMutation();
 
   const {
     register,
@@ -97,10 +106,24 @@ export default function UsersPage() {
     );
   };
 
+  const handleChangeRole = (
+    user: UserSummaryApiResponse,
+    role: Exclude<UserApiRole, "MANAGER">,
+  ) => {
+    if (role === user.role) return;
+    updateRole.mutate(
+      { id: user.id, role },
+      {
+        onSuccess: () =>
+          toast.success(
+            `نقش «${user.username}» به ${ROLE_META[role].label} تغییر کرد`,
+          ),
+      },
+    );
+  };
+
   return (
     <div className="sk-page flex flex-col gap-4">
-      <InvitationList />
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <AppSelect
           value={roleFilter}
@@ -110,7 +133,8 @@ export default function UsersPage() {
               v === "" ||
               v === "RESIDENT" ||
               v === "MANAGER" ||
-              v === "STAFF"
+              v === "STAFF" ||
+              v === "ADMIN"
             ) {
               setRoleFilter(v);
             }
@@ -133,7 +157,7 @@ export default function UsersPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px] border-collapse text-[13.5px]">
+          <table className="w-full min-w-[820px] border-collapse text-[13.5px]">
             <thead>
               <tr className="text-right text-[12.5px] text-app-muted">
                 <th className="px-[18px] py-[13px] font-medium">کاربر</th>
@@ -170,7 +194,7 @@ export default function UsersPage() {
                     </StatusBadge>
                   </td>
                   <td className="px-[18px] py-[13px]">
-                    <div className="flex gap-1.5">
+                    <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(u)}
@@ -192,6 +216,29 @@ export default function UsersPage() {
                         >
                           ویرایش تخصص
                         </button>
+                      ) : null}
+                      {u.role !== "MANAGER" ? (
+                        <AppSelect
+                          value={u.role}
+                          disabled={updateRole.isPending}
+                          onChange={(e) => {
+                            const role = e.target.value;
+                            if (
+                              role === "RESIDENT" ||
+                              role === "STAFF" ||
+                              role === "ADMIN"
+                            ) {
+                              handleChangeRole(u, role);
+                            }
+                          }}
+                          className="h-8 w-auto min-w-[110px] rounded-lg text-[12.5px]"
+                        >
+                          {ASSIGNABLE_ROLES.map((role) => (
+                            <option key={role} value={role}>
+                              {ROLE_META[role].label}
+                            </option>
+                          ))}
+                        </AppSelect>
                       ) : null}
                     </div>
                   </td>

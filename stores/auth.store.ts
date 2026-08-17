@@ -9,6 +9,7 @@ const ROLE_LABELS: Record<Role, string> = {
   resident: "ساکن",
   manager: "مدیر ساختمان",
   staff: "کارکن خدماتی",
+  admin: "مدیر سامانه",
 };
 
 /**
@@ -19,6 +20,7 @@ const ROLE_UNITS: Record<Role, string> = {
   resident: "—",
   manager: "—",
   staff: "واحد خدمات",
+  admin: "—",
 };
 
 /** Build the app-level user from backend auth data (username + role). */

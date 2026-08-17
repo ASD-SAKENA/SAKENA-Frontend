@@ -6,7 +6,6 @@ import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
-import { AppSelect } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
@@ -17,18 +16,17 @@ import {
 import {
   useBuildingsQuery,
   useDeleteApartmentMutation,
-  useDeleteBuildingMutation,
   useUnitsQuery,
 } from "@/queries/units";
 
 import { TENANCY_LABELS } from "@/schemas/residency.schema";
 
 import type { StatusColor } from "@/types/app.type";
-import type { BuildingApiResponse } from "@/types/units.api.type";
 import type { Unit } from "@/types/units.type";
 
 import { ApartmentModal } from "./components/apartment-modal";
 import { BuildingModal } from "./components/building-modal";
+import { InvitationList } from "./components/invitation-list";
 import { ResidencyModal } from "./components/residency-modal";
 
 const BALANCE_COLOR: Record<StatusColor, string> = {
@@ -41,108 +39,67 @@ const BALANCE_COLOR: Record<StatusColor, string> = {
   muted: "text-app-muted",
 };
 
-type DeleteTarget =
-  | { kind: "unit"; id: string; label: string }
-  | { kind: "building"; id: string; label: string };
-
 export default function UnitsPage() {
-  const [buildingFilter, setBuildingFilter] = useState<string>("");
   const [apartmentModalOpen, setApartmentModalOpen] = useState(false);
   const [buildingModalOpen, setBuildingModalOpen] = useState(false);
   const [editUnit, setEditUnit] = useState<Unit | null>(null);
-  const [editBuilding, setEditBuilding] = useState<BuildingApiResponse | null>(
-    null,
-  );
-  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
   const [residencyTarget, setResidencyTarget] = useState<Unit | null>(null);
 
+  // A manager only ever administers the one building the API scopes them to.
   const { data: buildings = [] } = useBuildingsQuery();
-  const { data: units = [] } = useUnitsQuery(buildingFilter || undefined);
+  const building = buildings[0] ?? null;
+  const { data: units = [] } = useUnitsQuery(building?.id);
   const deleteApartment = useDeleteApartmentMutation();
-  const deleteBuilding = useDeleteBuildingMutation();
   const { data: residencies = [] } = useBuildingResidenciesQuery(
-    buildingFilter || null,
+    building?.id ?? null,
   );
   const endResidency = useEndResidencyMutation();
 
   const residencyOf = (apartmentId: string) =>
     residencies.find((residency) => residency.apartmentId === apartmentId);
 
-  const selectedBuilding =
-    buildings.find((b) => b.id === buildingFilter) ?? null;
-
   const handleDelete = () => {
     if (!deleteTarget) return;
-    const mutation =
-      deleteTarget.kind === "unit" ? deleteApartment : deleteBuilding;
-    mutation.mutate(deleteTarget.id, {
+    deleteApartment.mutate(deleteTarget.id, {
       onSuccess: () => {
         toast.success(`«${deleteTarget.label}» حذف شد`);
-        if (deleteTarget.kind === "building") setBuildingFilter("");
         setDeleteTarget(null);
       },
     });
   };
 
   return (
-    <div className="sk-page">
-      <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <AppSelect
-            value={buildingFilter}
-            onChange={(e) => setBuildingFilter(e.target.value)}
-            className="h-[38px] w-[220px] rounded-[10px] text-[13px]"
-          >
-            <option value="">همه ساختمان‌ها</option>
-            {buildings.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </AppSelect>
-          {selectedBuilding ? (
-            <>
-              <AppButton
-                variant="outline"
-                onClick={() => {
-                  setEditBuilding(selectedBuilding);
-                  setBuildingModalOpen(true);
-                }}
-                className="h-[38px] gap-1.5 rounded-[10px] px-3 text-[13px]"
+    <div className="sk-page flex flex-col gap-4">
+      <InvitationList buildingId={building?.id ?? null} />
+
+      <div className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-[var(--ap-shadow-sm)]">
+        <div className="flex items-center justify-between border-b border-app-border px-[18px] py-4">
+          <div className="flex items-center gap-2.5">
+            <div>
+              <div className="text-[15px] font-bold text-app-fg">
+                واحدها و ساکنین
+              </div>
+              {building ? (
+                <div className="mt-0.5 text-[12.5px] text-app-muted">
+                  {building.name}
+                </div>
+              ) : null}
+            </div>
+            {building ? (
+              <button
+                type="button"
+                onClick={() => setBuildingModalOpen(true)}
+                className="flex size-8 items-center justify-center rounded-lg border border-app-border text-app-muted transition-colors hover:border-app-gold hover:text-app-gold"
+                aria-label="ویرایش ساختمان"
               >
                 <AppIcon name="edit" className="size-4" />
-                ویرایش
-              </AppButton>
-              <AppButton
-                variant="outline"
-                onClick={() =>
-                  setDeleteTarget({
-                    kind: "building",
-                    id: selectedBuilding.id,
-                    label: selectedBuilding.name,
-                  })
-                }
-                className="h-[38px] gap-1.5 rounded-[10px] px-3 text-[13px] text-app-danger"
-              >
-                <AppIcon name="delete" className="size-4" />
-                حذف
-              </AppButton>
-            </>
-          ) : null}
-        </div>
-
-        <div className="flex gap-2.5">
-          <AppButton
-            variant="outline"
-            onClick={() => {
-              setEditBuilding(null);
-              setBuildingModalOpen(true);
-            }}
-            className="h-[38px] gap-1.5 rounded-[10px] px-3.5 text-[13px]"
-          >
-            <AppIcon name="apartment" className="size-[18px]" />
-            افزودن ساختمان
-          </AppButton>
+              </button>
+            ) : null}
+          </div>
           <AppButton
             variant="gold"
             onClick={() => {
@@ -154,14 +111,6 @@ export default function UnitsPage() {
             <AppIcon name="add" className="size-[18px]" />
             افزودن واحد
           </AppButton>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-[var(--ap-shadow-sm)]">
-        <div className="flex items-center justify-between border-b border-app-border px-[18px] py-4">
-          <div className="text-[15px] font-bold text-app-fg">
-            واحدها و ساکنین
-          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -224,7 +173,6 @@ export default function UnitsPage() {
                           type="button"
                           onClick={() =>
                             setDeleteTarget({
-                              kind: "unit",
                               id: u.id,
                               label: `واحد ${u.no}`,
                             })
@@ -280,17 +228,16 @@ export default function UnitsPage() {
         }}
         buildings={buildings}
         unit={editUnit}
-        defaultBuildingId={buildingFilter || undefined}
+        defaultBuildingId={building?.id}
       />
 
-      <BuildingModal
-        open={buildingModalOpen}
-        onClose={() => {
-          setBuildingModalOpen(false);
-          setEditBuilding(null);
-        }}
-        building={editBuilding}
-      />
+      {building ? (
+        <BuildingModal
+          open={buildingModalOpen}
+          onClose={() => setBuildingModalOpen(false)}
+          building={building}
+        />
+      ) : null}
 
       <Modal
         open={deleteTarget !== null}
@@ -306,7 +253,7 @@ export default function UnitsPage() {
         <div className="mt-4 flex gap-2.5">
           <AppButton
             onClick={handleDelete}
-            disabled={deleteApartment.isPending || deleteBuilding.isPending}
+            disabled={deleteApartment.isPending}
             className="h-[46px] flex-1 bg-app-danger text-white hover:brightness-105"
           >
             حذف

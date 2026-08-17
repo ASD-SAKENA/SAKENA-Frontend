@@ -38,13 +38,17 @@ export function navForRole(role: Role): NavItem[] {
         href: "/queue",
       },
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
-      { label: "کاربران", icon: "group", href: "/users" },
-      { label: "شارژ و هزینه‌ها", icon: "receipt_long", href: "/wallet" },
       { label: "دوره‌های شارژ", icon: "payments", href: "/billing" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
       { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
+      { label: "پروفایل", icon: "person", href: "/profile" },
+    ];
+  }
+  if (role === "admin") {
+    return [
+      { label: "کاربران", icon: "group", href: "/users" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -61,6 +65,7 @@ export function navForRole(role: Role): NavItem[] {
 export function roleHomePath(role: Role): string {
   if (role === "manager") return "/dashboard";
   if (role === "staff") return "/tasks";
+  if (role === "admin") return "/users";
   return "/dashboard";
 }
 
@@ -73,7 +78,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/profile": ["پروفایل", "حساب کاربری · اطلاعات شخصی"],
   "/queue": ["صف درخواست‌ها", "مدیریت · بررسی و ارجاع درخواست‌ها"],
   "/units": ["واحدها و ساکنین", "مدیریت · فهرست واحدها"],
-  "/users": ["کاربران", "مدیریت · فهرست کاربران سامانه"],
+  "/users": ["کاربران", "مدیریت سامانه · فهرست کاربران"],
   "/tasks": ["وظایف من", "خدمات · کارهای ارجاع‌شده به شما"],
   "/tasks/history": ["تاریخچه کارها", "خدمات · آرشیو کارهای انجام‌شده"],
   "/billing": [

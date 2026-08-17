@@ -40,3 +40,15 @@ export async function updateUserSpecialty(
   );
   return data;
 }
+
+/** Not supported for MANAGER — reassigning it also involves a building. */
+export async function updateUserRole(
+  id: string,
+  role: Exclude<UserApiRole, "MANAGER">,
+): Promise<UserSummaryApiResponse> {
+  const { data } = await http.patch<UserSummaryApiResponse>(
+    `/users/${id}/role`,
+    { role },
+  );
+  return data;
+}

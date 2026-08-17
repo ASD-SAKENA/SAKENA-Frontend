@@ -23,6 +23,7 @@ const ROLE_LABELS = {
   RESIDENT: "ساکن",
   MANAGER: "مدیر ساختمان",
   STAFF: "کارکن خدماتی",
+  ADMIN: "مدیر سامانه",
 } as const;
 
 const CARD =

@@ -12,10 +12,7 @@ import {
 } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 
-import {
-  useCreateBuildingMutation,
-  useUpdateBuildingMutation,
-} from "@/queries/units";
+import { useUpdateBuildingMutation } from "@/queries/units";
 
 import { type BuildingForm, buildingSchema } from "@/schemas/units.schema";
 
@@ -24,38 +21,26 @@ import type { BuildingApiResponse } from "@/types/units.api.type";
 interface Props {
   open: boolean;
   onClose: () => void;
-  /** When set, the modal edits this building instead of creating one. */
-  building?: BuildingApiResponse | null;
+  /** The building the signed-in manager administers. */
+  building: BuildingApiResponse;
 }
 
 export function BuildingModal({ open, onClose, building }: Props) {
-  const createBuilding = useCreateBuildingMutation();
   const updateBuilding = useUpdateBuildingMutation();
-  const isEdit = Boolean(building);
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<BuildingForm>({
     resolver: zodResolver(buildingSchema),
-    defaultValues: { name: "", address: "" },
-    values: building
-      ? { name: building.name, address: building.address }
-      : undefined,
+    values: { name: building.name, address: building.address },
   });
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-      if (building) {
-        await updateBuilding.mutateAsync({ id: building.id, payload: values });
-        toast.success("ساختمان ویرایش شد");
-      } else {
-        await createBuilding.mutateAsync(values);
-        toast.success("ساختمان جدید ثبت شد");
-      }
-      reset();
+      await updateBuilding.mutateAsync({ id: building.id, payload: values });
+      toast.success("ساختمان ویرایش شد");
       onClose();
     } catch {
       // The global http interceptor already surfaced the error toast.
@@ -66,7 +51,7 @@ export function BuildingModal({ open, onClose, building }: Props) {
     <Modal
       open={open}
       onClose={onClose}
-      title={isEdit ? "ویرایش ساختمان" : "افزودن ساختمان"}
+      title="ویرایش ساختمان"
       icon="apartment"
     >
       <form onSubmit={onSubmit} className="mt-4">
@@ -84,10 +69,10 @@ export function BuildingModal({ open, onClose, building }: Props) {
         <div className="mt-2 flex gap-2.5">
           <AppButton
             type="submit"
-            disabled={createBuilding.isPending || updateBuilding.isPending}
+            disabled={updateBuilding.isPending}
             className="h-[46px] flex-1"
           >
-            {isEdit ? "ذخیره تغییرات" : "ثبت ساختمان"}
+            ذخیره تغییرات
           </AppButton>
           <AppButton
             type="button"
