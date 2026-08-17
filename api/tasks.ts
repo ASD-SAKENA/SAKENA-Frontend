@@ -35,7 +35,7 @@ function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
     priority: "نامشخص",
     priorityColor: "muted",
     apiStatus: r.status,
-    done: r.status === "COMPLETED",
+    done: r.status === "CONFIRMED" || r.status === "SETTLED",
   };
 }
 
@@ -47,10 +47,16 @@ export async function getStaffTasks(): Promise<StaffTask[]> {
 export async function getStaffSummary(): Promise<SummaryItem[]> {
   const data = await getAssignedRequests();
   const open = data.filter(
-    (r) => r.status !== "COMPLETED" && r.status !== "REJECTED",
+    (r) =>
+      r.status !== "COMPLETED" &&
+      r.status !== "CONFIRMED" &&
+      r.status !== "SETTLED" &&
+      r.status !== "REJECTED",
   ).length;
   const inProgress = data.filter((r) => r.status === "IN_PROGRESS").length;
-  const done = data.filter((r) => r.status === "COMPLETED").length;
+  const done = data.filter(
+    (r) => r.status === "CONFIRMED" || r.status === "SETTLED",
+  ).length;
   return [
     {
       label: "کارهای باز",
@@ -77,7 +83,7 @@ export async function getStaffSummary(): Promise<SummaryItem[]> {
 export async function getStaffHistory(): Promise<StaffHistoryItem[]> {
   const data = await getAssignedRequests();
   return data
-    .filter((r) => r.status === "COMPLETED")
+    .filter((r) => r.status === "CONFIRMED" || r.status === "SETTLED")
     .sort(
       (a, b) =>
         new Date(b.resolvedAt ?? b.updatedAt).getTime() -

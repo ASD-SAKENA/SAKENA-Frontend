@@ -43,9 +43,25 @@ describe("getStaffTasks", () => {
     expect(task.done).toBe(false);
   });
 
-  it("marks a COMPLETED request as done", async () => {
+  it("does not mark a COMPLETED request as done — it still awaits resident confirmation", async () => {
     mockedGetAssigned.mockResolvedValue([
       { ...baseRequest, status: "COMPLETED" },
+    ]);
+    const [task] = await getStaffTasks();
+    expect(task.done).toBe(false);
+  });
+
+  it("marks a CONFIRMED request as done", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      { ...baseRequest, status: "CONFIRMED" },
+    ]);
+    const [task] = await getStaffTasks();
+    expect(task.done).toBe(true);
+  });
+
+  it("marks a SETTLED request as done", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      { ...baseRequest, status: "SETTLED" },
     ]);
     const [task] = await getStaffTasks();
     expect(task.done).toBe(true);
@@ -63,26 +79,54 @@ describe("getStaffSummary", () => {
 
     const summary = await getStaffSummary();
 
-    expect(summary.find((s) => s.label === "کارهای باز")?.value).toBe("۲"); // PENDING + IN_PROGRESS
+    // PENDING + IN_PROGRESS are "open"; COMPLETED is awaiting confirmation
+    // (neither open nor done); REJECTED and done statuses are excluded.
+    expect(summary.find((s) => s.label === "کارهای باز")?.value).toBe("۲");
     expect(summary.find((s) => s.label === "در جریان")?.value).toBe("۱");
-    expect(summary.find((s) => s.label === "انجام‌شده")?.value).toBe("۱");
+    expect(summary.find((s) => s.label === "انجام‌شده")?.value).toBe("۰");
+  });
+
+  it("does not count a COMPLETED request as done, but counts CONFIRMED and SETTLED", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      { ...baseRequest, id: "1", status: "COMPLETED" },
+      { ...baseRequest, id: "2", status: "CONFIRMED" },
+      { ...baseRequest, id: "3", status: "SETTLED" },
+    ]);
+
+    const summary = await getStaffSummary();
+
+    expect(summary.find((s) => s.label === "کارهای باز")?.value).toBe("۰");
+    expect(summary.find((s) => s.label === "انجام‌شده")?.value).toBe("۲");
   });
 });
 
 describe("getStaffHistory", () => {
-  it("returns only completed requests, newest first", async () => {
+  it("includes CONFIRMED and SETTLED jobs, not just COMPLETED", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      { ...baseRequest, id: "req-1", status: "COMPLETED" },
+      { ...baseRequest, id: "req-2", status: "CONFIRMED" },
+      { ...baseRequest, id: "req-3", status: "SETTLED" },
+      { ...baseRequest, id: "req-4", status: "IN_PROGRESS" },
+    ]);
+
+    const history = await getStaffHistory();
+
+    expect(history.map((h) => h.id).sort()).toEqual(["req-2", "req-3"]);
+  });
+
+  it("returns only CONFIRMED/SETTLED requests, newest first", async () => {
     mockedGetAssigned.mockResolvedValue([
       {
         ...baseRequest,
         id: "old",
-        status: "COMPLETED",
+        status: "CONFIRMED",
         resolvedAt: "2026-01-01T00:00:00Z",
       },
       { ...baseRequest, id: "open", status: "PENDING" },
       {
         ...baseRequest,
         id: "new",
-        status: "COMPLETED",
+        status: "SETTLED",
         resolvedAt: "2026-03-01T00:00:00Z",
       },
     ]);
@@ -94,7 +138,7 @@ describe("getStaffHistory", () => {
 
   it("falls back to a placeholder when there is no completion report", async () => {
     mockedGetAssigned.mockResolvedValue([
-      { ...baseRequest, status: "COMPLETED", resolvedAt: "2026-01-01" },
+      { ...baseRequest, status: "CONFIRMED", resolvedAt: "2026-01-01" },
     ]);
     const [item] = await getStaffHistory();
     expect(item.report).toBe("گزارشی ثبت نشده است");
