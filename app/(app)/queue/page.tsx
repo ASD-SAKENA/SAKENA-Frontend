@@ -18,7 +18,7 @@ import {
   useManagerRequestsQuery,
   useRejectRequestMutation,
 } from "@/queries/requests";
-import { useUsersQuery } from "@/queries/users";
+import { useStaffQuery } from "@/queries/staff";
 import { useSettleRequestMutation } from "@/queries/wallet";
 
 import { toFaDigits } from "@/lib/persian-number";
@@ -63,7 +63,7 @@ export default function QueuePage() {
   const [tab, setTab] = useState<QueueTab>("open");
   const [assignTarget, setAssignTarget] = useState<ManagerRequest | null>(null);
   const { data: requests = [] } = useManagerRequestsQuery();
-  const { data: allStaff = [] } = useUsersQuery("STAFF");
+  const { data: allStaff = [] } = useStaffQuery();
   const approve = useApproveRequestMutation();
   const reject = useRejectRequestMutation();
   const assign = useAssignRequestMutation();

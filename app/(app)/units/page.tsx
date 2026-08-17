@@ -27,7 +27,6 @@ import type { Unit } from "@/types/units.type";
 import { ApartmentModal } from "./components/apartment-modal";
 import { BuildingModal } from "./components/building-modal";
 import { InvitationList } from "./components/invitation-list";
-import { ResidencyModal } from "./components/residency-modal";
 
 const BALANCE_COLOR: Record<StatusColor, string> = {
   gold: "text-app-gold",
@@ -47,7 +46,6 @@ export default function UnitsPage() {
     id: string;
     label: string;
   } | null>(null);
-  const [residencyTarget, setResidencyTarget] = useState<Unit | null>(null);
 
   // A manager only ever administers the one building the API scopes them to.
   const { data: buildings = [] } = useBuildingsQuery();
@@ -196,15 +194,7 @@ export default function UnitsPage() {
                           >
                             تخلیه
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setResidencyTarget(u)}
-                            className="h-8 rounded-lg border border-app-border px-2.5 text-[12px] font-semibold text-app-gold transition-colors hover:border-app-gold"
-                          >
-                            تخصیص ساکن
-                          </button>
-                        )}
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -214,11 +204,6 @@ export default function UnitsPage() {
           </table>
         </div>
       </div>
-
-      <ResidencyModal
-        unit={residencyTarget}
-        onClose={() => setResidencyTarget(null)}
-      />
 
       <ApartmentModal
         open={apartmentModalOpen}
