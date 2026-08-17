@@ -6,10 +6,12 @@ import {
   approveRequest,
   assignRequest,
   completeRequest,
+  confirmCompletion,
   createRequest,
   getManagerRequests,
   getRequestCategories,
   getResidentRequests,
+  rejectCompletion,
   rejectRequest,
   requestKeys,
   startRequestProgress,
@@ -128,6 +130,27 @@ export function useCompleteRequestMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+}
+
+export function useConfirmCompletionMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, score }: { id: string; score: number }) =>
+      confirmCompletion(id, score),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: requestKeys.all });
+    },
+  });
+}
+
+export function useRejectCompletionMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => rejectCompletion(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: requestKeys.all });
     },
   });
 }

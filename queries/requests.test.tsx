@@ -4,17 +4,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestKeys } from "@/api/requests";
 import {
   completeRequest,
+  confirmCompletion,
   createRequest,
   getManagerRequests,
   getResidentRequests,
+  rejectCompletion,
   startRequestProgress,
 } from "@/api/requests";
 import { taskKeys } from "@/api/tasks";
 
 import {
   useCompleteRequestMutation,
+  useConfirmCompletionMutation,
   useCreateRequestMutation,
   useManagerRequestsQuery,
+  useRejectCompletionMutation,
   useResidentRequestsQuery,
   useStartProgressMutation,
 } from "./requests";
@@ -36,6 +40,8 @@ vi.mock("@/api/requests", () => ({
   assignRequest: vi.fn(),
   startRequestProgress: vi.fn(),
   completeRequest: vi.fn(),
+  confirmCompletion: vi.fn(),
+  rejectCompletion: vi.fn(),
 }));
 vi.mock("@/api/tasks", () => ({
   taskKeys: { all: ["tasks"] },
@@ -107,5 +113,39 @@ describe("useStartProgressMutation / useCompleteRequestMutation", () => {
     result.current.mutate({ id: "req-1", report: "گزارش", cost: 50000 });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(completeRequest).toHaveBeenCalledWith("req-1", "گزارش", 50000);
+  });
+});
+
+describe("useConfirmCompletionMutation", () => {
+  it("calls confirmCompletion and invalidates requests", async () => {
+    vi.mocked(confirmCompletion).mockResolvedValue(undefined);
+    const client = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+    const { result } = renderHook(() => useConfirmCompletionMutation(), {
+      wrapper: createWrapper(client),
+    });
+
+    result.current.mutate({ id: "req-1", score: 5 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(confirmCompletion).toHaveBeenCalledWith("req-1", 5);
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
+  });
+});
+
+describe("useRejectCompletionMutation", () => {
+  it("calls rejectCompletion and invalidates requests", async () => {
+    vi.mocked(rejectCompletion).mockResolvedValue(undefined);
+    const client = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+    const { result } = renderHook(() => useRejectCompletionMutation(), {
+      wrapper: createWrapper(client),
+    });
+
+    result.current.mutate("req-1");
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(rejectCompletion).toHaveBeenCalledWith("req-1");
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
   });
 });
