@@ -4,6 +4,9 @@ import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
+import { NoUnitNotice } from "@/components/app/no-unit-notice";
+
+import { useResidentDashboardQuery } from "@/queries/dashboard";
 
 import { useAuthStore } from "@/stores/auth.store";
 import { useReserveStore } from "@/stores/reserve.store";
@@ -26,10 +29,23 @@ export default function ReservePage() {
   const nextWeek = useReserveStore((s) => s.nextWeek);
   const thisWeek = useReserveStore((s) => s.thisWeek);
   const role = useAuthStore((s) => s.user?.role);
+  const isResident = role === "resident";
   const [manageOpen, setManageOpen] = useState(false);
   const { selected } = useSelectedFacility();
 
+  const { data: dashboard } = useResidentDashboardQuery({
+    enabled: isResident,
+  });
+
   const label = weekLabel(weekOffset);
+
+  if (isResident && dashboard && !dashboard.hasUnit) {
+    return (
+      <div className="sk-page">
+        <NoUnitNotice />
+      </div>
+    );
+  }
 
   return (
     <div className="sk-page">

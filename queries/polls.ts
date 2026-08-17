@@ -12,11 +12,12 @@ import {
 
 const STALE = 60 * 1000;
 
-export function usePollsQuery() {
+export function usePollsQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: pollKeys.list,
     queryFn: getPolls,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 

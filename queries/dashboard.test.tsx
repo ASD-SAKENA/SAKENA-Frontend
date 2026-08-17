@@ -34,6 +34,7 @@ describe("useResidentDashboardQuery", () => {
         progressPct: 0,
         walletBalance: 0,
       },
+      hasUnit: false,
     });
     const { result } = renderHook(() => useResidentDashboardQuery(), {
       wrapper: createWrapper(),

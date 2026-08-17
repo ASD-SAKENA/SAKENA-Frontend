@@ -10,11 +10,12 @@ import {
 
 const STALE = 5 * 60 * 1000;
 
-export function useResidentDashboardQuery() {
+export function useResidentDashboardQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: dashboardKeys.resident,
     queryFn: getResidentDashboard,
     staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 

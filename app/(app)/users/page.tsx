@@ -11,6 +11,7 @@ import { AppField, AppInput, AppSelect } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
+import { useBuildingsQuery } from "@/queries/units";
 import {
   useUpdateUserRoleMutation,
   useUpdateUserSpecialtyMutation,
@@ -44,18 +45,25 @@ const ROLE_FILTERS: { value: UserApiRole | ""; label: string }[] = [
   { value: "ADMIN", label: "مدیر سامانه" },
 ];
 
-/** Reassigning MANAGER also provisions a building, so it isn't offered here. */
-const ASSIGNABLE_ROLES: Exclude<UserApiRole, "MANAGER">[] = [
+const ASSIGNABLE_ROLES: UserApiRole[] = [
   "RESIDENT",
   "STAFF",
   "ADMIN",
+  "MANAGER",
 ];
 
 export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<UserApiRole | "">("");
   const [specialtyTarget, setSpecialtyTarget] =
     useState<UserSummaryApiResponse | null>(null);
+  const [managerTarget, setManagerTarget] = useState<{
+    user: UserSummaryApiResponse;
+    buildingId: string;
+  } | null>(null);
   const { data: users = [] } = useUsersQuery(roleFilter || undefined);
+  const { data: buildings = [] } = useBuildingsQuery({
+    enabled: managerTarget !== null,
+  });
   const updateStatus = useUpdateUserStatusMutation();
   const updateSpecialty = useUpdateUserSpecialtyMutation();
   const updateRole = useUpdateUserRoleMutation();
@@ -108,9 +116,13 @@ export default function UsersPage() {
 
   const handleChangeRole = (
     user: UserSummaryApiResponse,
-    role: Exclude<UserApiRole, "MANAGER">,
+    role: UserApiRole,
   ) => {
     if (role === user.role) return;
+    if (role === "MANAGER") {
+      setManagerTarget({ user, buildingId: "" });
+      return;
+    }
     updateRole.mutate(
       { id: user.id, role },
       {
@@ -118,6 +130,23 @@ export default function UsersPage() {
           toast.success(
             `نقش «${user.username}» به ${ROLE_META[role].label} تغییر کرد`,
           ),
+      },
+    );
+  };
+
+  const onManagerSubmit = () => {
+    if (!managerTarget || !managerTarget.buildingId) return;
+    updateRole.mutate(
+      {
+        id: managerTarget.user.id,
+        role: "MANAGER",
+        managedBuildingId: managerTarget.buildingId,
+      },
+      {
+        onSuccess: () => {
+          toast.success(`«${managerTarget.user.username}» مدیر ساختمان شد`);
+          setManagerTarget(null);
+        },
       },
     );
   };
@@ -217,29 +246,34 @@ export default function UsersPage() {
                           ویرایش تخصص
                         </button>
                       ) : null}
-                      {u.role !== "MANAGER" ? (
-                        <AppSelect
-                          value={u.role}
-                          disabled={updateRole.isPending}
-                          onChange={(e) => {
-                            const role = e.target.value;
-                            if (
-                              role === "RESIDENT" ||
-                              role === "STAFF" ||
-                              role === "ADMIN"
-                            ) {
-                              handleChangeRole(u, role);
-                            }
-                          }}
-                          className="h-8 w-auto min-w-[110px] rounded-lg text-[12.5px]"
-                        >
-                          {ASSIGNABLE_ROLES.map((role) => (
-                            <option key={role} value={role}>
-                              {ROLE_META[role].label}
-                            </option>
-                          ))}
-                        </AppSelect>
-                      ) : null}
+                      <AppSelect
+                        value={u.role}
+                        disabled={updateRole.isPending}
+                        onChange={(e) => {
+                          const role = e.target.value;
+                          if (
+                            role === "RESIDENT" ||
+                            role === "STAFF" ||
+                            role === "ADMIN" ||
+                            role === "MANAGER"
+                          ) {
+                            handleChangeRole(u, role);
+                          }
+                        }}
+                        className="h-8 w-auto min-w-[110px] rounded-lg text-[12.5px]"
+                      >
+                        {(u.role === "MANAGER"
+                          ? [
+                              u.role,
+                              ...ASSIGNABLE_ROLES.filter((r) => r !== u.role),
+                            ]
+                          : ASSIGNABLE_ROLES
+                        ).map((role) => (
+                          <option key={role} value={role}>
+                            {ROLE_META[role].label}
+                          </option>
+                        ))}
+                      </AppSelect>
                     </div>
                   </td>
                 </tr>
@@ -252,6 +286,56 @@ export default function UsersPage() {
           نمایش {toFaDigits(users.length)} کاربر
         </div>
       </div>
+
+      <Modal
+        open={managerTarget !== null}
+        onClose={() => setManagerTarget(null)}
+        title="انتساب مدیر ساختمان"
+        description={
+          managerTarget
+            ? `ساختمانی که «${managerTarget.user.username}» مدیر آن خواهد بود را انتخاب کنید.`
+            : undefined
+        }
+        icon="apartment"
+      >
+        <div className="mt-4">
+          <AppField label="ساختمان">
+            <AppSelect
+              value={managerTarget?.buildingId ?? ""}
+              onChange={(e) =>
+                setManagerTarget((prev) =>
+                  prev ? { ...prev, buildingId: e.target.value } : prev,
+                )
+              }
+            >
+              <option value="">انتخاب کنید</option>
+              {buildings.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </AppSelect>
+          </AppField>
+          <div className="mt-4 flex gap-2.5">
+            <AppButton
+              type="button"
+              onClick={onManagerSubmit}
+              disabled={!managerTarget?.buildingId || updateRole.isPending}
+              className="h-[46px] flex-1"
+            >
+              ثبت
+            </AppButton>
+            <AppButton
+              type="button"
+              variant="outline"
+              onClick={() => setManagerTarget(null)}
+              className="h-[46px] px-6"
+            >
+              انصراف
+            </AppButton>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         open={specialtyTarget !== null}

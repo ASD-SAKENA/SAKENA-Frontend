@@ -131,6 +131,7 @@ export async function getResidentDashboard(): Promise<ResidentDashboard> {
     kpis: residentKpis(data),
     unitInfo: unitRows(data.unit),
     charge: chargeSummary(data),
+    hasUnit: data.unit !== null,
   };
 }
 

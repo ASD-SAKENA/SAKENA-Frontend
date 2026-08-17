@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
+import { NoUnitNotice } from "@/components/app/no-unit-notice";
 
+import { useResidentDashboardQuery } from "@/queries/dashboard";
 import { usePollsQuery } from "@/queries/polls";
 
 import { useAuthStore } from "@/stores/auth.store";
@@ -13,10 +15,25 @@ import { PollCard } from "./components/poll-card";
 import { PollModal } from "./components/poll-modal";
 
 export default function PollsPage() {
-  const { data: polls = [] } = usePollsQuery();
   const role = useAuthStore((s) => s.user?.role);
-  const [composerOpen, setComposerOpen] = useState(false);
   const isManager = role === "manager";
+  const isResident = role === "resident";
+
+  const { data: dashboard } = useResidentDashboardQuery({
+    enabled: isResident,
+  });
+  const { data: polls = [] } = usePollsQuery({
+    enabled: !isResident || dashboard?.hasUnit === true,
+  });
+  const [composerOpen, setComposerOpen] = useState(false);
+
+  if (isResident && dashboard && !dashboard.hasUnit) {
+    return (
+      <div className="sk-page max-w-[820px]">
+        <NoUnitNotice />
+      </div>
+    );
+  }
 
   return (
     <div className="sk-page flex max-w-[820px] flex-col gap-3.5">

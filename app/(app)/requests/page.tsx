@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
+import { NoUnitNotice } from "@/components/app/no-unit-notice";
 
+import { useResidentDashboardQuery } from "@/queries/dashboard";
 import { useResidentRequestsQuery } from "@/queries/requests";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
@@ -24,7 +26,18 @@ const TABS: { key: RequestTab; label: string }[] = [
 export default function RequestsPage() {
   const [tab, setTab] = useState<RequestTab>("all");
   const openRequestModal = useAppUiStore((s) => s.openRequestModal);
-  const { data: requests = [] } = useResidentRequestsQuery();
+  const { data: dashboard } = useResidentDashboardQuery();
+  const { data: requests = [] } = useResidentRequestsQuery({
+    enabled: dashboard?.hasUnit === true,
+  });
+
+  if (dashboard && !dashboard.hasUnit) {
+    return (
+      <div className="sk-page">
+        <NoUnitNotice />
+      </div>
+    );
+  }
 
   const filtered = requests.filter((r) => {
     if (tab === "open") return r.status !== "انجام‌شده";

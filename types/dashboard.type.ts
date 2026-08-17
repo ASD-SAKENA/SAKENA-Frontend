@@ -29,6 +29,8 @@ export interface ResidentDashboard {
   kpis: KpiData[];
   unitInfo: UnitInfoRow[];
   charge: ChargeSummary;
+  /** False until the resident has been moved into a unit by their manager. */
+  hasUnit: boolean;
 }
 
 /** One vertical bar in the manager collection chart. */

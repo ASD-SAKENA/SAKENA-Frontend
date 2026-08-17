@@ -62,6 +62,7 @@ describe("getResidentDashboard", () => {
     });
     expect(dashboard.charge.title).toBe("شارژ فروردین");
     expect(dashboard.charge.progressPct).toBe(40); // 400000/1000000
+    expect(dashboard.hasUnit).toBe(true);
   });
 
   it("shows a no-unit placeholder when the resident has none", async () => {
@@ -82,6 +83,7 @@ describe("getResidentDashboard", () => {
     ]);
     expect(dashboard.charge.dueLabel).toBe("صورتحسابی صادر نشده");
     expect(dashboard.charge.amount).toBe(0);
+    expect(dashboard.hasUnit).toBe(false);
   });
 
   it("marks the debt KPI success (not warning) when there is nothing owed", async () => {

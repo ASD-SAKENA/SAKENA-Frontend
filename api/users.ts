@@ -41,14 +41,15 @@ export async function updateUserSpecialty(
   return data;
 }
 
-/** Not supported for MANAGER — reassigning it also involves a building. */
+/** `managedBuildingId` is required when `role` is MANAGER, ignored otherwise. */
 export async function updateUserRole(
   id: string,
-  role: Exclude<UserApiRole, "MANAGER">,
+  role: UserApiRole,
+  managedBuildingId?: string,
 ): Promise<UserSummaryApiResponse> {
   const { data } = await http.patch<UserSummaryApiResponse>(
     `/users/${id}/role`,
-    { role },
+    { role, managedBuildingId },
   );
   return data;
 }

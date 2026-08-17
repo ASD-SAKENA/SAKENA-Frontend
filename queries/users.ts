@@ -50,10 +50,12 @@ export function useUpdateUserRoleMutation() {
     mutationFn: ({
       id,
       role,
+      managedBuildingId,
     }: {
       id: string;
-      role: Exclude<UserApiRole, "MANAGER">;
-    }) => updateUserRole(id, role),
+      role: UserApiRole;
+      managedBuildingId?: string;
+    }) => updateUserRole(id, role, managedBuildingId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },
