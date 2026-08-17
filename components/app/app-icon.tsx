@@ -55,6 +55,7 @@ import {
   Snowflake,
   SprayCan,
   Square,
+  Star,
   Sun,
   Trash2,
   Trees,
@@ -151,6 +152,7 @@ const ICONS: Record<string, LucideIcon> = {
   delete: Trash2,
   image: ImageIcon,
   graphic_eq: AudioLines,
+  star: Star,
 };
 
 interface Props {
