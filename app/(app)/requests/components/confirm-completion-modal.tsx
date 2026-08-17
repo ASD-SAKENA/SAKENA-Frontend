@@ -45,7 +45,9 @@ export function ConfirmCompletionModal({ request, onClose }: Props) {
       onClose={handleClose}
       title="تایید انجام کار"
       description={
-        request ? `به کار انجام‌شده روی «${request.title}» امتیاز بدهید.` : undefined
+        request
+          ? `به کار انجام‌شده روی «${request.title}» امتیاز بدهید.`
+          : undefined
       }
       icon="check_circle"
     >
