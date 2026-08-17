@@ -46,6 +46,7 @@ export interface ManagerRequest {
   title: string;
   type: string;
   unit: string;
+  requestingUnit: string | null;
   date: string;
   status: RequestStatus;
   statusColor: StatusColor;

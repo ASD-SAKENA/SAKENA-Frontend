@@ -141,6 +141,7 @@ export function useConfirmCompletionMutation() {
       confirmCompletion(id, score),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
     },
   });
 }
@@ -151,6 +152,7 @@ export function useRejectCompletionMutation() {
     mutationFn: (id: string) => rejectCompletion(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
     },
   });
 }

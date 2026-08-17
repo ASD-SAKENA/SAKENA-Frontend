@@ -214,9 +214,21 @@ export default function QueuePage() {
                         ارجاع
                       </button>
                     ) : r.apiStatus === "COMPLETED" ? (
-                      <span className="text-[12px] text-app-muted">
-                        در انتظار تایید ساکن
-                      </span>
+                      r.requestingUnit === null ? (
+                        <button
+                          type="button"
+                          onClick={() => handleSettle(r)}
+                          disabled={settle.isPending}
+                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold disabled:opacity-50"
+                        >
+                          <AppIcon name="payments" className="size-4" />
+                          پرداخت دستمزد
+                        </button>
+                      ) : (
+                        <span className="text-[12px] text-app-muted">
+                          در انتظار تایید ساکن
+                        </span>
+                      )
                     ) : r.apiStatus === "CONFIRMED" ? (
                       <button
                         type="button"
@@ -256,7 +268,7 @@ export default function QueuePage() {
                 <option key={s.id} value={s.id}>
                   {s.username} — {s.specialty ?? "بدون تخصص"} ·{" "}
                   {s.averageRating !== null
-                    ? `⭐ ${s.averageRating.toFixed(1)}`
+                    ? `⭐ ${toFaDigits(s.averageRating.toFixed(1))}`
                     : "بدون امتیاز"}
                 </option>
               ))}

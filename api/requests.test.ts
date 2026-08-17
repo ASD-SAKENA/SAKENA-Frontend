@@ -93,14 +93,16 @@ describe("getManagerRequests", () => {
     });
     const [req] = await getManagerRequests();
     expect(req.unit).toBe("۱۲ — طبقه ۳");
+    expect(req.requestingUnit).toBe("۱۲ — طبقه ۳");
   });
 
-  it("falls back to a dash when requestingUnit is missing", async () => {
+  it("falls back to a dash when requestingUnit is missing, but keeps requestingUnit null", async () => {
     vi.mocked(http.get).mockResolvedValue({
       data: [{ ...rawRequest, requestingUnit: null }],
     });
     const [req] = await getManagerRequests();
     expect(req.unit).toBe("—");
+    expect(req.requestingUnit).toBeNull();
   });
 });
 

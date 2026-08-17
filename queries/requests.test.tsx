@@ -117,7 +117,7 @@ describe("useStartProgressMutation / useCompleteRequestMutation", () => {
 });
 
 describe("useConfirmCompletionMutation", () => {
-  it("calls confirmCompletion and invalidates requests", async () => {
+  it("calls confirmCompletion and invalidates requests and staff tasks", async () => {
     vi.mocked(confirmCompletion).mockResolvedValue(undefined);
     const client = createTestQueryClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
@@ -130,11 +130,12 @@ describe("useConfirmCompletionMutation", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(confirmCompletion).toHaveBeenCalledWith("req-1", 5);
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: taskKeys.all });
   });
 });
 
 describe("useRejectCompletionMutation", () => {
-  it("calls rejectCompletion and invalidates requests", async () => {
+  it("calls rejectCompletion and invalidates requests and staff tasks", async () => {
     vi.mocked(rejectCompletion).mockResolvedValue(undefined);
     const client = createTestQueryClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
@@ -147,5 +148,6 @@ describe("useRejectCompletionMutation", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(rejectCompletion).toHaveBeenCalledWith("req-1");
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: taskKeys.all });
   });
 });
