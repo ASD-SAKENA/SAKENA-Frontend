@@ -49,6 +49,23 @@ describe("getResidentRequests", () => {
     expect(req.statusColor).toBe("warning");
     expect(req.displayId).toBe("a۱b۲c۳d۴"); // shortRequestId then Persian digits
   });
+
+  it("maps requestingUnit to a display label", async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: [
+        {
+          ...rawRequest,
+          requestingUnit: {
+            unitNumber: "12",
+            floorNumber: 3,
+            buildingName: "برج نیلوفر",
+          },
+        },
+      ],
+    });
+    const [req] = await getResidentRequests();
+    expect(req.requestingUnit).toBe("۱۲ — طبقه ۳");
+  });
 });
 
 describe("getManagerRequests", () => {
@@ -58,12 +75,29 @@ describe("getManagerRequests", () => {
     expect(http.get).toHaveBeenCalledWith("/service-requests/admin");
     expect(req.priority).toBe("نامشخص");
     expect(req.priorityColor).toBe("muted");
-    expect(req.unit).toBe("واحد ۵");
+    expect(req.unit).toBe("—");
   });
 
-  it("falls back to a dash when location is missing", async () => {
+  it("maps requestingUnit to a display label", async () => {
     vi.mocked(http.get).mockResolvedValue({
-      data: [{ ...rawRequest, location: null }],
+      data: [
+        {
+          ...rawRequest,
+          requestingUnit: {
+            unitNumber: "12",
+            floorNumber: 3,
+            buildingName: "برج نیلوفر",
+          },
+        },
+      ],
+    });
+    const [req] = await getManagerRequests();
+    expect(req.unit).toBe("۱۲ — طبقه ۳");
+  });
+
+  it("falls back to a dash when requestingUnit is missing", async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: [{ ...rawRequest, requestingUnit: null }],
     });
     const [req] = await getManagerRequests();
     expect(req.unit).toBe("—");

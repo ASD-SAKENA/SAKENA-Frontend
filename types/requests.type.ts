@@ -10,6 +10,7 @@ export type RequestStatus =
   | "ارجاع‌شده"
   | "در حال انجام"
   | "انجام‌شده"
+  | "تایید شده"
   | "تسویه‌شده"
   | "ردشده";
 
@@ -31,9 +32,14 @@ export interface ServiceRequest {
   date: string;
   completionReport: string | null;
   completionCost: number | null;
+  requestingUnit: string | null;
 }
 
-/** Manager queue view adds unit, submission time and priority columns. */
+/**
+ * Manager queue view adds unit, submission time and priority columns.
+ * `unit` shows the resolved apartment (building floor + unit number) when
+ * the request has one; falls back to "—" otherwise.
+ */
 export interface ManagerRequest {
   id: string;
   displayId: string;

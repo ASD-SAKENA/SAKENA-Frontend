@@ -104,6 +104,7 @@ describe("RequestModal", () => {
         date: "۱۴۰۴/۰۱/۰۱",
         completionReport: null,
         completionCost: null,
+        requestingUnit: null,
       },
     });
     const user = userEvent.setup();

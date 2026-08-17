@@ -6,8 +6,15 @@ export type ServiceRequestApiStatus =
   | "ASSIGNED"
   | "IN_PROGRESS"
   | "COMPLETED"
+  | "CONFIRMED"
   | "SETTLED"
   | "REJECTED";
+
+export interface RequestingUnitApiResponse {
+  unitNumber: string;
+  floorNumber: number;
+  buildingName: string;
+}
 
 export type ServiceCategoryGroup =
   | "FACILITIES"
@@ -35,6 +42,7 @@ export interface ServiceRequestApiResponse {
   expectedCompletionAt: string | null;
   completionReport: string | null;
   completionCost: number | null;
+  requestingUnit: RequestingUnitApiResponse | null;
 }
 
 export interface CreateServiceRequestApiPayload {

@@ -28,6 +28,13 @@ export const requestKeys = {
   categories: ["requests", "categories"] as const,
 };
 
+function unitLabel(
+  unit: ServiceRequestApiResponse["requestingUnit"],
+): string | null {
+  if (!unit) return null;
+  return `${toFaDigits(unit.unitNumber)} — طبقه ${toFaDigits(unit.floorNumber)}`;
+}
+
 function toServiceRequest(r: ServiceRequestApiResponse): ServiceRequest {
   const meta = REQUEST_STATUS_META[r.status];
   return {
@@ -45,13 +52,16 @@ function toServiceRequest(r: ServiceRequestApiResponse): ServiceRequest {
     date: formatFaDate(r.createdAt),
     completionReport: r.completionReport,
     completionCost: r.completionCost,
+    requestingUnit: unitLabel(r.requestingUnit),
   };
 }
 
 /**
- * Priority is not modelled server-side yet — shown as "نامشخص" rather than
- * a fabricated level, so the queue doesn't imply data that doesn't exist.
- * `unit` maps to the request location.
+ * `unit` shows the resolved apartment (building floor + unit number) when
+ * the request has one; falls back to "—" for the legacy/staff-filed
+ * requests that predate the residency-required-to-file gate, which have no
+ * requesting apartment at all. Priority is not modelled server-side yet —
+ * shown as "نامشخص" rather than a fabricated level.
  */
 function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
   const meta = REQUEST_STATUS_META[r.status];
@@ -60,7 +70,7 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     displayId: toFaDigits(shortRequestId(r.id)),
     title: r.title,
     type: subCategoryLabel(r.subCategory),
-    unit: r.location ?? "—",
+    unit: unitLabel(r.requestingUnit) ?? "—",
     date: formatFaDate(r.createdAt),
     status: meta.label,
     statusColor: meta.color,
@@ -158,4 +168,15 @@ export async function completeRequest(
     completionReport,
     completionCost,
   });
+}
+
+export async function confirmCompletion(
+  id: string,
+  score: number,
+): Promise<void> {
+  await http.patch(`/service-requests/${id}/confirm`, { score });
+}
+
+export async function rejectCompletion(id: string): Promise<void> {
+  await http.patch(`/service-requests/${id}/reject-completion`, {});
 }

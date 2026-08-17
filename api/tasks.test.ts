@@ -27,6 +27,7 @@ const baseRequest = {
   expectedCompletionAt: null,
   completionReport: null,
   completionCost: null,
+  requestingUnit: null,
 } as const;
 
 beforeEach(() => {
