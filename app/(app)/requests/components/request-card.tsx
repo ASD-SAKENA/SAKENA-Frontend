@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 
+import { toast } from "sonner";
+
 import { AppIcon } from "@/components/app/app-icon";
 import { StatusBadge } from "@/components/app/status-badge";
+
+import { useRejectCompletionMutation } from "@/queries/requests";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
 
@@ -11,18 +15,31 @@ import { faNumber } from "@/lib/persian-number";
 
 import type { ServiceRequest } from "@/types/requests.type";
 
+import { ConfirmCompletionModal } from "./confirm-completion-modal";
+
 interface Props {
   request: ServiceRequest;
 }
 
-const REPORT_STATUSES = new Set(["COMPLETED", "SETTLED"]);
+const REPORT_STATUSES = new Set(["COMPLETED", "CONFIRMED", "SETTLED"]);
 
 export function RequestCard({ request }: Props) {
   const openRequestModal = useAppUiStore((s) => s.openRequestModal);
   const [reportOpen, setReportOpen] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState<ServiceRequest | null>(
+    null,
+  );
+  const rejectCompletion = useRejectCompletionMutation();
 
   const editable = request.apiStatus === "PENDING";
+  const awaitingConfirmation = request.apiStatus === "COMPLETED";
   const hasReport = REPORT_STATUSES.has(request.apiStatus);
+
+  const handleReject = () => {
+    rejectCompletion.mutate(request.id, {
+      onSuccess: () => toast.success("درخواست برای انجام مجدد برگشت داده شد"),
+    });
+  };
 
   return (
     <div className="rounded-2xl border border-app-border bg-app-surface p-[18px] shadow-[var(--ap-shadow-sm)]">
@@ -49,8 +66,8 @@ export function RequestCard({ request }: Props) {
         </div>
       </div>
 
-      {editable || hasReport ? (
-        <div className="mt-3 flex gap-2 border-t border-app-border pt-3">
+      {editable || hasReport || awaitingConfirmation ? (
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-app-border pt-3">
           {editable ? (
             <button
               type="button"
@@ -60,6 +77,27 @@ export function RequestCard({ request }: Props) {
               <AppIcon name="edit" className="size-[15px]" />
               ویرایش درخواست
             </button>
+          ) : null}
+          {awaitingConfirmation ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(request)}
+                className="flex items-center gap-1 text-[12.5px] font-semibold text-app-success hover:brightness-110"
+              >
+                <AppIcon name="check_circle" className="size-[15px]" />
+                تایید انجام کار
+              </button>
+              <button
+                type="button"
+                onClick={handleReject}
+                disabled={rejectCompletion.isPending}
+                className="flex items-center gap-1 text-[12.5px] font-semibold text-app-danger hover:brightness-110 disabled:opacity-50"
+              >
+                <AppIcon name="cancel" className="size-[15px]" />
+                کار درست انجام نشده
+              </button>
+            </>
           ) : null}
           {hasReport ? (
             <button
@@ -84,6 +122,11 @@ export function RequestCard({ request }: Props) {
           ) : null}
         </div>
       ) : null}
+
+      <ConfirmCompletionModal
+        request={confirmTarget}
+        onClose={() => setConfirmTarget(null)}
+      />
     </div>
   );
 }
