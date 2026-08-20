@@ -147,10 +147,7 @@ function NotificationRow({
             : "bg-app-surface2 text-app-muted"
         }`}
       >
-        <AppIcon
-          name={TYPE_ICON[notification.type]}
-          className="size-[18px]"
-        />
+        <AppIcon name={TYPE_ICON[notification.type]} className="size-[18px]" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">

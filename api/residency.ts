@@ -42,10 +42,13 @@ export async function getBuildingResidencies(
   const pages = await Promise.all(
     allBuildingIds.map(async (id) => {
       try {
-        const { data } = await http.get<ResidencyApiResponse[]>("/residencies", {
-          params: { buildingId: id },
-          suppressToast: true,
-        });
+        const { data } = await http.get<ResidencyApiResponse[]>(
+          "/residencies",
+          {
+            params: { buildingId: id },
+            suppressToast: true,
+          },
+        );
         return data;
       } catch {
         return [] as ResidencyApiResponse[];

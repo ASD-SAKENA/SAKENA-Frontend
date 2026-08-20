@@ -41,8 +41,13 @@ describe("getUnreadNotificationCount", () => {
 
 describe("markNotificationRead / markAllNotificationsRead", () => {
   it("marks one notification as read", async () => {
-    vi.mocked(http.post).mockResolvedValue({ data: { id: "n1", unread: false } });
-    expect(await markNotificationRead("n1")).toEqual({ id: "n1", unread: false });
+    vi.mocked(http.post).mockResolvedValue({
+      data: { id: "n1", unread: false },
+    });
+    expect(await markNotificationRead("n1")).toEqual({
+      id: "n1",
+      unread: false,
+    });
     expect(http.post).toHaveBeenCalledWith("/notifications/n1/read");
   });
 
