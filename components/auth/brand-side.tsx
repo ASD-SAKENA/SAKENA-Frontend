@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { AppIcon } from "@/components/app/app-icon";
 
@@ -22,7 +23,11 @@ export function BrandSide() {
     <div className="relative flex flex-col justify-between overflow-hidden bg-[radial-gradient(115%_85%_at_80%_0%,#18223A_0%,#0A0E1A_58%)] px-12 py-[52px] max-[880px]:hidden">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.022)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.022)_1px,transparent_1px)] [mask-image:radial-gradient(75%_65%_at_72%_18%,#000_0%,transparent_78%)] bg-[size:40px_40px]" />
 
-      <div className="relative flex items-center gap-[13px]">
+      <Link
+        href="/"
+        className="relative flex w-fit items-center gap-[13px]"
+        aria-label="رفتن به صفحه اصلی ساکنا"
+      >
         <div className="size-[52px] overflow-hidden rounded-[14px] bg-[var(--sk-bg)] shadow-[0_0_0_1px_rgba(201,162,78,.35),0_8px_22px_rgba(0,0,0,.5)]">
           <Image
             src="/sakena-mark.jpg"
@@ -40,7 +45,7 @@ export function BrandSide() {
             SAKENA
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="relative">
         <div className="max-w-[430px] text-[33px] leading-[1.55] font-extrabold text-[var(--sk-text)]">
