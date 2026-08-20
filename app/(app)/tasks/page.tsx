@@ -14,6 +14,7 @@ import { useStaffSummaryQuery, useStaffTasksQuery } from "@/queries/tasks";
 import { useMyWalletQuery } from "@/queries/wallet";
 
 import { faNumber } from "@/lib/persian-number";
+import { statusGroupOf } from "@/lib/service-requests";
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
@@ -22,7 +23,11 @@ import type { StaffTask } from "@/types/tasks.type";
 import { CompleteTaskModal } from "./components/complete-task-modal";
 import { TaskDetailModal } from "./components/task-detail-modal";
 
-type StaffTab = "open" | "done" | "all";
+/**
+ * Work only reaches a worker once a manager assigns it, so there is no
+ * "open" tab here — an unassigned request is never theirs to see.
+ */
+type StaffTab = "progress" | "done" | "rejected" | "all";
 
 const SUMMARY_TINT: Record<StatusColor, string> = {
   gold: "text-app-gold bg-[color-mix(in_srgb,var(--ap-gold)_14%,transparent)]",
@@ -40,13 +45,14 @@ const SUMMARY_TINT: Record<StatusColor, string> = {
 };
 
 const TABS: { key: StaffTab; label: string }[] = [
-  { key: "open", label: "در انتظار" },
+  { key: "progress", label: "در جریان" },
   { key: "done", label: "انجام‌شده" },
+  { key: "rejected", label: "ردشده" },
   { key: "all", label: "همه" },
 ];
 
 export default function TasksPage() {
-  const [tab, setTab] = useState<StaffTab>("open");
+  const [tab, setTab] = useState<StaffTab>("progress");
   const { data: tasks = [] } = useStaffTasksQuery();
   const { data: summary = [] } = useStaffSummaryQuery();
   const { data: walletBalance } = useMyWalletQuery();
@@ -54,13 +60,11 @@ export default function TasksPage() {
   const [completeTarget, setCompleteTarget] = useState<StaffTask | null>(null);
   const [detailTarget, setDetailTarget] = useState<StaffTask | null>(null);
 
-  const filtered = tasks.filter((t) => {
-    // A rejected request is nobody's outstanding work, so it stays out of
-    // "در انتظار" without counting as something the worker completed.
-    if (tab === "open") return !t.done && t.apiStatus !== "REJECTED";
-    if (tab === "done") return t.done;
-    return true;
-  });
+  // The same grouping every other role sees, so a status means the same
+  // thing on the worker's screen as it does on the manager's.
+  const filtered = tasks.filter(
+    (t) => tab === "all" || statusGroupOf(t.apiStatus) === tab,
+  );
 
   const handleStart = (task: StaffTask) => {
     startProgress.mutate(task.id, {
@@ -107,8 +111,8 @@ export default function TasksPage() {
                 <span className="text-[14.5px] font-bold text-app-fg">
                   {task.title}
                 </span>
-                <StatusBadge color={task.priorityColor}>
-                  {task.priority}
+                <StatusBadge color={task.statusColor}>
+                  {task.status}
                 </StatusBadge>
               </div>
               <div className="mb-1 text-[12.5px] text-app-muted">

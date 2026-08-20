@@ -1,6 +1,6 @@
 import type { StatusColor } from "@/types/app.type";
 import type { ServiceRequestApiStatus } from "@/types/requests.api.type";
-import type { RequestPriority } from "@/types/requests.type";
+import type { RequestPriority, RequestStatus } from "@/types/requests.type";
 
 export interface StaffTask {
   id: string;
@@ -17,6 +17,9 @@ export interface StaffTask {
   date: string;
   priority: RequestPriority;
   priorityColor: StatusColor;
+  /** Same Persian status wording every other role sees. */
+  status: RequestStatus;
+  statusColor: StatusColor;
   apiStatus: ServiceRequestApiStatus;
   done: boolean;
 }

@@ -5,6 +5,7 @@ import { faNumber, toFaDigits } from "@/lib/persian-number";
 import {
   CATEGORY_GROUP_ICONS,
   CATEGORY_GROUP_LABELS,
+  REQUEST_STATUS_META,
   statusGroupOf,
   subCategoryLabel,
 } from "@/lib/service-requests";
@@ -43,6 +44,8 @@ function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
     date: formatFaDate(r.createdAt),
     priority: "نامشخص",
     priorityColor: "muted",
+    status: REQUEST_STATUS_META[r.status].label,
+    statusColor: REQUEST_STATUS_META[r.status].color,
     apiStatus: r.status,
     done: statusGroupOf(r.status) === "done",
   };
@@ -55,24 +58,16 @@ export async function getStaffTasks(): Promise<StaffTask[]> {
 
 export async function getStaffSummary(): Promise<SummaryItem[]> {
   const data = await getAssignedRequests();
-  const open = data.filter(
-    (r) =>
-      r.status !== "COMPLETED" &&
-      r.status !== "CONFIRMED" &&
-      r.status !== "SETTLED" &&
-      r.status !== "REJECTED",
+  // Counted off the same groups the tabs filter by, so the tiles and the list
+  // can never disagree about what a status means.
+  const inProgress = data.filter(
+    (r) => statusGroupOf(r.status) === "progress",
   ).length;
-  const inProgress = data.filter((r) => r.status === "IN_PROGRESS").length;
-  const done = data.filter(
-    (r) => r.status === "CONFIRMED" || r.status === "SETTLED",
+  const done = data.filter((r) => statusGroupOf(r.status) === "done").length;
+  const rejected = data.filter(
+    (r) => statusGroupOf(r.status) === "rejected",
   ).length;
   return [
-    {
-      label: "کارهای باز",
-      value: toFaDigits(open),
-      icon: "pending_actions",
-      color: "warning",
-    },
     {
       label: "در جریان",
       value: toFaDigits(inProgress),
@@ -84,6 +79,12 @@ export async function getStaffSummary(): Promise<SummaryItem[]> {
       value: toFaDigits(done),
       icon: "task_alt",
       color: "success",
+    },
+    {
+      label: "ردشده",
+      value: toFaDigits(rejected),
+      icon: "close",
+      color: "danger",
     },
   ];
 }

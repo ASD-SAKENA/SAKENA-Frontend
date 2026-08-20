@@ -79,9 +79,9 @@ describe("getStaffTasks", () => {
 });
 
 describe("getStaffSummary", () => {
-  it("counts open, in-progress and done requests", async () => {
+  it("counts the tiles off the same groups the tabs filter by", async () => {
     mockedGetAssigned.mockResolvedValue([
-      { ...baseRequest, id: "1", status: "PENDING" },
+      { ...baseRequest, id: "1", status: "ASSIGNED" },
       { ...baseRequest, id: "2", status: "IN_PROGRESS" },
       { ...baseRequest, id: "3", status: "COMPLETED" },
       { ...baseRequest, id: "4", status: "REJECTED" },
@@ -89,11 +89,11 @@ describe("getStaffSummary", () => {
 
     const summary = await getStaffSummary();
 
-    // PENDING + IN_PROGRESS are "open"; COMPLETED is awaiting confirmation
-    // (neither open nor done); REJECTED and done statuses are excluded.
-    expect(summary.find((s) => s.label === "کارهای باز")?.value).toBe("۲");
-    expect(summary.find((s) => s.label === "در جریان")?.value).toBe("۱");
+    // ASSIGNED, IN_PROGRESS and COMPLETED are all still the worker's job:
+    // COMPLETED only means they finished, not that the resident confirmed.
+    expect(summary.find((s) => s.label === "در جریان")?.value).toBe("۳");
     expect(summary.find((s) => s.label === "انجام‌شده")?.value).toBe("۰");
+    expect(summary.find((s) => s.label === "ردشده")?.value).toBe("۱");
   });
 
   it("does not count a COMPLETED request as done, but counts CONFIRMED and SETTLED", async () => {
@@ -105,7 +105,7 @@ describe("getStaffSummary", () => {
 
     const summary = await getStaffSummary();
 
-    expect(summary.find((s) => s.label === "کارهای باز")?.value).toBe("۰");
+    expect(summary.find((s) => s.label === "در جریان")?.value).toBe("۱");
     expect(summary.find((s) => s.label === "انجام‌شده")?.value).toBe("۲");
   });
 });
