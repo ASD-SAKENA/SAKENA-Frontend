@@ -11,6 +11,7 @@ import { GLOBAL_CONFIG } from "@/app/config";
 
 import { useAuthStore } from "@/stores/auth.store";
 
+import { toPersianApiMessage } from "@/lib/api-messages";
 import { getQueryClient } from "@/lib/query-client";
 
 export { isAxiosError };
@@ -171,7 +172,9 @@ http.interceptors.response.use(
         break;
       case 409:
         toast.error(
-          resolveErrorMessage(data, "این عملیات با وضعیت فعلی تداخل دارد"),
+          toPersianApiMessage(
+            resolveErrorMessage(data, "این عملیات با وضعیت فعلی تداخل دارد"),
+          ),
         );
         break;
       case 422:
