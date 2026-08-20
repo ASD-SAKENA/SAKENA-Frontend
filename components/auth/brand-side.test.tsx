@@ -10,6 +10,6 @@ describe("BrandSide", () => {
       screen.getByText("پرداخت شارژ و مدیریت مالی شفاف"),
     ).toBeInTheDocument();
     expect(screen.getByText("۴۸+")).toBeInTheDocument();
-    expect(screen.getByText("نرخ وصول")).toBeInTheDocument();
+    expect(screen.getByText("۲۴/۷")).toBeInTheDocument();
   });
 });

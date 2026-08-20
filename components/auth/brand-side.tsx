@@ -14,7 +14,6 @@ const BRAND_POINTS = [
 
 const LOGIN_STATS = [
   { value: "۴۸+", label: "واحد فعال" },
-  { value: "٪۸۹", label: "نرخ وصول" },
   { value: "۲۴/۷", label: "پشتیبانی" },
 ] as const;
 
