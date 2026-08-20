@@ -55,7 +55,9 @@ export default function TasksPage() {
   const [detailTarget, setDetailTarget] = useState<StaffTask | null>(null);
 
   const filtered = tasks.filter((t) => {
-    if (tab === "open") return !t.done;
+    // A rejected request is nobody's outstanding work, so it stays out of
+    // "در انتظار" without counting as something the worker completed.
+    if (tab === "open") return !t.done && t.apiStatus !== "REJECTED";
     if (tab === "done") return t.done;
     return true;
   });
@@ -109,8 +111,13 @@ export default function TasksPage() {
                   {task.priority}
                 </StatusBadge>
               </div>
+              <div className="mb-1 text-[12.5px] text-app-muted">
+                {task.categoryGroup} · {task.type}
+              </div>
               <div className="mb-2.5 text-[13px] text-app-muted">
-                واحد {task.unit} · ارجاع: {task.date}
+                واحد {task.unit}
+                {task.location ? ` · ${task.location}` : ""} · ارجاع:{" "}
+                {task.date}
               </div>
               <div className="flex gap-2.5">
                 {task.apiStatus === "ASSIGNED" ? (

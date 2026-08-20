@@ -4,9 +4,18 @@ import { getAssignedRequests } from "@/api/requests";
 
 import { getStaffHistory, getStaffSummary, getStaffTasks } from "./tasks";
 
-vi.mock("@/api/requests", () => ({
-  getAssignedRequests: vi.fn(),
-}));
+// `unitLabel` is pure formatting, so the real implementation is re-exported
+// here — mocking it would hide whether staff actually see the resident's unit.
+vi.mock("@/api/requests", async () => {
+  const { toFaDigits } = await import("@/lib/persian-number");
+  return {
+    getAssignedRequests: vi.fn(),
+    unitLabel: (unit: { unitNumber: string; floorNumber: number } | null) =>
+      unit
+        ? `${toFaDigits(unit.unitNumber)} — طبقه ${toFaDigits(unit.floorNumber)}`
+        : null,
+  };
+});
 
 const mockedGetAssigned = vi.mocked(getAssignedRequests);
 
@@ -144,5 +153,48 @@ describe("getStaffHistory", () => {
     const [item] = await getStaffHistory();
     expect(item.report).toBe("گزارشی ثبت نشده است");
     expect(item.cost).toBeNull();
+  });
+});
+
+describe("staff see the real unit, not the free-text location", () => {
+  it("resolves the resident's unit and shows location as a separate detail", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      {
+        ...baseRequest,
+        status: "ASSIGNED",
+        location: "راه‌پله طبقه ۳",
+        requestingUnit: {
+          unitNumber: "12",
+          floorNumber: 3,
+          buildingName: "برج نیلوفر",
+        },
+      },
+    ]);
+
+    const [task] = await getStaffTasks();
+
+    // Used to render the location string in the "unit" slot.
+    expect(task.unit).toBe("۱۲ — طبقه ۳");
+    expect(task.location).toBe("راه‌پله طبقه ۳");
+  });
+
+  it("falls back to a dash when the request has no requesting unit", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      { ...baseRequest, status: "ASSIGNED", requestingUnit: null },
+    ]);
+
+    const [task] = await getStaffTasks();
+
+    expect(task.unit).toBe("—");
+  });
+
+  it("names the category group so staff know what kind of job it is", async () => {
+    mockedGetAssigned.mockResolvedValue([
+      { ...baseRequest, status: "ASSIGNED", categoryGroup: "FACILITIES" },
+    ]);
+
+    const [task] = await getStaffTasks();
+
+    expect(task.categoryGroup).toBe("تاسیسات");
   });
 });

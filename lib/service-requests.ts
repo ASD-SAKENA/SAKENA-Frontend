@@ -22,6 +22,37 @@ export const REQUEST_STATUS_META: Record<
 };
 
 /**
+ * Where a status sits in the request's life, for the list filters.
+ *
+ * Filtering used to compare the Persian label, so anything without an exact
+ * match — a confirmed, settled or rejected request — silently counted as
+ * open. Deriving the group from the backend status keeps every screen
+ * agreeing with the API, and adding a status is a compile error here.
+ */
+export type RequestStatusGroup = "open" | "progress" | "done" | "rejected";
+
+export const REQUEST_STATUS_GROUP: Record<
+  ServiceRequestApiStatus,
+  RequestStatusGroup
+> = {
+  PENDING: "open",
+  APPROVED: "open",
+  ASSIGNED: "progress",
+  IN_PROGRESS: "progress",
+  // Staff finished, but a resident still has to confirm before payout.
+  COMPLETED: "progress",
+  CONFIRMED: "done",
+  SETTLED: "done",
+  REJECTED: "rejected",
+};
+
+export function statusGroupOf(
+  status: ServiceRequestApiStatus,
+): RequestStatusGroup {
+  return REQUEST_STATUS_GROUP[status];
+}
+
+/**
  * The three ways a completed request's cost can be paid, in the order the
  * manager sees them. `requiresRequestingUnit` mirrors the backend guard: a
  * request with no requesting apartment can only be paid from the building
@@ -66,6 +97,17 @@ export const COST_RESPONSIBILITY_LABELS: Record<
   ALL_UNITS: "تقسیم بین همه واحدها",
   REQUESTING_UNIT: "بر عهده واحد درخواست‌دهنده",
   BUILDING_WALLET: "از کیف پول ساختمان",
+};
+
+/** Persian labels mirroring the backend `ServiceCategoryGroup.persianName`. */
+export const CATEGORY_GROUP_LABELS: Record<ServiceCategoryGroup, string> = {
+  FACILITIES: "تاسیسات",
+  BUILDING: "ساختمان",
+  CLEANING: "نظافت",
+  SECURITY: "امنیت",
+  GREEN_SPACE: "فضای سبز",
+  COMMUNICATION: "ارتباطات",
+  GENERAL: "عمومی",
 };
 
 export const CATEGORY_GROUP_ICONS: Record<ServiceCategoryGroup, string> = {

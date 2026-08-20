@@ -21,7 +21,10 @@ import {
 import { useStaffQuery } from "@/queries/staff";
 
 import { toFaDigits } from "@/lib/persian-number";
-import { COST_RESPONSIBILITY_LABELS } from "@/lib/service-requests";
+import {
+  COST_RESPONSIBILITY_LABELS,
+  statusGroupOf,
+} from "@/lib/service-requests";
 import { cn } from "@/lib/utils";
 
 import {
@@ -33,12 +36,13 @@ import type { ManagerRequest } from "@/types/requests.type";
 
 import { SettleRequestModal } from "./components/settle-request-modal";
 
-type QueueTab = "open" | "progress" | "done" | "all";
+type QueueTab = "open" | "progress" | "done" | "rejected" | "all";
 
 const TABS: { k: QueueTab; label: string }[] = [
   { k: "open", label: "باز" },
   { k: "progress", label: "در جریان" },
   { k: "done", label: "انجام‌شده" },
+  { k: "rejected", label: "ردشده" },
   { k: "all", label: "همه" },
 ];
 
@@ -46,19 +50,8 @@ function filterRequests(
   requests: ManagerRequest[],
   tab: QueueTab,
 ): ManagerRequest[] {
-  if (tab === "open")
-    return requests.filter(
-      (r) => r.status === "باز" || r.status === "تأییدشده",
-    );
-  if (tab === "progress")
-    return requests.filter(
-      (r) => r.status === "در حال انجام" || r.status === "ارجاع‌شده",
-    );
-  if (tab === "done")
-    return requests.filter(
-      (r) => r.status === "انجام‌شده" || r.status === "تسویه‌شده",
-    );
-  return requests;
+  if (tab === "all") return requests;
+  return requests.filter((r) => statusGroupOf(r.apiStatus) === tab);
 }
 
 export default function QueuePage() {

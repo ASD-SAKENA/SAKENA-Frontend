@@ -30,7 +30,7 @@ export const requestKeys = {
   categories: ["requests", "categories"] as const,
 };
 
-function unitLabel(
+export function unitLabel(
   unit: ServiceRequestApiResponse["requestingUnit"],
 ): string | null {
   if (!unit) return null;

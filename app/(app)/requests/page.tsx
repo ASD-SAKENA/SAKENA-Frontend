@@ -11,16 +11,19 @@ import { useResidentRequestsQuery } from "@/queries/requests";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
 
+import { statusGroupOf } from "@/lib/service-requests";
 import { cn } from "@/lib/utils";
 
 import { RequestCard } from "./components/request-card";
 
-type RequestTab = "all" | "open" | "done";
+type RequestTab = "all" | "open" | "progress" | "done" | "rejected";
 
 const TABS: { key: RequestTab; label: string }[] = [
   { key: "all", label: "همه" },
   { key: "open", label: "باز" },
+  { key: "progress", label: "در جریان" },
   { key: "done", label: "انجام‌شده" },
+  { key: "rejected", label: "ردشده" },
 ];
 
 export default function RequestsPage() {
@@ -39,11 +42,9 @@ export default function RequestsPage() {
     );
   }
 
-  const filtered = requests.filter((r) => {
-    if (tab === "open") return r.status !== "انجام‌شده";
-    if (tab === "done") return r.status === "انجام‌شده";
-    return true;
-  });
+  const filtered = requests.filter(
+    (r) => tab === "all" || statusGroupOf(r.apiStatus) === tab,
+  );
 
   return (
     <div className="sk-page">

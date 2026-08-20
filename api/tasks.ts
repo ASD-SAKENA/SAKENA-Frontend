@@ -1,8 +1,13 @@
-import { getAssignedRequests } from "@/api/requests";
+import { getAssignedRequests, unitLabel } from "@/api/requests";
 
 import { formatFaDate } from "@/lib/format-date";
 import { faNumber, toFaDigits } from "@/lib/persian-number";
-import { CATEGORY_GROUP_ICONS, subCategoryLabel } from "@/lib/service-requests";
+import {
+  CATEGORY_GROUP_ICONS,
+  CATEGORY_GROUP_LABELS,
+  statusGroupOf,
+  subCategoryLabel,
+} from "@/lib/service-requests";
 
 import type { ServiceRequestApiResponse } from "@/types/requests.api.type";
 import type {
@@ -29,13 +34,17 @@ function toStaffTask(r: ServiceRequestApiResponse): StaffTask {
     icon: CATEGORY_GROUP_ICONS[r.categoryGroup] ?? "handyman",
     title: r.title,
     type: subCategoryLabel(r.subCategory),
+    categoryGroup: CATEGORY_GROUP_LABELS[r.categoryGroup] ?? r.categoryGroup,
     description: r.description,
-    unit: r.location ?? "—",
+    // The unit comes from the resident's residency; `location` is the free-text
+    // detail they optionally add on top of it, so the two are shown separately.
+    unit: unitLabel(r.requestingUnit) ?? "—",
+    location: r.location,
     date: formatFaDate(r.createdAt),
     priority: "نامشخص",
     priorityColor: "muted",
     apiStatus: r.status,
-    done: r.status === "CONFIRMED" || r.status === "SETTLED",
+    done: statusGroupOf(r.status) === "done",
   };
 }
 
@@ -93,7 +102,8 @@ export async function getStaffHistory(): Promise<StaffHistoryItem[]> {
       id: r.id,
       icon: CATEGORY_GROUP_ICONS[r.categoryGroup] ?? "handyman",
       title: r.title,
-      unit: r.location ?? "—",
+      unit: unitLabel(r.requestingUnit) ?? "—",
+      location: r.location,
       completedAt: formatFaDate(r.resolvedAt ?? r.updatedAt),
       report: r.completionReport ?? "گزارشی ثبت نشده است",
       cost: r.completionCost !== null ? faNumber(r.completionCost) : null,

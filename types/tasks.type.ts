@@ -7,8 +7,13 @@ export interface StaffTask {
   icon: string;
   title: string;
   type: string;
+  /** Persian name of the category group, e.g. «تاسیسات». */
+  categoryGroup: string;
   description: string;
+  /** The resident's actual unit, resolved from their residency. */
   unit: string;
+  /** Optional free-text detail the resident added, e.g. «راه‌پله طبقه ۳». */
+  location: string | null;
   date: string;
   priority: RequestPriority;
   priorityColor: StatusColor;
@@ -29,6 +34,7 @@ export interface StaffHistoryItem {
   icon: string;
   title: string;
   unit: string;
+  location: string | null;
   completedAt: string;
   report: string;
   cost: string | null;
