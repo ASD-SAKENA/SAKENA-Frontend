@@ -95,6 +95,7 @@ describe("useCreateBookingMutation", () => {
       start: 4,
       dur: 2,
       startHour: 8,
+      partySize: 2,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -105,6 +106,7 @@ describe("useCreateBookingMutation", () => {
       4,
       2,
       8,
+      2,
     ]);
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: reserveKeys.bookingsRoot,

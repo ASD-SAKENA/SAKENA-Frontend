@@ -117,6 +117,7 @@ export async function getBookings(
       return {
         id: booking.id,
         ...grid,
+        partySize: booking.partySize,
         mine: myUserId !== null && booking.bookedBy === myUserId,
       };
     })
@@ -148,12 +149,14 @@ export async function createBooking(
   start: number,
   dur: number,
   startHour: number,
+  partySize: number,
 ): Promise<{ id: string }> {
   const { data } = await http.post<BookingApiResponse>(
     `/facilities/${facilityId}/bookings`,
     {
       startsAt: slotToDate(weekOffset, day, start, startHour).toISOString(),
       endsAt: slotToDate(weekOffset, day, start + dur, startHour).toISOString(),
+      partySize,
     },
   );
   return { id: data.id };

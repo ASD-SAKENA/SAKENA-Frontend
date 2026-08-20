@@ -54,6 +54,8 @@ export interface GridBooking {
   start: number;
   /** Duration in half-hour slots. */
   dur: number;
+  /** People this booking brings — capacity is measured in people. */
+  partySize: number;
   /** Whether the current user made this booking. */
   mine: boolean;
 }

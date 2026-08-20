@@ -47,6 +47,8 @@ export interface BookingApiResponse {
   bookedBy: string;
   startsAt: string;
   endsAt: string;
+  /** People this booking brings; capacity is counted in people. */
+  partySize: number;
 }
 
 export interface MyBookingApiResponse {

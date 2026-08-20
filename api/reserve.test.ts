@@ -118,6 +118,7 @@ describe("getBookings", () => {
           bookedBy: "user-1",
           startsAt: start.toISOString(),
           endsAt: end.toISOString(),
+          partySize: 1,
         },
       ],
     });
@@ -125,8 +126,30 @@ describe("getBookings", () => {
     const bookings = await getBookings("f1", 0, DEFAULT_RULES, "user-1");
 
     expect(bookings).toEqual([
-      { id: "bk1", day: 1, start: 4, dur: 2, mine: true },
+      { id: "bk1", day: 1, start: 4, dur: 2, partySize: 1, mine: true },
     ]);
+  });
+
+  it("carries each booking's party size so capacity can be counted in people", async () => {
+    const start = slotToDate(0, 1, 4, DEFAULT_RULES.startHour);
+    const end = slotToDate(0, 1, 6, DEFAULT_RULES.startHour);
+    vi.mocked(http.get).mockResolvedValue({
+      data: [
+        {
+          id: "bk1",
+          facilityId: "f1",
+          bookedBy: "someone-else",
+          startsAt: start.toISOString(),
+          endsAt: end.toISOString(),
+          partySize: 6,
+        },
+      ],
+    });
+
+    const bookings = await getBookings("f1", 0, DEFAULT_RULES, "user-1");
+
+    // Counting rows would report one occupant here instead of six.
+    expect(bookings[0].partySize).toBe(6);
   });
 
   it("marks another resident's booking as not mine", async () => {
@@ -202,13 +225,14 @@ describe("getMyBookings", () => {
 describe("createBooking", () => {
   it("computes the start/end ISO range from the grid position", async () => {
     vi.mocked(http.post).mockResolvedValue({ data: { id: "bk1" } });
-    const result = await createBooking("f1", 0, 1, 4, 2, 8);
+    const result = await createBooking("f1", 0, 1, 4, 2, 8, 3);
 
     expect(http.post).toHaveBeenCalledWith(
       "/facilities/f1/bookings",
       expect.objectContaining({
         startsAt: expect.any(String),
         endsAt: expect.any(String),
+        partySize: 3,
       }),
     );
     const [, body] = vi.mocked(http.post).mock.calls[0] as [

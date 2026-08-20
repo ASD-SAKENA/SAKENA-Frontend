@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
@@ -73,6 +75,8 @@ export function ReserveComposer() {
     { day: "numeric", month: "long" },
   )}`;
 
+  const [partySize, setPartySize] = useState(1);
+
   const durChoices: number[] = [];
   for (let dur = rules.minSlots; dur <= rules.maxSlots; dur++) {
     durChoices.push(dur);
@@ -82,8 +86,12 @@ export function ReserveComposer() {
     (b) => b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
   );
   const conflictMine = overlapping.some((b) => b.mine);
-  const capacityFull =
-    selected !== null && overlapping.length >= selected.capacity;
+  // Capacity is people, not bookings: counting rows made a 20-person facility
+  // look full after 20 reservations even when only 20 seats of 100 were taken.
+  const peopleBooked = overlapping.reduce((sum, b) => sum + b.partySize, 0);
+  const seatsLeft = selected !== null ? selected.capacity - peopleBooked : 0;
+  const capacityFull = selected !== null && seatsLeft <= 0;
+  const partyTooBig = partySize > seatsLeft;
   const closedDay = rules.closedDays.includes(composer.day);
   const pastSlot = isPastSlot(
     weekOffset,
@@ -102,13 +110,12 @@ export function ReserveComposer() {
     overrunsClosing ||
     conflictMine ||
     capacityFull ||
+    partyTooBig ||
     closedDay ||
     pastSlot ||
     tooFarAhead;
 
-  const remaining = selected
-    ? Math.max(selected.capacity - overlapping.length, 0)
-    : 0;
+  const remaining = Math.max(seatsLeft, 0);
 
   const price = slotPrice(rules, cDur);
 
@@ -136,6 +143,7 @@ export function ReserveComposer() {
         start: cStart,
         dur: cDur,
         startHour: rules.startHour,
+        partySize,
       },
       {
         onSuccess: () => {
@@ -193,6 +201,33 @@ export function ReserveComposer() {
             </button>
           );
         })}
+      </div>
+
+      <label className="mb-[9px] block text-[13px] font-medium">
+        تعداد نفرات
+      </label>
+      <div className="mb-[18px] flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => setPartySize((n) => Math.max(1, n - 1))}
+          disabled={partySize <= 1}
+          aria-label="کاهش تعداد نفرات"
+          className="flex size-10 items-center justify-center rounded-[10px] border border-app-border text-app-fg transition-colors hover:border-app-gold disabled:opacity-40"
+        >
+          <AppIcon name="remove" className="size-[18px]" />
+        </button>
+        <span className="min-w-[64px] text-center text-[15px] font-bold text-app-fg">
+          {toFaDigits(partySize)} نفر
+        </span>
+        <button
+          type="button"
+          onClick={() => setPartySize((n) => n + 1)}
+          disabled={partySize >= Math.max(remaining, 1)}
+          aria-label="افزایش تعداد نفرات"
+          className="flex size-10 items-center justify-center rounded-[10px] border border-app-border text-app-fg transition-colors hover:border-app-gold disabled:opacity-40"
+        >
+          <AppIcon name="add" className="size-[18px]" />
+        </button>
       </div>
 
       {warning ? (

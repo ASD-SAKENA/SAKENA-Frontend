@@ -104,6 +104,7 @@ export function useCreateBookingMutation() {
       start,
       dur,
       startHour,
+      partySize,
     }: {
       facilityId: string;
       weekOffset: number;
@@ -111,7 +112,17 @@ export function useCreateBookingMutation() {
       start: number;
       dur: number;
       startHour: number;
-    }) => createBooking(facilityId, weekOffset, day, start, dur, startHour),
+      partySize: number;
+    }) =>
+      createBooking(
+        facilityId,
+        weekOffset,
+        day,
+        start,
+        dur,
+        startHour,
+        partySize,
+      ),
     onSuccess: invalidate,
   });
 }
