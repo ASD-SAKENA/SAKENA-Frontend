@@ -39,9 +39,7 @@ describe("getBuildingResidencies", () => {
   it("omits the buildingId param when null (all buildings)", async () => {
     vi.mocked(http.get).mockResolvedValue({ data: [] });
     await getBuildingResidencies(null);
-    expect(http.get).toHaveBeenCalledWith("/residencies", {
-      params: undefined,
-    });
+    expect(http.get).toHaveBeenCalledWith("/residencies");
   });
 
   it("includes the buildingId param when given", async () => {
@@ -50,6 +48,21 @@ describe("getBuildingResidencies", () => {
     expect(http.get).toHaveBeenCalledWith("/residencies", {
       params: { buildingId: "building-1" },
     });
+  });
+
+  it("fans out per building when listing all with known building ids", async () => {
+    vi.mocked(http.get)
+      .mockResolvedValueOnce({
+        data: [{ id: "r1", apartmentId: "a1" }],
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "r2", apartmentId: "a2" }],
+      });
+
+    const residencies = await getBuildingResidencies(null, ["b1", "b2"]);
+
+    expect(http.get).toHaveBeenCalledTimes(2);
+    expect(residencies.map((r) => r.id).sort()).toEqual(["r1", "r2"]);
   });
 });
 

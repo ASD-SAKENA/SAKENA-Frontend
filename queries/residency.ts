@@ -27,10 +27,14 @@ export function useMyResidencyQuery(options?: { enabled?: boolean }) {
 /** `undefined` waits for a building list; `null` fetches the permitted all-buildings scope. */
 export function useBuildingResidenciesQuery(
   buildingId: string | null | undefined,
+  allBuildingIds: string[] = [],
 ) {
   return useQuery({
-    queryKey: residencyKeys.byBuilding(buildingId ?? null),
-    queryFn: () => getBuildingResidencies(buildingId ?? null),
+    queryKey: [
+      ...residencyKeys.byBuilding(buildingId ?? null),
+      allBuildingIds.slice().sort().join(","),
+    ],
+    queryFn: () => getBuildingResidencies(buildingId ?? null, allBuildingIds),
     staleTime: STALE,
     enabled: buildingId !== undefined,
   });

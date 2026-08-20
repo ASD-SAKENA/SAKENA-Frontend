@@ -90,7 +90,6 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   ],
   "/polls": ["نظرسنجی‌ها", "مشارکت · نظرسنجی‌های ساختمان"],
   "/chat": ["گفتگوی ساکنین", "ارتباطات · پیام‌رسان داخلی ساختمان"],
-  "/style-guide": ["راهنمای طراحی", "مرجع · رنگ، تایپوگرافی و کامپوننت‌ها"],
 };
 
 export function pageMetaForPath(pathname: string): [string, string] {

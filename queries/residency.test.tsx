@@ -44,7 +44,7 @@ describe("useBuildingResidenciesQuery", () => {
       wrapper: createWrapper(),
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(getBuildingResidencies).toHaveBeenCalledWith(null);
+    expect(getBuildingResidencies).toHaveBeenCalledWith(null, []);
   });
 
   it("waits for a building scope instead of fetching every residency", () => {
@@ -63,7 +63,7 @@ describe("useBuildingResidenciesQuery", () => {
       wrapper: createWrapper(),
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(getBuildingResidencies).toHaveBeenCalledWith("b1");
+    expect(getBuildingResidencies).toHaveBeenCalledWith("b1", []);
   });
 });
 

@@ -73,7 +73,10 @@ export default function UnitsPage() {
       : (buildings.find((candidate) => candidate.id === buildingId) ?? null);
   const { data: units = [] } = useUnitsQuery(buildingId);
   const deleteApartment = useDeleteApartmentMutation();
-  const { data: residencies = [] } = useBuildingResidenciesQuery(buildingId);
+  const { data: residencies = [] } = useBuildingResidenciesQuery(
+    buildingId,
+    buildingId === null ? buildings.map((b) => b.id) : [],
+  );
   const endResidency = useEndResidencyMutation();
 
   const residenciesByApartmentId = new Map(

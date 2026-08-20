@@ -17,6 +17,10 @@ vi.mock("next-themes", () => ({
   useTheme: () => ({ theme: themeValue, setTheme }),
 }));
 
+vi.mock("@/components/app/notification-bell", () => ({
+  NotificationBell: () => <button type="button" title="اعلان‌ها" />,
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   pathname = "/dashboard";
@@ -48,12 +52,9 @@ describe("AppTopbar", () => {
     expect(setTheme).toHaveBeenCalledWith("dark");
   });
 
-  it("links to the style guide", () => {
+  it("does not render a style guide link", () => {
     render(<AppTopbar />);
-    expect(screen.getByTitle("راهنمای طراحی")).toHaveAttribute(
-      "href",
-      "/style-guide",
-    );
+    expect(screen.queryByTitle("راهنمای طراحی")).not.toBeInTheDocument();
   });
 
   it("renders a notifications button", () => {

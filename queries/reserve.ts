@@ -79,11 +79,12 @@ export function useFacilityBookingsQuery(
   });
 }
 
-export function useMyBookingsQuery() {
+export function useMyBookingsQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: reserveKeys.myBookings,
     queryFn: getMyBookings,
     staleTime: 30 * 1000,
+    enabled: options?.enabled ?? true,
   });
 }
 

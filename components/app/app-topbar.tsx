@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useTheme } from "next-themes";
+
+import { NotificationBell } from "@/components/app/notification-bell";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
 
@@ -53,14 +54,7 @@ export function AppTopbar() {
         />
       </button>
 
-      <Link href="/style-guide" title="راهنمای طراحی" className={iconBtn}>
-        <AppIcon name="palette" className="size-[21px]" />
-      </Link>
-
-      <button type="button" title="اعلان‌ها" className={`relative ${iconBtn}`}>
-        <AppIcon name="notifications" className="size-[21px]" />
-        <span className="absolute top-2 right-2.5 size-[7px] rounded-full bg-app-danger" />
-      </button>
+      <NotificationBell />
     </header>
   );
 }

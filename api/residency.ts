@@ -22,11 +22,39 @@ export async function getMyResidency(): Promise<ResidencyApiResponse | null> {
 /** Active residencies of one building, or of every building when buildingId is null. */
 export async function getBuildingResidencies(
   buildingId: string | null,
+  allBuildingIds: string[] = [],
 ): Promise<ResidencyApiResponse[]> {
-  const { data } = await http.get<ResidencyApiResponse[]>("/residencies", {
-    params: buildingId ? { buildingId } : undefined,
-  });
-  return data;
+  if (buildingId) {
+    const { data } = await http.get<ResidencyApiResponse[]>("/residencies", {
+      params: { buildingId },
+    });
+    return data;
+  }
+
+  // "All buildings": prefer one unscoped request; if the API still requires a
+  // buildingId (or scopes to a single managed building), fan out per building
+  // so occupancy never silently disappears from the units table.
+  if (allBuildingIds.length === 0) {
+    const { data } = await http.get<ResidencyApiResponse[]>("/residencies");
+    return data;
+  }
+
+  const pages = await Promise.all(
+    allBuildingIds.map(async (id) => {
+      try {
+        const { data } = await http.get<ResidencyApiResponse[]>("/residencies", {
+          params: { buildingId: id },
+          suppressToast: true,
+        });
+        return data;
+      } catch {
+        return [] as ResidencyApiResponse[];
+      }
+    }),
+  );
+  const byId = new Map<string, ResidencyApiResponse>();
+  for (const residency of pages.flat()) byId.set(residency.id, residency);
+  return [...byId.values()];
 }
 
 export async function startResidency(

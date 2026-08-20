@@ -111,7 +111,10 @@ describe("UnitsPage", () => {
     render(<UnitsPage />);
 
     expect(unitsQuery).toHaveBeenLastCalledWith(null);
-    expect(residenciesQuery).toHaveBeenLastCalledWith(null);
+    expect(residenciesQuery).toHaveBeenLastCalledWith(null, [
+      "building-1",
+      "building-2",
+    ]);
   });
 
   it("shows the resident assigned to a unit by apartment ID", () => {
@@ -130,6 +133,6 @@ describe("UnitsPage", () => {
     );
 
     expect(unitsQuery).toHaveBeenLastCalledWith("building-2");
-    expect(residenciesQuery).toHaveBeenLastCalledWith("building-2");
+    expect(residenciesQuery).toHaveBeenLastCalledWith("building-2", []);
   });
 });

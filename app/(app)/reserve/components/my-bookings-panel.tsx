@@ -28,7 +28,9 @@ function timeRange(booking: MyBooking): string {
 
 /** The resident's own upcoming reservations across every facility. */
 export function MyBookingsPanel() {
-  const { data: bookings = [], isLoading } = useMyBookingsQuery();
+  const { data: bookings = [], isLoading } = useMyBookingsQuery({
+    enabled: true,
+  });
   const cancelBooking = useCancelBookingMutation();
 
   if (isLoading || bookings.length === 0) return null;
