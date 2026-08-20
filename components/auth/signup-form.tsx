@@ -18,9 +18,6 @@ import { type SignupForm, signupSchema } from "@/schemas/auth.schema";
 
 import { RoleChips } from "./role-chips";
 
-const inputClass =
-  "h-[46px] w-full rounded-[11px] border border-[#2A3548] bg-[#10172A] pr-[42px] pl-3 text-right text-[14px] text-[#ECEEF3] outline-none transition-[border-color,box-shadow] placeholder:text-[#7A8294] focus:border-[var(--sk-gold)] focus:shadow-[0_0_0_3px_rgba(201,162,78,.18)]";
-
 const iconClass =
   "pointer-events-none absolute top-1/2 right-[13px] size-[19px] -translate-y-1/2 text-[#7A8294]";
 
@@ -40,7 +37,6 @@ export function SignupForm() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
-      buildingCode: "",
       email: "",
       password: "",
       role: "resident",
@@ -60,7 +56,6 @@ export function SignupForm() {
       const session = await mutation.mutateAsync({
         name: values.name,
         email: values.email,
-        buildingCode: values.buildingCode || undefined,
         password: values.password,
         role: values.role,
       });
@@ -92,19 +87,6 @@ export function SignupForm() {
           {...register("name")}
           placeholder="مثلاً علی رضایی"
           className="h-[46px] w-full rounded-[11px] border border-[#2A3548] bg-[#10172A] pr-[42px] pl-3.5 text-right text-[14px] text-[#ECEEF3] transition-[border-color,box-shadow] outline-none placeholder:text-[#7A8294] focus:border-[var(--sk-gold)] focus:shadow-[0_0_0_3px_rgba(201,162,78,.18)]"
-        />
-      </div>
-
-      <label className="mb-[7px] block text-[13px] font-medium text-[#D4D8E0]">
-        کد مجتمع / دعوت
-      </label>
-      <div className="relative mb-[15px]">
-        <AppIcon name="apartment" className={iconClass} />
-        <input
-          {...register("buildingCode")}
-          dir="ltr"
-          placeholder="SKN-1024"
-          className={inputClass}
         />
       </div>
 

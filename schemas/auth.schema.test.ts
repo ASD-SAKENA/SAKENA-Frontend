@@ -41,7 +41,6 @@ describe("loginSchema", () => {
 describe("signupSchema", () => {
   const valid = {
     name: "Ali Rezaei",
-    buildingCode: "SKN-1",
     email: "ali@example.com",
     password: "password123",
     role: "resident" as const,
@@ -80,12 +79,6 @@ describe("signupSchema", () => {
     expect(signupSchema.safeParse({ ...valid, agree: false }).success).toBe(
       false,
     );
-  });
-
-  it("allows buildingCode to be omitted", () => {
-    const { buildingCode, ...rest } = valid;
-    void buildingCode;
-    expect(signupSchema.safeParse(rest).success).toBe(true);
   });
 });
 

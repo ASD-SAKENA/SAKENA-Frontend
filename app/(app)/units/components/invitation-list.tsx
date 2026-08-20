@@ -13,6 +13,7 @@ import {
   useBuildingInvitationsQuery,
   useRevokeInvitationMutation,
 } from "@/queries/invitations";
+import { useUnitsQuery } from "@/queries/units";
 
 import { formatFaDate } from "@/lib/format-date";
 
@@ -51,6 +52,7 @@ export function InvitationList({ buildingId }: Props) {
   const [composerOpen, setComposerOpen] = useState(false);
 
   const { data: invitations = [] } = useBuildingInvitationsQuery(buildingId);
+  const { data: units = [] } = useUnitsQuery(buildingId);
   const revokeInvitation = useRevokeInvitationMutation();
 
   return (
@@ -79,12 +81,13 @@ export function InvitationList({ buildingId }: Props) {
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] border-collapse text-[13.5px]">
+          <table className="w-full min-w-[820px] border-collapse text-[13.5px]">
             <thead>
               <tr className="text-right text-[12.5px] text-app-muted">
                 <th className="px-[18px] py-[13px] font-medium">گیرنده</th>
                 <th className="px-[18px] py-[13px] font-medium">روش</th>
                 <th className="px-[18px] py-[13px] font-medium">نقش</th>
+                <th className="px-[18px] py-[13px] font-medium">واحد</th>
                 <th className="px-[18px] py-[13px] font-medium">اعتبار تا</th>
                 <th className="px-[18px] py-[13px] font-medium">وضعیت</th>
                 <th className="px-[18px] py-[13px] font-medium">عملیات</th>
@@ -107,6 +110,11 @@ export function InvitationList({ buildingId }: Props) {
                   </td>
                   <td className="px-[18px] py-[13px] text-app-muted">
                     {invitation.role === "STAFF" ? "کارکن" : "ساکن"}
+                  </td>
+                  <td className="px-[18px] py-[13px] text-app-muted">
+                    {invitation.apartmentId
+                      ? `واحد ${units.find((unit) => unit.id === invitation.apartmentId)?.no ?? "—"}`
+                      : "بدون تخصیص"}
                   </td>
                   <td className="px-[18px] py-[13px] text-app-muted">
                     {formatFaDate(invitation.expiresAt)}

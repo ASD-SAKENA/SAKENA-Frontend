@@ -12,7 +12,6 @@ export type LoginForm = z.infer<typeof loginSchema>;
 
 export const signupSchema = z.object({
   name: z.string().trim().min(2, "نام و نام خانوادگی را وارد کنید."),
-  buildingCode: z.string().trim().optional(),
   // Required by the backend register endpoint (used for password recovery).
   email: z
     .string()

@@ -67,26 +67,6 @@ describe("signup", () => {
     });
     expect(session.user.name).toBe("Ali");
   });
-
-  it("ignores buildingCode (no backend support yet)", async () => {
-    mockedPost.mockResolvedValue({
-      data: { token: "jwt", username: "Ali", role: "RESIDENT" },
-    });
-
-    await signup({
-      name: "Ali",
-      email: "ali@example.com",
-      buildingCode: "SKN-1",
-      password: "password123",
-      role: "resident",
-    });
-
-    const [, body] = mockedPost.mock.calls[0] as [
-      string,
-      Record<string, unknown>,
-    ];
-    expect("buildingCode" in body).toBe(false);
-  });
 });
 
 describe("logout", () => {
