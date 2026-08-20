@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { requestKeys } from "@/api/requests";
 import {
+  assignCostResponsibility,
   completeRequest,
   confirmCompletion,
   createRequest,
@@ -14,6 +15,7 @@ import {
 import { taskKeys } from "@/api/tasks";
 
 import {
+  useAssignCostResponsibilityMutation,
   useCompleteRequestMutation,
   useConfirmCompletionMutation,
   useCreateRequestMutation,
@@ -42,6 +44,7 @@ vi.mock("@/api/requests", () => ({
   completeRequest: vi.fn(),
   confirmCompletion: vi.fn(),
   rejectCompletion: vi.fn(),
+  assignCostResponsibility: vi.fn(),
 }));
 vi.mock("@/api/tasks", () => ({
   taskKeys: { all: ["tasks"] },
@@ -149,5 +152,28 @@ describe("useRejectCompletionMutation", () => {
     expect(rejectCompletion).toHaveBeenCalledWith("req-1");
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: taskKeys.all });
+  });
+});
+
+describe("useAssignCostResponsibilityMutation", () => {
+  it("calls assignCostResponsibility and invalidates requests", async () => {
+    vi.mocked(assignCostResponsibility).mockResolvedValue(undefined);
+    const client = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+    const { result } = renderHook(() => useAssignCostResponsibilityMutation(), {
+      wrapper: createWrapper(client),
+    });
+
+    result.current.mutate({
+      id: "req-1",
+      costResponsibility: "BUILDING_WALLET",
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(assignCostResponsibility).toHaveBeenCalledWith(
+      "req-1",
+      "BUILDING_WALLET",
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
   });
 });

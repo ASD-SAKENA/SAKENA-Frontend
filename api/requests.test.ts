@@ -4,6 +4,7 @@ import http from "@/services/http";
 
 import {
   approveRequest,
+  assignCostResponsibility,
   assignRequest,
   completeRequest,
   createRequest,
@@ -181,5 +182,14 @@ describe("workflow actions", () => {
       completionReport: "گزارش",
       completionCost: 50000,
     });
+  });
+
+  it("assignCostResponsibility patches the chosen payment method", async () => {
+    vi.mocked(http.patch).mockResolvedValue({ data: {} });
+    await assignCostResponsibility("id-1", "ALL_UNITS");
+    expect(http.patch).toHaveBeenCalledWith(
+      "/service-requests/id-1/cost-responsibility",
+      { costResponsibility: "ALL_UNITS" },
+    );
   });
 });

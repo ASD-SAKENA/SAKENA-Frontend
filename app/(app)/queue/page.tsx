@@ -19,9 +19,9 @@ import {
   useRejectRequestMutation,
 } from "@/queries/requests";
 import { useStaffQuery } from "@/queries/staff";
-import { useSettleRequestMutation } from "@/queries/wallet";
 
 import { toFaDigits } from "@/lib/persian-number";
+import { COST_RESPONSIBILITY_LABELS } from "@/lib/service-requests";
 import { cn } from "@/lib/utils";
 
 import {
@@ -30,6 +30,8 @@ import {
 } from "@/schemas/request.schema";
 
 import type { ManagerRequest } from "@/types/requests.type";
+
+import { SettleRequestModal } from "./components/settle-request-modal";
 
 type QueueTab = "open" | "progress" | "done" | "all";
 
@@ -62,12 +64,12 @@ function filterRequests(
 export default function QueuePage() {
   const [tab, setTab] = useState<QueueTab>("open");
   const [assignTarget, setAssignTarget] = useState<ManagerRequest | null>(null);
+  const [settleTarget, setSettleTarget] = useState<ManagerRequest | null>(null);
   const { data: requests = [] } = useManagerRequestsQuery();
   const { data: allStaff = [] } = useStaffQuery();
   const approve = useApproveRequestMutation();
   const reject = useRejectRequestMutation();
   const assign = useAssignRequestMutation();
-  const settle = useSettleRequestMutation();
 
   const {
     register,
@@ -95,14 +97,6 @@ export default function QueuePage() {
     reject.mutate(r.id, {
       onSuccess: () => {
         toast.success(`درخواست «${r.title}» رد شد`);
-      },
-    });
-  };
-
-  const handleSettle = (r: ManagerRequest) => {
-    settle.mutate(r.id, {
-      onSuccess: () => {
-        toast.success(`دستمزد «${r.title}» تسویه و به کیف پول کارکن واریز شد`);
       },
     });
   };
@@ -217,9 +211,8 @@ export default function QueuePage() {
                       r.requestingUnit === null ? (
                         <button
                           type="button"
-                          onClick={() => handleSettle(r)}
-                          disabled={settle.isPending}
-                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold disabled:opacity-50"
+                          onClick={() => setSettleTarget(r)}
+                          className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold"
                         >
                           <AppIcon name="payments" className="size-4" />
                           پرداخت دستمزد
@@ -232,13 +225,16 @@ export default function QueuePage() {
                     ) : r.apiStatus === "CONFIRMED" ? (
                       <button
                         type="button"
-                        onClick={() => handleSettle(r)}
-                        disabled={settle.isPending}
-                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold disabled:opacity-50"
+                        onClick={() => setSettleTarget(r)}
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-app-border bg-transparent px-3 text-[12.5px] font-semibold text-app-gold transition-colors hover:border-app-gold"
                       >
                         <AppIcon name="payments" className="size-4" />
                         پرداخت دستمزد
                       </button>
+                    ) : r.apiStatus === "SETTLED" && r.costResponsibility ? (
+                      <span className="text-[12px] text-app-muted">
+                        {COST_RESPONSIBILITY_LABELS[r.costResponsibility]}
+                      </span>
                     ) : (
                       <span className="text-[12px] text-app-muted">—</span>
                     )}
@@ -293,6 +289,11 @@ export default function QueuePage() {
           </div>
         </form>
       </Modal>
+
+      <SettleRequestModal
+        request={settleTarget}
+        onClose={() => setSettleTarget(null)}
+      />
     </div>
   );
 }
