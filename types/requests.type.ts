@@ -34,6 +34,7 @@ export interface ServiceRequest {
   completionReport: string | null;
   completionCost: number | null;
   requestingUnit: string | null;
+  location: string | null;
 }
 
 /**
@@ -57,6 +58,8 @@ export interface ManagerRequest {
   /** Null until the manager picks how the completed request's cost is paid. */
   costResponsibility: ServiceCostResponsibility | null;
   completionCost: number | null;
+  /** Staff user id; resolved to a name against the staff directory. */
+  assignedTo: string | null;
 }
 
 export interface CreateRequestPayload {
@@ -64,4 +67,6 @@ export interface CreateRequestPayload {
   subCategory: string;
   title: string;
   description: string;
+  /** Free-text detail; the unit itself comes from the resident's residency. */
+  location?: string;
 }

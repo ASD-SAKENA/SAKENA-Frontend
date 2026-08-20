@@ -41,6 +41,7 @@ const baseRequest: ManagerRequest = {
   priorityColor: "muted",
   costResponsibility: null,
   completionCost: 500000,
+  assignedTo: null,
 };
 
 beforeEach(() => {

@@ -138,8 +138,26 @@ describe("createRequest", () => {
       description: "توضیحات",
       categoryGroup: "FACILITIES",
       subCategory: "ELEVATOR",
+      location: undefined,
     });
     expect(result).toEqual({ id: "new-id" });
+  });
+
+  it("sends the optional location detail when the resident filled it in", async () => {
+    vi.mocked(http.post).mockResolvedValue({ data: { id: "new-id" } });
+
+    await createRequest({
+      categoryGroup: "FACILITIES",
+      subCategory: "ELEVATOR",
+      title: "عنوان",
+      description: "توضیحات",
+      location: "راه‌پله طبقه ۳",
+    });
+
+    expect(http.post).toHaveBeenCalledWith(
+      "/service-requests",
+      expect.objectContaining({ location: "راه‌پله طبقه ۳" }),
+    );
   });
 });
 

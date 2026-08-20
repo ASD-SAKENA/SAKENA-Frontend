@@ -55,6 +55,7 @@ function toServiceRequest(r: ServiceRequestApiResponse): ServiceRequest {
     completionReport: r.completionReport,
     completionCost: r.completionCost,
     requestingUnit: unitLabel(r.requestingUnit),
+    location: r.location,
   };
 }
 
@@ -82,6 +83,7 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     priorityColor: "muted",
     costResponsibility: r.costResponsibility,
     completionCost: r.completionCost,
+    assignedTo: r.assignedTo,
   };
 }
 
@@ -122,6 +124,7 @@ export async function createRequest(
     description: payload.description,
     categoryGroup: payload.categoryGroup,
     subCategory: payload.subCategory,
+    location: payload.location,
   };
   const { data } = await http.post<ServiceRequestApiResponse>(
     "/service-requests",
@@ -139,6 +142,7 @@ export async function updateRequest(
     description: payload.description,
     categoryGroup: payload.categoryGroup,
     subCategory: payload.subCategory,
+    location: payload.location,
   };
   await http.patch(`/service-requests/${id}`, body);
 }

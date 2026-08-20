@@ -84,6 +84,8 @@ export default function QueuePage() {
   const rows = filterRequests(requests, tab);
   // Deactivated workers can no longer act on requests, so they are not assignable.
   const staff = allStaff.filter((s) => s.active);
+  // The request only carries the worker's id, so the directory resolves the name.
+  const staffNameById = new Map(allStaff.map((s) => [s.id, s.username]));
 
   const handleApprove = (r: ManagerRequest) => {
     approve.mutate(r.id, {
@@ -143,7 +145,8 @@ export default function QueuePage() {
               <tr className="text-right text-[12.5px] text-app-muted">
                 <th className="px-[18px] py-[13px] font-medium">#</th>
                 <th className="px-[18px] py-[13px] font-medium">موضوع</th>
-                <th className="px-[18px] py-[13px] font-medium">محل</th>
+                <th className="px-[18px] py-[13px] font-medium">واحد</th>
+                <th className="px-[18px] py-[13px] font-medium">کارکن</th>
                 <th className="px-[18px] py-[13px] font-medium">زمان ثبت</th>
                 <th className="px-[18px] py-[13px] font-medium">اولویت</th>
                 <th className="px-[18px] py-[13px] font-medium">وضعیت</th>
@@ -164,6 +167,11 @@ export default function QueuePage() {
                     <div className="text-[11.5px] text-app-muted">{r.type}</div>
                   </td>
                   <td className="px-[18px] py-[13px] text-app-fg">{r.unit}</td>
+                  <td className="px-[18px] py-[13px] text-app-muted">
+                    {r.assignedTo
+                      ? (staffNameById.get(r.assignedTo) ?? "—")
+                      : "—"}
+                  </td>
                   <td className="px-[18px] py-[13px] text-app-muted">
                     {r.date}
                   </td>

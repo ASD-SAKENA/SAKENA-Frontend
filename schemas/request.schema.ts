@@ -11,6 +11,12 @@ export const requestSchema = z.object({
     .string()
     .trim()
     .min(5, "شرح مشکل را کمی کامل‌تر بنویسید (حداقل ۵ کاراکتر)."),
+  /** Free-text detail like «راه‌پله طبقه ۳» — the unit itself comes from the residency. */
+  location: z
+    .string()
+    .trim()
+    .max(255, "جزئیات مکان حداکثر ۲۵۵ کاراکتر است.")
+    .optional(),
 });
 
 export type RequestForm = z.infer<typeof requestSchema>;

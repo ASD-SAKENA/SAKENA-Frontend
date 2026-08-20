@@ -105,6 +105,7 @@ describe("RequestModal", () => {
         completionReport: null,
         completionCost: null,
         requestingUnit: null,
+        location: null,
       },
     });
     const user = userEvent.setup();

@@ -33,6 +33,7 @@ const EMPTY: RequestForm = {
   subCategory: "",
   title: "",
   description: "",
+  location: "",
 };
 
 export function RequestModal() {
@@ -60,6 +61,7 @@ export function RequestModal() {
           subCategory: editingRequest.subCategory,
           title: editingRequest.title,
           description: editingRequest.description,
+          location: editingRequest.location ?? "",
         }
       : EMPTY,
   });
@@ -75,6 +77,7 @@ export function RequestModal() {
       subCategory: values.subCategory,
       title: values.title,
       description: values.description,
+      location: values.location?.trim() ? values.location.trim() : undefined,
     };
     try {
       if (editingRequest) {
@@ -163,6 +166,16 @@ export function RequestModal() {
           <AppTextarea
             placeholder="توضیح مختصری درباره مشکل بنویسید…"
             {...register("description")}
+          />
+        </AppField>
+
+        <AppField
+          label="جزئیات مکان (اختیاری)"
+          error={errors.location?.message}
+        >
+          <AppInput
+            placeholder="مثلاً راه‌پله طبقه ۳ یا پارکینگ"
+            {...register("location")}
           />
         </AppField>
 
