@@ -9,6 +9,7 @@ import { AppField, AppInput, AppSelect } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 
 import { useCreateInvitationMutation } from "@/queries/invitations";
+import { useBuildingResidenciesQuery } from "@/queries/residency";
 import { useBuildingsQuery, useUnitsQuery } from "@/queries/units";
 
 import {
@@ -34,6 +35,7 @@ export function InvitationModal({
 }: Props) {
   const { data: buildings = [] } = useBuildingsQuery();
   const { data: units = [] } = useUnitsQuery(buildingId ?? undefined);
+  const { data: residencies = [] } = useBuildingResidenciesQuery(buildingId);
   const createInvitation = useCreateInvitationMutation();
 
   const {
@@ -58,6 +60,11 @@ export function InvitationModal({
   // Only residents live in a unit, and an open link has no addressee.
   const showUnit = role === "RESIDENT";
   const showRecipient = channel === "EMAIL";
+
+  // A unit with a current resident cannot take another, so offering it here
+  // would only produce a link that fails on the invitee's screen.
+  const occupiedUnitIds = new Set(residencies.map((r) => r.apartmentId));
+  const vacantUnits = units.filter((unit) => !occupiedUnitIds.has(unit.id));
 
   const onSubmit = handleSubmit(async (values) => {
     if (!buildingId) return;
@@ -140,13 +147,20 @@ export function InvitationModal({
             >
               <AppSelect {...register("apartmentId")}>
                 <option value="">بدون تخصیص واحد</option>
-                {units.map((unit) => (
+                {vacantUnits.map((unit) => (
                   <option key={unit.id} value={unit.id}>
                     واحد {unit.no}
                   </option>
                 ))}
               </AppSelect>
             </AppField>
+
+            {vacantUnits.length === 0 && units.length > 0 ? (
+              <p className="mb-4 rounded-xl bg-app-surface2 px-3.5 py-2.5 text-[12.5px] leading-[1.9] text-app-muted">
+                همه واحدهای این ساختمان ساکن دارند. برای تخصیص واحد به ساکن
+                جدید، ابتدا از جدول واحدها سکونت فعلی را پایان دهید.
+              </p>
+            ) : null}
 
             <AppField label="وضعیت سکونت" error={errors.tenancy?.message}>
               <AppSelect {...register("tenancy")}>
