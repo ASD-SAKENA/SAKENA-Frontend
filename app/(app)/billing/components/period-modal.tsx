@@ -74,7 +74,10 @@ export function PeriodModal({ open, onClose }: Props) {
         </AppField>
 
         <AppField label="عنوان دوره" error={errors.title?.message}>
-          <AppInput placeholder="مثلاً شارژ تیرماه" {...register("title")} />
+          <AppInput
+            placeholder="مثلاً شارژ تمیزکاری ماهانه"
+            {...register("title")}
+          />
         </AppField>
 
         <AppField label="نوع دوره" error={errors.type?.message}>
