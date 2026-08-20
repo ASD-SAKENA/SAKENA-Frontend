@@ -49,7 +49,7 @@ export default function ReservePage() {
 
   return (
     <div className="sk-page">
-      <MyBookingsPanel />
+      {isResident ? <MyBookingsPanel /> : null}
 
       {/* toolbar */}
       <div className="mb-[14px] flex flex-wrap items-center gap-[14px]">

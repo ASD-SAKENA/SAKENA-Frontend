@@ -16,11 +16,13 @@ import type { ApartmentForm, BuildingForm } from "@/schemas/units.schema";
 
 const STALE = 5 * 60 * 1000;
 
-export function useUnitsQuery(buildingId?: string) {
+/** `undefined` waits for a building list; `null` requests the permitted all-buildings scope. */
+export function useUnitsQuery(buildingId: string | null | undefined) {
   return useQuery({
-    queryKey: unitKeys.list(buildingId),
-    queryFn: () => getUnits(buildingId),
+    queryKey: unitKeys.list(buildingId ?? undefined),
+    queryFn: () => getUnits(buildingId ?? undefined),
     staleTime: STALE,
+    enabled: buildingId !== undefined,
   });
 }
 

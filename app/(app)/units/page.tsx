@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
+import { AppSelect } from "@/components/app/form-controls";
 import { Modal } from "@/components/app/modal";
 import { StatusBadge } from "@/components/app/status-badge";
 
@@ -41,24 +42,43 @@ const BALANCE_COLOR: Record<StatusColor, string> = {
 export default function UnitsPage() {
   const [apartmentModalOpen, setApartmentModalOpen] = useState(false);
   const [buildingModalOpen, setBuildingModalOpen] = useState(false);
+  const [selectedBuildingId, setSelectedBuildingId] = useState<
+    string | null | undefined
+  >(undefined);
   const [editUnit, setEditUnit] = useState<Unit | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     label: string;
   } | null>(null);
 
-  // A manager only ever administers the one building the API scopes them to.
   const { data: buildings = [] } = useBuildingsQuery();
-  const building = buildings[0] ?? null;
-  const { data: units = [] } = useUnitsQuery(building?.id);
-  const deleteApartment = useDeleteApartmentMutation();
-  const { data: residencies = [] } = useBuildingResidenciesQuery(
-    building?.id ?? null,
+  const canViewAllBuildings = buildings.length > 1;
+  const fallbackBuildingId = canViewAllBuildings
+    ? null
+    : (buildings[0]?.id ?? undefined);
+  const selectedBuilding = buildings.find(
+    (candidate) => candidate.id === selectedBuildingId,
   );
+  const buildingId =
+    selectedBuildingId === undefined
+      ? fallbackBuildingId
+      : selectedBuildingId === null
+        ? canViewAllBuildings
+          ? null
+          : fallbackBuildingId
+        : (selectedBuilding?.id ?? fallbackBuildingId);
+  const building =
+    buildingId === null
+      ? null
+      : (buildings.find((candidate) => candidate.id === buildingId) ?? null);
+  const { data: units = [] } = useUnitsQuery(buildingId);
+  const deleteApartment = useDeleteApartmentMutation();
+  const { data: residencies = [] } = useBuildingResidenciesQuery(buildingId);
   const endResidency = useEndResidencyMutation();
 
-  const residencyOf = (apartmentId: string) =>
-    residencies.find((residency) => residency.apartmentId === apartmentId);
+  const residenciesByApartmentId = new Map(
+    residencies.map((residency) => [residency.apartmentId, residency]),
+  );
 
   const handleDelete = () => {
     if (!deleteTarget) return;
@@ -81,7 +101,25 @@ export default function UnitsPage() {
               <div className="text-[15px] font-bold text-app-fg">
                 واحدها و ساکنین
               </div>
-              {building ? (
+              {canViewAllBuildings ? (
+                <AppSelect
+                  aria-label="انتخاب ساختمان"
+                  value={buildingId ?? "all"}
+                  onChange={(event) =>
+                    setSelectedBuildingId(
+                      event.target.value === "all" ? null : event.target.value,
+                    )
+                  }
+                  className="mt-0.5 h-8 min-w-40 text-[12.5px]"
+                >
+                  <option value="all">همه ساختمان‌ها</option>
+                  {buildings.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {candidate.name}
+                    </option>
+                  ))}
+                </AppSelect>
+              ) : building ? (
                 <div className="mt-0.5 text-[12.5px] text-app-muted">
                   {building.name}
                 </div>
@@ -125,7 +163,7 @@ export default function UnitsPage() {
             </thead>
             <tbody>
               {units.map((u) => {
-                const residency = residencyOf(u.id);
+                const residency = residenciesByApartmentId.get(u.id);
                 return (
                   <tr
                     key={u.id}

@@ -51,6 +51,15 @@ describe("useUnitsQuery / useBuildingsQuery", () => {
     await waitFor(() => expect(buildings.current.isSuccess).toBe(true));
     expect(getUnits).toHaveBeenCalledWith("b1");
   });
+
+  it("waits for a building scope instead of fetching every unit", () => {
+    const { result } = renderHook(() => useUnitsQuery(undefined), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(getUnits).not.toHaveBeenCalled();
+  });
 });
 
 describe("mutations invalidate the shared units.all key", () => {

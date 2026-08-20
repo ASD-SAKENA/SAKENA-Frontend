@@ -24,12 +24,15 @@ export function useMyResidencyQuery(options?: { enabled?: boolean }) {
   });
 }
 
-/** Pass null to fetch active residencies across every building. */
-export function useBuildingResidenciesQuery(buildingId: string | null) {
+/** `undefined` waits for a building list; `null` fetches the permitted all-buildings scope. */
+export function useBuildingResidenciesQuery(
+  buildingId: string | null | undefined,
+) {
   return useQuery({
-    queryKey: residencyKeys.byBuilding(buildingId),
-    queryFn: () => getBuildingResidencies(buildingId),
+    queryKey: residencyKeys.byBuilding(buildingId ?? null),
+    queryFn: () => getBuildingResidencies(buildingId ?? null),
     staleTime: STALE,
+    enabled: buildingId !== undefined,
   });
 }
 

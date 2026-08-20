@@ -38,13 +38,23 @@ beforeEach(() => {
 });
 
 describe("useBuildingResidenciesQuery", () => {
-  it("always fetches (no enabled gate) - null means all buildings", async () => {
+  it("fetches the permitted all-buildings scope for null", async () => {
     vi.mocked(getBuildingResidencies).mockResolvedValue([]);
     const { result } = renderHook(() => useBuildingResidenciesQuery(null), {
       wrapper: createWrapper(),
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(getBuildingResidencies).toHaveBeenCalledWith(null);
+  });
+
+  it("waits for a building scope instead of fetching every residency", () => {
+    const { result } = renderHook(
+      () => useBuildingResidenciesQuery(undefined),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(getBuildingResidencies).not.toHaveBeenCalled();
   });
 
   it("fetches a specific building's residencies", async () => {
