@@ -28,6 +28,7 @@ import type { Unit } from "@/types/units.type";
 import { ApartmentModal } from "./components/apartment-modal";
 import { BuildingModal } from "./components/building-modal";
 import { InvitationList } from "./components/invitation-list";
+import { MemberList } from "./components/member-list";
 
 const BALANCE_COLOR: Record<StatusColor, string> = {
   gold: "text-app-gold",
@@ -96,6 +97,8 @@ export default function UnitsPage() {
   return (
     <div className="sk-page flex flex-col gap-4">
       <InvitationList buildingId={building?.id ?? null} />
+
+      <MemberList buildingId={building?.id ?? null} />
 
       <div className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-[var(--ap-shadow-sm)]">
         <div className="flex items-center justify-between border-b border-app-border px-[18px] py-4">

@@ -1,6 +1,7 @@
 import http from "@/services/http";
 
 import type {
+  BuildingMemberApiResponse,
   CreateInvitationApiPayload,
   InvitationApiResponse,
   InvitationPreviewApiResponse,
@@ -10,6 +11,8 @@ export const invitationKeys = {
   all: ["invitations"] as const,
   byBuilding: (buildingId: string) =>
     ["invitations", "building", buildingId] as const,
+  members: (buildingId: string) =>
+    ["invitations", "members", buildingId] as const,
   preview: (token: string) => ["invitations", "preview", token] as const,
 };
 
@@ -41,6 +44,17 @@ export async function getInvitations(
   const { data } = await http.get<InvitationApiResponse[]>("/invitations", {
     params: { buildingId },
   });
+  return data;
+}
+
+/** People who joined the building, and the unit each one occupies. */
+export async function getBuildingMembers(
+  buildingId: string,
+): Promise<BuildingMemberApiResponse[]> {
+  const { data } = await http.get<BuildingMemberApiResponse[]>(
+    "/invitations/members",
+    { params: { buildingId } },
+  );
   return data;
 }
 

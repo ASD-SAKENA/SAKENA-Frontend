@@ -37,6 +37,19 @@ export interface InvitationPreviewApiResponse {
   expiresAt: string;
 }
 
+/**
+ * Someone who joined the building. A null `unitNumber` is the actionable
+ * case — they accepted an invitation but still need a unit assigned.
+ */
+export interface BuildingMemberApiResponse {
+  userId: string;
+  username: string;
+  email: string;
+  role: UserApiRole;
+  unitNumber: string | null;
+  tenancy: TenancyTypeApi | null;
+}
+
 export interface CreateInvitationApiPayload {
   channel: InvitationChannelApi;
   recipient?: string;

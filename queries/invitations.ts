@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   acceptInvitation,
   createInvitation,
+  getBuildingMembers,
   getInvitations,
   invitationKeys,
   previewInvitation,
@@ -31,6 +32,15 @@ export function useBuildingInvitationsQuery(buildingId: string | null) {
   return useQuery({
     queryKey: invitationKeys.byBuilding(buildingId ?? ""),
     queryFn: () => getInvitations(buildingId ?? ""),
+    enabled: buildingId !== null && buildingId !== "",
+    staleTime: STALE,
+  });
+}
+
+export function useBuildingMembersQuery(buildingId: string | null) {
+  return useQuery({
+    queryKey: invitationKeys.members(buildingId ?? ""),
+    queryFn: () => getBuildingMembers(buildingId ?? ""),
     enabled: buildingId !== null && buildingId !== "",
     staleTime: STALE,
   });

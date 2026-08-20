@@ -60,6 +60,9 @@ vi.mock("./components/building-modal", () => ({
 vi.mock("./components/invitation-list", () => ({
   InvitationList: () => null,
 }));
+vi.mock("./components/member-list", () => ({
+  MemberList: () => null,
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
