@@ -41,9 +41,9 @@ export const AppInput = forwardRef<HTMLInputElement, InputProps>(
     if (!icon) {
       return (
         <input
-          ref={ref}
           className={cn(inputBase, "px-3.5 text-right", className)}
           {...props}
+          ref={ref}
         />
       );
     }
@@ -54,9 +54,9 @@ export const AppInput = forwardRef<HTMLInputElement, InputProps>(
           className="pointer-events-none absolute top-1/2 right-3.5 size-[19px] -translate-y-1/2 text-app-muted"
         />
         <input
-          ref={ref}
           className={cn(inputBase, "pr-[42px] pl-3.5 text-right", className)}
           {...props}
+          ref={ref}
         />
       </div>
     );
@@ -69,9 +69,9 @@ export const AppSelect = forwardRef<
 >(function AppSelect({ className, children, ...props }, ref) {
   return (
     <select
-      ref={ref}
       className={cn(inputBase, "cursor-pointer px-3.5 text-right", className)}
       {...props}
+      ref={ref}
     >
       {children}
     </select>
@@ -84,12 +84,12 @@ export const AppTextarea = forwardRef<
 >(function AppTextarea({ className, ...props }, ref) {
   return (
     <textarea
-      ref={ref}
       className={cn(
         "min-h-24 w-full resize-none rounded-xl border border-app-border bg-app-bg px-3.5 py-3 text-right text-[13.5px] text-app-fg transition-[border-color,box-shadow] outline-none placeholder:text-app-muted focus:border-app-gold focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--ap-gold)_22%,transparent)]",
         className,
       )}
       {...props}
+      ref={ref}
     />
   );
 });

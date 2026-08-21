@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,6 +22,13 @@ interface Props {
   periodId: string;
 }
 
+const EMPTY_ITEM: ChargeItemFormValues = {
+  title: "",
+  amount: "",
+  kind: "RECURRING_CHARGE",
+  allocation: "EQUAL",
+};
+
 /** Adds a recurring charge, facility cost or one-off expense to a draft period. */
 export function ChargeItemForm({ periodId }: Props) {
   const addItem = useAddChargeItemMutation();
@@ -28,33 +37,30 @@ export function ChargeItemForm({ periodId }: Props) {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitSuccessful },
   } = useForm<ChargeItemFormValues>({
     resolver: zodResolver(chargeItemSchema),
-    defaultValues: {
-      title: "",
-      amount: "",
-      kind: "RECURRING_CHARGE",
-      allocation: "EQUAL",
-    },
+    defaultValues: EMPTY_ITEM,
   });
 
+  // RHF docs: reset after an async submit must run outside the submit handler,
+  // otherwise the next submit can read empty values while the inputs look filled.
+  useEffect(() => {
+    if (!isSubmitSuccessful) return;
+    reset(EMPTY_ITEM);
+  }, [isSubmitSuccessful, reset]);
+
   const onSubmit = handleSubmit(async (values) => {
-    try {
-      await addItem.mutateAsync({
-        periodId,
-        payload: {
-          title: values.title,
-          amount: Number(values.amount),
-          kind: values.kind,
-          allocation: values.allocation,
-        },
-      });
-      toast.success("ردیف هزینه اضافه شد");
-      reset();
-    } catch {
-      // The global http interceptor already surfaced the error toast.
-    }
+    await addItem.mutateAsync({
+      periodId,
+      payload: {
+        title: values.title,
+        amount: Number(values.amount),
+        kind: values.kind,
+        allocation: values.allocation,
+      },
+    });
+    toast.success("ردیف هزینه اضافه شد");
   });
 
   return (

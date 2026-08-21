@@ -82,10 +82,12 @@ describe("useCreateChargePeriodMutation", () => {
 });
 
 describe("useAddChargeItemMutation", () => {
-  it("passes periodId/payload through to the api call", async () => {
+  it("invalidates only that period's items on success", async () => {
     vi.mocked(addChargeItem).mockResolvedValue({} as never);
+    const client = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(client, "invalidateQueries");
     const { result } = renderHook(() => useAddChargeItemMutation(), {
-      wrapper: createWrapper(),
+      wrapper: createWrapper(client),
     });
     const payload = {
       title: "نگهبانی",
@@ -97,5 +99,11 @@ describe("useAddChargeItemMutation", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(vi.mocked(addChargeItem).mock.calls[0]).toEqual(["p1", payload]);
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: billingKeys.items("p1"),
+    });
+    expect(invalidateSpy).not.toHaveBeenCalledWith({
+      queryKey: billingKeys.all,
+    });
   });
 });

@@ -88,7 +88,7 @@ export function useDeleteChargePeriodMutation() {
 }
 
 export function useAddChargeItemMutation() {
-  const invalidate = useInvalidateBilling();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       periodId,
@@ -97,7 +97,11 @@ export function useAddChargeItemMutation() {
       periodId: string;
       payload: AddChargeItemApiPayload;
     }) => addChargeItem(periodId, payload),
-    onSuccess: invalidate,
+    onSuccess: (_data, { periodId }) => {
+      // Only refresh this period's lines — a full billing invalidate remounts
+      // the draft form mid-reset and breaks the next submit.
+      queryClient.invalidateQueries({ queryKey: billingKeys.items(periodId) });
+    },
   });
 }
 
