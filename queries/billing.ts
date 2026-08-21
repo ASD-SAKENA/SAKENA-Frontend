@@ -10,6 +10,7 @@ import {
   deleteChargePeriod,
   getChargeItems,
   getChargePeriods,
+  getPendingServiceCharges,
   getPeriodInvoices,
   getUnitInvoices,
   issueChargePeriod,
@@ -35,6 +36,15 @@ export function useChargeItemsQuery(periodId: string | null) {
     queryFn: () => getChargeItems(periodId ?? ""),
     enabled: periodId !== null,
     staleTime: STALE,
+  });
+}
+
+export function usePendingServiceChargesQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: billingKeys.pendingServiceCharges,
+    queryFn: getPendingServiceCharges,
+    staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 

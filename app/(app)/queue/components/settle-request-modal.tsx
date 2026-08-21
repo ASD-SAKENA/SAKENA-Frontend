@@ -52,7 +52,9 @@ export function SettleRequestModal({ request, onClose }: Props) {
       });
       await settle.mutateAsync(request.id);
       toast.success(
-        `دستمزد «${request.title}» تسویه و به کیف پول کارکن واریز شد`,
+        choice === "BUILDING_WALLET"
+          ? `دستمزد «${request.title}» از کیف پول ساختمان به کارکن واریز شد`
+          : `دستمزد «${request.title}» به کارکن واریز شد؛ مبلغ در صورت‌حساب دوره بعد ظاهر می‌شود`,
       );
       handleClose();
     } catch {

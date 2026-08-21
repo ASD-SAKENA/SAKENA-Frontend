@@ -5,6 +5,7 @@ import type {
   ChargeItemApiResponse,
   ChargePeriodApiResponse,
   CreateChargePeriodApiPayload,
+  ServiceChargeApiResponse,
   UnitInvoiceApiResponse,
 } from "@/types/billing.api.type";
 
@@ -16,6 +17,7 @@ export const billingKeys = {
   invoices: (periodId: string) => ["billing", "invoices", periodId] as const,
   unitInvoices: (apartmentId: string) =>
     ["billing", "unit-invoices", apartmentId] as const,
+  pendingServiceCharges: ["billing", "pending-service-charges"] as const,
 };
 
 export async function getChargePeriods(
@@ -47,6 +49,15 @@ export async function getChargeItems(
 ): Promise<ChargeItemApiResponse[]> {
   const { data } = await http.get<ChargeItemApiResponse[]>(
     `/charge-periods/${periodId}/items`,
+  );
+  return data;
+}
+
+export async function getPendingServiceCharges(): Promise<
+  ServiceChargeApiResponse[]
+> {
+  const { data } = await http.get<ServiceChargeApiResponse[]>(
+    "/charge-periods/pending-service-charges",
   );
   return data;
 }

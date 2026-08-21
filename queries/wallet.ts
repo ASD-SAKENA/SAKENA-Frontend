@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { billingKeys } from "@/api/billing";
 import { requestKeys } from "@/api/requests";
 import {
   fundWallet,
@@ -85,6 +86,7 @@ export function useSettleRequestMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: requestKeys.all });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });
+      queryClient.invalidateQueries({ queryKey: billingKeys.all });
     },
   });
 }

@@ -9,6 +9,7 @@ import {
   deleteChargePeriod,
   getChargeItems,
   getChargePeriods,
+  getPendingServiceCharges,
   getPeriodInvoices,
   getUnitInvoices,
   issueChargePeriod,
@@ -82,6 +83,13 @@ describe("charge items", () => {
   it("getChargeItems reads a period's items", async () => {
     await getChargeItems("p1");
     expect(http.get).toHaveBeenCalledWith("/charge-periods/p1/items");
+  });
+
+  it("getPendingServiceCharges reads the deferred service cost queue", async () => {
+    await getPendingServiceCharges();
+    expect(http.get).toHaveBeenCalledWith(
+      "/charge-periods/pending-service-charges",
+    );
   });
 
   it("addChargeItem posts a new item to the period", async () => {

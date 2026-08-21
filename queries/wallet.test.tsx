@@ -2,6 +2,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type * as WalletApi from "@/api/wallet";
+import { billingKeys } from "@/api/billing";
 import { requestKeys } from "@/api/requests";
 import { walletKeys } from "@/api/wallet";
 import {
@@ -93,7 +94,7 @@ describe("useRecordPaymentMutation", () => {
 });
 
 describe("useSettleRequestMutation", () => {
-  it("invalidates both requests and wallet queries on success", async () => {
+  it("invalidates requests, wallet and billing queries on success", async () => {
     vi.mocked(settleServiceRequest).mockResolvedValue(undefined);
     const client = createTestQueryClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
@@ -106,5 +107,6 @@ describe("useSettleRequestMutation", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: requestKeys.all });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: walletKeys.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: billingKeys.all });
   });
 });

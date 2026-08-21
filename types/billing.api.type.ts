@@ -13,6 +13,8 @@ export type CostAllocationApi = "EQUAL" | "BY_AREA";
 
 export type InvoiceApiStatus = "UNPAID" | "PARTIALLY_PAID" | "PAID";
 
+export type ServiceChargeApiTarget = "ALL_UNITS" | "SPECIFIC_UNIT";
+
 export interface ChargePeriodApiResponse {
   id: string;
   buildingId: string;
@@ -32,6 +34,17 @@ export interface ChargeItemApiResponse {
   amount: number;
   kind: ChargeItemApiKind;
   allocation: CostAllocationApi;
+  createdAt: string;
+}
+
+export interface ServiceChargeApiResponse {
+  id: string;
+  sourceServiceRequestId: string;
+  buildingId: string;
+  title: string;
+  amount: number;
+  target: ServiceChargeApiTarget;
+  targetApartmentId: string | null;
   createdAt: string;
 }
 

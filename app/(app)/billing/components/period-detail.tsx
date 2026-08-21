@@ -11,6 +11,7 @@ import {
   useChargeItemsQuery,
   useCloseChargePeriodMutation,
   useIssueChargePeriodMutation,
+  usePendingServiceChargesQuery,
   usePeriodInvoicesQuery,
   useRemoveChargeItemMutation,
 } from "@/queries/billing";
@@ -34,6 +35,9 @@ interface Props {
 
 export function PeriodDetail({ period }: Props) {
   const { data: items = [] } = useChargeItemsQuery(period.id);
+  const { data: pendingCharges = [] } = usePendingServiceChargesQuery({
+    enabled: period.status === "DRAFT",
+  });
   const { data: invoices = [] } = usePeriodInvoicesQuery(period.id);
   const { data: units = [] } = useUnitsQuery(period.buildingId);
   const removeItem = useRemoveChargeItemMutation();
@@ -41,7 +45,13 @@ export function PeriodDetail({ period }: Props) {
   const closePeriod = useCloseChargePeriodMutation();
 
   const draft = period.status === "DRAFT";
-  const total = items.reduce((sum, item) => sum + item.amount, 0);
+  const pendingTotal = pendingCharges.reduce(
+    (sum, charge) => sum + charge.amount,
+    0,
+  );
+  const total =
+    items.reduce((sum, item) => sum + item.amount, 0) + pendingTotal;
+  const canIssue = items.length > 0 || pendingCharges.length > 0;
   const collected = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
   const outstanding = invoices.reduce((sum, inv) => sum + inv.remaining, 0);
 
@@ -72,7 +82,7 @@ export function PeriodDetail({ period }: Props) {
             <AppButton
               variant="gold"
               onClick={handleIssue}
-              disabled={items.length === 0 || issuePeriod.isPending}
+              disabled={!canIssue || issuePeriod.isPending}
               className="h-9 gap-1.5 px-3.5 text-[13px]"
             >
               <AppIcon name="receipt_long" className="size-[18px]" />
@@ -97,9 +107,44 @@ export function PeriodDetail({ period }: Props) {
           </div>
         ) : null}
 
-        {items.length === 0 ? (
+        {draft && pendingCharges.length > 0 ? (
+          <div className="mb-4 flex flex-col gap-2 border-b border-app-border pb-4">
+            <p className="text-[12.5px] leading-6 text-app-muted">
+              هزینه‌های خدماتی تسویه‌شده که با صدور این دوره به صورت‌حساب واحدها
+              اضافه می‌شوند (دستمزد از قبل از کیف پول ساختمان پرداخت شده است):
+            </p>
+            {pendingCharges.map((charge) => (
+              <div
+                key={charge.id}
+                className="flex items-center gap-3 rounded-xl border border-dashed border-app-gold/40 bg-app-surface2 px-3.5 py-2.5"
+              >
+                <AppIcon name="handyman" className="size-5 text-app-gold" />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[13.5px] font-semibold text-app-fg">
+                    {charge.title}
+                  </div>
+                  <div className="text-[11.5px] text-app-muted">
+                    {charge.target === "SPECIFIC_UNIT"
+                      ? `واحد ${unitNumberOf(charge.targetApartmentId ?? "")}`
+                      : "تقسیم بین همه واحدها"}
+                  </div>
+                </div>
+                <span className="text-[13.5px] font-bold text-app-gold">
+                  {faNumber(charge.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {items.length === 0 && pendingCharges.length === 0 ? (
           <p className="text-[13px] text-app-muted">
             هنوز ردیف هزینه‌ای برای این دوره ثبت نشده است.
+          </p>
+        ) : items.length === 0 ? (
+          <p className="text-[13px] text-app-muted">
+            ردیف دستی ثبت نشده؛ با صدور، فقط هزینه‌های خدماتی بالا در صورت‌حساب
+            می‌آید.
           </p>
         ) : (
           <div className="flex flex-col gap-2">
@@ -141,14 +186,17 @@ export function PeriodDetail({ period }: Props) {
                 ) : null}
               </div>
             ))}
-            <div className="mt-1 flex items-center justify-between border-t border-app-border pt-3 text-[13.5px]">
-              <span className="text-app-muted">جمع هزینه‌های دوره</span>
-              <span className="font-extrabold text-app-fg">
-                {faNumber(total)} تومان
-              </span>
-            </div>
           </div>
         )}
+
+        {canIssue ? (
+          <div className="mt-3 flex items-center justify-between border-t border-app-border pt-3 text-[13.5px]">
+            <span className="text-app-muted">جمع هزینه‌های دوره</span>
+            <span className="font-extrabold text-app-fg">
+              {faNumber(total)} تومان
+            </span>
+          </div>
+        ) : null}
       </SectionCard>
 
       {invoices.length > 0 ? (

@@ -37,7 +37,10 @@ export default function BuildingWalletPage() {
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-app-border bg-[linear-gradient(135deg,#1A2336,#0F1626)] p-[22px] text-[#ECEEF3] shadow-[var(--ap-shadow)]">
           <div className="text-[13px] text-[#9CA3B0]">موجودی حساب ساختمان</div>
-          <div className="my-[10px] mb-[18px] text-[30px] font-extrabold text-[#E6CC8A]">
+          <div
+            dir="ltr"
+            className="my-[10px] mb-[18px] text-[30px] font-extrabold text-[#E6CC8A]"
+          >
             {faNumber(balance)}{" "}
             <span className="text-[14px] font-medium text-[#9CA3B0]">
               تومان

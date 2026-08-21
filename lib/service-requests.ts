@@ -69,14 +69,15 @@ export const COST_RESPONSIBILITY_OPTIONS: {
     value: "ALL_UNITS",
     label: "تقسیم بین همه واحدها",
     description:
-      "هزینه به‌طور مساوی بین واحدها تقسیم و به شارژ دوره بعد اضافه می‌شود.",
+      "دستمزد الان از کیف پول ساختمان پرداخت می‌شود؛ مبلغ در صدور دوره بعد بین همه واحدها تقسیم می‌شود.",
     icon: "apartment",
     requiresRequestingUnit: true,
   },
   {
     value: "REQUESTING_UNIT",
     label: "بر عهده واحد درخواست‌دهنده",
-    description: "کل هزینه به شارژ دوره بعدِ واحد درخواست‌دهنده اضافه می‌شود.",
+    description:
+      "دستمزد الان از کیف پول ساختمان پرداخت می‌شود؛ کل مبلغ در صورت‌حساب دوره بعد همان واحد می‌آید.",
     icon: "person",
     requiresRequestingUnit: true,
   },
@@ -84,7 +85,7 @@ export const COST_RESPONSIBILITY_OPTIONS: {
     value: "BUILDING_WALLET",
     label: "از کیف پول ساختمان",
     description:
-      "هزینه از موجودی ساختمان پرداخت می‌شود و شارژ واحدها تغییری نمی‌کند.",
+      "دستمزد از موجودی ساختمان پرداخت می‌شود و به شارژ واحدها اضافه نمی‌شود.",
     icon: "account_balance_wallet",
     requiresRequestingUnit: false,
   },
