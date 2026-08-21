@@ -17,13 +17,35 @@ vi.mock("next/navigation", () => ({
 
 let residentRequests: { apiStatus: string }[] = [];
 let managerRequests: { apiStatus: string }[] = [];
+let myResidency: {
+  unitNumber: string | null;
+  buildingName: string | null;
+} | null = null;
+let buildings: { id: string; name: string }[] = [];
+
 vi.mock("@/queries/requests", () => ({
   useResidentRequestsQuery: () => ({ data: residentRequests }),
   useManagerRequestsQuery: () => ({ data: managerRequests }),
 }));
 
+vi.mock("@/queries/residency", () => ({
+  useMyResidencyQuery: () => ({ data: myResidency, isFetched: true }),
+}));
+
+vi.mock("@/queries/units", () => ({
+  useBuildingsQuery: () => ({ data: buildings, isFetched: true }),
+}));
+
 vi.mock("@/queries/tasks", () => ({
   useStaffTasksQuery: () => ({ data: [] }),
+}));
+
+vi.mock("@/queries/wallet", () => ({
+  usePendingPaymentsQuery: () => ({ data: [] }),
+}));
+
+vi.mock("@/hooks/use-building-access", () => ({
+  useBuildingAccess: () => ({ ready: true, hasBuilding: true }),
 }));
 
 function renderSidebar() {
@@ -34,6 +56,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   residentRequests = [];
   managerRequests = [];
+  myResidency = null;
+  buildings = [{ id: "b1", name: "برج نیلوفر" }];
   useAuthStore.setState({
     isAuthenticated: true,
     user: buildAppUser("manager", "مریم احمدی"),
@@ -74,6 +98,23 @@ describe("AppSidebar", () => {
     renderSidebar();
     const queueLink = screen.getByText("صف درخواست‌ها").closest("a");
     expect(queueLink?.textContent).toContain("۲");
+  });
+
+  it("shows the managed building name under the brand", () => {
+    renderSidebar();
+    expect(screen.getByText("برج نیلوفر")).toBeInTheDocument();
+    expect(screen.queryByText("—")).not.toBeInTheDocument();
+  });
+
+  it("shows the resident unit under the brand", () => {
+    useAuthStore.setState({
+      isAuthenticated: true,
+      user: buildAppUser("resident", "علی رضایی"),
+      token: "t",
+    });
+    myResidency = { unitNumber: "12", buildingName: "برج نیلوفر" };
+    renderSidebar();
+    expect(screen.getByText("واحد ۱۲ — برج نیلوفر")).toBeInTheDocument();
   });
 
   it("badges resident requests with only unfinished ones", () => {

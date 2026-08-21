@@ -4,11 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { useMyResidencyQuery } from "@/queries/residency";
 import {
   useManagerRequestsQuery,
   useResidentRequestsQuery,
 } from "@/queries/requests";
 import { useStaffTasksQuery } from "@/queries/tasks";
+import { useBuildingsQuery } from "@/queries/units";
 import { usePendingPaymentsQuery } from "@/queries/wallet";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
@@ -24,6 +26,29 @@ import { cn } from "@/lib/utils";
 import type { Role } from "@/types/app.type";
 
 import { AppIcon } from "./app-icon";
+
+/** Live label under the brand — not the hardcoded "—" on AppUser.unit. */
+function useBrandSubtitle(role: Role, fallback: string): string {
+  const residency = useMyResidencyQuery({ enabled: role === "resident" });
+  const buildings = useBuildingsQuery({ enabled: role === "manager" });
+
+  if (role === "resident") {
+    if (!residency.isFetched) return fallback;
+    const r = residency.data;
+    if (!r) return "بدون واحد";
+    const parts = [
+      r.unitNumber ? `واحد ${toFaDigits(r.unitNumber)}` : null,
+      r.buildingName,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(" — ") : "بدون واحد";
+  }
+  if (role === "manager") {
+    if (!buildings.isFetched) return fallback;
+    return buildings.data?.[0]?.name ?? "بدون ساختمان";
+  }
+  if (role === "staff") return "واحد خدمات";
+  return fallback;
+}
 
 function useNavBadges(role: Role) {
   const { ready, hasBuilding } = useBuildingAccess();
@@ -71,6 +96,7 @@ export function AppSidebar() {
   const closeNav = useAppUiStore((s) => s.closeNav);
 
   const role = user?.role ?? "resident";
+  const brandSubtitle = useBrandSubtitle(role, user?.roleLabel ?? "");
   const badges = useNavBadges(role);
   const items = navForRole(role).map((item) => {
     const count = badges[item.href as keyof typeof badges];
@@ -104,7 +130,9 @@ export function AppSidebar() {
         </div>
         <div className="flex-1">
           <div className="text-[17px] font-extrabold text-app-fg">ساکِنا</div>
-          <div className="text-[11.5px] text-app-muted">{user?.unit}</div>
+          {brandSubtitle ? (
+            <div className="text-[11.5px] text-app-muted">{brandSubtitle}</div>
+          ) : null}
         </div>
         <button
           type="button"
