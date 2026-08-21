@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { optionalDigitString } from "@/lib/latin-digits";
+
 export const requestSchema = z.object({
   categoryGroup: z.string().min(1, "دسته را انتخاب کنید."),
   subCategory: z.string().min(1, "زیر‌دسته را انتخاب کنید."),
@@ -36,12 +38,7 @@ export const completeTaskSchema = z.object({
     .max(4000, "گزارش حداکثر ۴۰۰۰ کاراکتر است.")
     .optional()
     .or(z.literal("")),
-  completionCost: z
-    .string()
-    .trim()
-    .regex(/^\d*$/, "هزینه باید عدد (تومان) باشد.")
-    .optional()
-    .or(z.literal("")),
+  completionCost: optionalDigitString("هزینه باید عدد (تومان) باشد."),
 });
 
 export type CompleteTaskForm = z.infer<typeof completeTaskSchema>;

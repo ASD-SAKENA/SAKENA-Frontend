@@ -66,7 +66,10 @@ export function JoinScreen() {
   };
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-app-bg p-5">
+    <main
+      dir="rtl"
+      className="flex min-h-dvh items-center justify-center bg-app-bg p-5 text-right text-app-fg"
+    >
       {!token || isError ? (
         <div className={CARD}>
           <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--ap-danger)_14%,transparent)]">
@@ -109,21 +112,21 @@ export function JoinScreen() {
           </p>
 
           <dl className="mb-6 flex flex-col gap-2 rounded-xl bg-app-surface2 px-4 py-3 text-[12.5px]">
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between gap-3">
               <dt className="text-app-muted">روش دعوت</dt>
               <dd className="text-app-fg">
                 {INVITATION_CHANNEL_LABELS[invitation.channel]}
               </dd>
             </div>
             {invitation.recipientHint ? (
-              <div className="flex justify-between">
-                <dt className="text-app-muted">فرستاده‌شده به</dt>
-                <dd dir="ltr" className="text-app-fg">
+              <div className="flex items-center justify-between gap-3">
+                <dt className="shrink-0 text-app-muted">فرستاده‌شده به</dt>
+                <dd dir="ltr" className="truncate text-left text-app-fg">
                   {invitation.recipientHint}
                 </dd>
               </div>
             ) : null}
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between gap-3">
               <dt className="text-app-muted">اعتبار تا</dt>
               <dd className="text-app-fg">
                 {formatFaDate(invitation.expiresAt)}
@@ -132,11 +135,11 @@ export function JoinScreen() {
           </dl>
 
           {isAuthenticated && blockedByRole ? (
-            <div className="rounded-xl border border-app-warning/40 bg-[color-mix(in_srgb,var(--ap-warning)_12%,transparent)] px-4 py-3.5">
+            <div className="rounded-xl border border-app-warning/40 bg-[color-mix(in_srgb,var(--ap-warning)_12%,transparent)] px-4 py-3.5 text-right">
               <div className="mb-1.5 flex items-center gap-2">
                 <AppIcon
                   name="error"
-                  className="size-[17px] text-app-warning"
+                  className="size-[17px] shrink-0 text-app-warning"
                 />
                 <span className="text-[13px] font-bold text-app-fg">
                   با این حساب نمی‌توانید واحد بگیرید

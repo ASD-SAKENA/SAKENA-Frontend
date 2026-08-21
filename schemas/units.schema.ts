@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { latinCoercedNumber } from "@/lib/latin-digits";
+
 export const buildingSchema = z.object({
   name: z
     .string()
@@ -22,18 +24,22 @@ export const apartmentSchema = z.object({
     .trim()
     .min(1, "شماره واحد را وارد کنید.")
     .max(50, "شماره واحد حداکثر ۵۰ کاراکتر است."),
-  floorNumber: z.coerce
-    .number({ message: "طبقه باید عدد باشد." })
-    .int("طبقه باید عدد صحیح باشد.")
-    .min(0, "طبقه نمی‌تواند منفی باشد."),
-  areaSquareMeters: z.coerce
-    .number({ message: "متراژ باید عدد باشد." })
-    .positive("متراژ باید بزرگ‌تر از صفر باشد."),
-  bedrooms: z.coerce
-    .number({ message: "تعداد خواب باید عدد باشد." })
-    .int("تعداد خواب باید عدد صحیح باشد.")
-    .min(0, "تعداد خواب نمی‌تواند منفی باشد.")
-    .max(20, "تعداد خواب حداکثر ۲۰ است."),
+  floorNumber: latinCoercedNumber("طبقه باید عدد باشد.").pipe(
+    z
+      .number()
+      .int("طبقه باید عدد صحیح باشد.")
+      .min(0, "طبقه نمی‌تواند منفی باشد."),
+  ),
+  areaSquareMeters: latinCoercedNumber("متراژ باید عدد باشد.").pipe(
+    z.number().positive("متراژ باید بزرگ‌تر از صفر باشد."),
+  ),
+  bedrooms: latinCoercedNumber("تعداد خواب باید عدد باشد.").pipe(
+    z
+      .number()
+      .int("تعداد خواب باید عدد صحیح باشد.")
+      .min(0, "تعداد خواب نمی‌تواند منفی باشد.")
+      .max(20, "تعداد خواب حداکثر ۲۰ است."),
+  ),
 });
 
 /** Raw field values before zod coercion (number inputs yield strings). */

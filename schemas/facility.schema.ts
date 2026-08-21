@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { digitString } from "@/lib/latin-digits";
+
 export const FACILITY_ICONS = [
   { value: "fitness_center", label: "سالن ورزش" },
   { value: "pool", label: "استخر" },
@@ -21,8 +23,7 @@ export const WEEK_DAY_OPTIONS = [
   { value: 6, label: "جمعه" },
 ] as const;
 
-const wholeNumber = (message: string) =>
-  z.string().trim().regex(/^\d+$/, message);
+const wholeNumber = (message: string) => digitString(message);
 
 const HOUR_MESSAGE = "ساعت باید بین ۰ تا ۲۴ باشد.";
 

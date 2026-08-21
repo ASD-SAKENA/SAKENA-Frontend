@@ -43,6 +43,21 @@ describe("apartmentSchema", () => {
     }
   });
 
+  it("accepts Persian digit numeric fields", () => {
+    const result = apartmentSchema.safeParse({
+      ...valid,
+      floorNumber: "۳",
+      areaSquareMeters: "۸۵.۵",
+      bedrooms: "۲",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.floorNumber).toBe(3);
+      expect(result.data.areaSquareMeters).toBe(85.5);
+      expect(result.data.bedrooms).toBe(2);
+    }
+  });
+
   it("rejects a non-uuid buildingId", () => {
     expect(
       apartmentSchema.safeParse({ ...valid, buildingId: "not-a-uuid" }).success,

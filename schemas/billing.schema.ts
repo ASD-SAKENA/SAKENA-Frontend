@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { positiveAmountString } from "@/lib/latin-digits";
+
 const isoDate = z
   .string()
   .trim()
@@ -30,11 +32,7 @@ export const chargeItemSchema = z.object({
     .trim()
     .min(2, "عنوان هزینه را وارد کنید.")
     .max(200, "عنوان حداکثر ۲۰۰ کاراکتر است."),
-  amount: z
-    .string()
-    .trim()
-    .regex(/^\d+$/, "مبلغ باید عدد (تومان) باشد.")
-    .refine((value) => Number(value) > 0, "مبلغ باید بزرگ‌تر از صفر باشد."),
+  amount: positiveAmountString(),
   kind: z.enum(["RECURRING_CHARGE", "FACILITY_COST", "EXTRAORDINARY_EXPENSE"]),
   allocation: z.enum(["EQUAL", "BY_AREA"]),
 });
@@ -42,11 +40,7 @@ export const chargeItemSchema = z.object({
 export type ChargeItemForm = z.infer<typeof chargeItemSchema>;
 
 export const invoicePaymentSchema = z.object({
-  amount: z
-    .string()
-    .trim()
-    .regex(/^\d+$/, "مبلغ باید عدد (تومان) باشد.")
-    .refine((value) => Number(value) > 0, "مبلغ باید بزرگ‌تر از صفر باشد."),
+  amount: positiveAmountString(),
 });
 
 export type InvoicePaymentForm = z.infer<typeof invoicePaymentSchema>;

@@ -4,6 +4,7 @@ import {
   hasNonLatinDigits,
   LATIN_DIGITS_ONLY_MESSAGE,
   normalizeToLatinDigits,
+  positiveAmountString,
   validateOtpAsciiDigits,
 } from "./latin-digits";
 
@@ -32,6 +33,21 @@ describe("normalizeToLatinDigits", () => {
 
   it("leaves ASCII digits untouched", () => {
     expect(normalizeToLatinDigits("1234")).toBe("1234");
+  });
+
+  it("converts mixed text with Persian digits", () => {
+    expect(normalizeToLatinDigits("مبلغ ۱۵۰۰۰۰ تومان")).toBe(
+      "مبلغ 150000 تومان",
+    );
+  });
+});
+
+describe("positiveAmountString", () => {
+  it("accepts Persian digit amounts", () => {
+    const schema = positiveAmountString();
+    const result = schema.safeParse("۱۵۰۰۰۰");
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toBe("150000");
   });
 });
 

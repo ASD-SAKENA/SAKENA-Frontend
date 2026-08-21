@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { faNumber, formatToman, toFaDigits } from "./persian-number";
+import {
+  faNumber,
+  formatToman,
+  toEnDigits,
+  toFaDigits,
+} from "./persian-number";
 
 describe("toFaDigits", () => {
   it("converts ASCII digits to Persian digits", () => {
@@ -13,6 +18,12 @@ describe("toFaDigits", () => {
 
   it("leaves non-digit characters untouched", () => {
     expect(toFaDigits("a1b2")).toBe("a۱b۲");
+  });
+});
+
+describe("toEnDigits", () => {
+  it("converts Persian digits to ASCII", () => {
+    expect(toEnDigits("۰۱۲۳۴۵۶۷۸۹")).toBe("0123456789");
   });
 });
 

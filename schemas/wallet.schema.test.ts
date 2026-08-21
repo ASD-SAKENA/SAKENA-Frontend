@@ -41,6 +41,15 @@ describe("invoicePaymentSchema", () => {
       }).success,
     ).toBe(false);
   });
+
+  it("accepts Persian digit amounts", () => {
+    const result = invoicePaymentSchema.safeParse({
+      amount: "۱۵۰۰۰۰",
+      transactionReference: "TRX-12345",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.amount).toBe("150000");
+  });
 });
 
 describe("topUpSchema", () => {

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { positiveAmountString } from "@/lib/latin-digits";
+
 export const buildingTransactionSchema = z.object({
   direction: z.enum(["CREDIT", "DEBIT"]),
   category: z.enum([
@@ -8,11 +10,7 @@ export const buildingTransactionSchema = z.object({
     "OPERATING_EXPENSE",
     "ADJUSTMENT",
   ]),
-  amount: z
-    .string()
-    .trim()
-    .regex(/^\d+$/, "مبلغ باید عدد (تومان) باشد.")
-    .refine((value) => Number(value) > 0, "مبلغ باید بزرگ‌تر از صفر باشد."),
+  amount: positiveAmountString(),
   description: z
     .string()
     .trim()

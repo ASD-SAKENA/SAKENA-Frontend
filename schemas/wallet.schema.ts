@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-const amountField = z
-  .string()
-  .trim()
-  .regex(/^\d+$/, "مبلغ باید عدد (تومان) باشد.")
-  .refine((value) => Number(value) > 0, "مبلغ باید بزرگ‌تر از صفر باشد.");
+import { positiveAmountString } from "@/lib/latin-digits";
+
+const amountField = positiveAmountString();
 
 export const invoicePaymentSchema = z.object({
   amount: amountField,

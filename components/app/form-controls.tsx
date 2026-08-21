@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react";
 
+import { normalizeToLatinDigits } from "@/lib/latin-digits";
 import { cn } from "@/lib/utils";
 
 import { AppIcon } from "./app-icon";
@@ -37,12 +38,21 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const AppInput = forwardRef<HTMLInputElement, InputProps>(
-  function AppInput({ icon, className, ...props }, ref) {
+  function AppInput({ icon, className, onChange, ...props }, ref) {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const normalized = normalizeToLatinDigits(event.target.value);
+      if (normalized !== event.target.value) {
+        event.target.value = normalized;
+      }
+      onChange?.(event);
+    };
+
     if (!icon) {
       return (
         <input
           className={cn(inputBase, "px-3.5 text-right", className)}
           {...props}
+          onChange={handleChange}
           ref={ref}
         />
       );
@@ -56,6 +66,7 @@ export const AppInput = forwardRef<HTMLInputElement, InputProps>(
         <input
           className={cn(inputBase, "pr-[42px] pl-3.5 text-right", className)}
           {...props}
+          onChange={handleChange}
           ref={ref}
         />
       </div>
@@ -81,7 +92,15 @@ export const AppSelect = forwardRef<
 export const AppTextarea = forwardRef<
   HTMLTextAreaElement,
   React.TextareaHTMLAttributes<HTMLTextAreaElement>
->(function AppTextarea({ className, ...props }, ref) {
+>(function AppTextarea({ className, onChange, ...props }, ref) {
+  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const normalized = normalizeToLatinDigits(event.target.value);
+    if (normalized !== event.target.value) {
+      event.target.value = normalized;
+    }
+    onChange?.(event);
+  };
+
   return (
     <textarea
       className={cn(
@@ -89,6 +108,7 @@ export const AppTextarea = forwardRef<
         className,
       )}
       {...props}
+      onChange={handleChange}
       ref={ref}
     />
   );
