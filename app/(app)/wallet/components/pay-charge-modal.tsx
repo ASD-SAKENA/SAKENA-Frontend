@@ -17,7 +17,7 @@ import {
 } from "@/queries/wallet";
 
 import { formatFaDate } from "@/lib/format-date";
-import { faNumber } from "@/lib/persian-number";
+import { exceedsAmount, faNumber, toAmountInput } from "@/lib/persian-number";
 
 import {
   type InvoicePaymentForm,
@@ -52,7 +52,7 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
   useEffect(() => {
     if (!open || !invoice) return;
     reset({
-      amount: String(Math.trunc(invoice.remaining)),
+      amount: toAmountInput(invoice.remaining),
       transactionReference: "",
     });
   }, [open, invoice, reset]);
@@ -69,7 +69,7 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
   const onSubmit = handleSubmit(async (values) => {
     if (!invoice) return;
     const amount = Number(values.amount);
-    if (amount > invoice.remaining) {
+    if (exceedsAmount(amount, invoice.remaining)) {
       toast.error("مبلغ بیشتر از مانده صورت‌حساب است");
       return;
     }
@@ -94,11 +94,11 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
   const handlePayFromWallet = async () => {
     if (!invoice) return;
     const amount = Number(getValues("amount") || 0);
-    if (amount <= 0 || amount > invoice.remaining) {
+    if (amount <= 0 || exceedsAmount(amount, invoice.remaining)) {
       toast.error("مبلغ معتبر برای پرداخت از کیف پول وارد کنید");
       return;
     }
-    if (amount > balance) {
+    if (exceedsAmount(amount, balance)) {
       toast.error("موجودی کیف پول کافی نیست");
       return;
     }
@@ -155,7 +155,7 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
         <AppField label="مبلغ پرداخت (تومان)" error={errors.amount?.message}>
           <AppInput
             dir="ltr"
-            placeholder={String(Math.trunc(invoice.remaining))}
+            placeholder={toAmountInput(invoice.remaining)}
             {...register("amount")}
           />
         </AppField>
@@ -163,7 +163,7 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
           type="button"
           className="mb-3 text-[12.5px] font-semibold text-app-gold"
           onClick={() =>
-            setValue("amount", String(Math.trunc(invoice.remaining)), {
+            setValue("amount", toAmountInput(invoice.remaining), {
               shouldValidate: true,
             })
           }

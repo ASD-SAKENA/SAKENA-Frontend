@@ -45,6 +45,27 @@ export function optionalDigitString(message: string) {
 }
 
 /**
+ * Positive whole-toman amount as a string. Input stays `string`.
+ *
+ * Used where the backend requires an integral amount — a new charge line must
+ * be whole so the split across units stays free of fractions.
+ */
+export function positiveWholeAmountString(
+  message = "مبلغ باید عدد صحیح (تومان) باشد.",
+  zeroMessage = "مبلغ باید بزرگ‌تر از صفر باشد.",
+) {
+  return z
+    .string()
+    .transform((value) => normalizeToLatinDigits(value.trim()))
+    .pipe(
+      z
+        .string()
+        .regex(/^\d+$/, message)
+        .refine((value) => Number(value) > 0, zeroMessage),
+    );
+}
+
+/**
  * Positive toman amount as a string. Input stays `string`.
  *
  * Up to two decimals are allowed: invoices issued before charges were split

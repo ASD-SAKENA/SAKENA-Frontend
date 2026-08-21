@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { positiveAmountString } from "@/lib/latin-digits";
+import {
+  positiveAmountString,
+  positiveWholeAmountString,
+} from "@/lib/latin-digits";
 
 const isoDate = z
   .string()
@@ -32,7 +35,7 @@ export const chargeItemSchema = z.object({
     .trim()
     .min(2, "عنوان هزینه را وارد کنید.")
     .max(200, "عنوان حداکثر ۲۰۰ کاراکتر است."),
-  amount: positiveAmountString(),
+  amount: positiveWholeAmountString(),
   kind: z.enum(["RECURRING_CHARGE", "FACILITY_COST", "EXTRAORDINARY_EXPENSE"]),
   allocation: z.enum(["EQUAL", "BY_AREA"]),
 });

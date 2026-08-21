@@ -19,7 +19,7 @@ import { useReserveStore } from "@/stores/reserve.store";
 
 import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
-import { formatToman, toFaDigits } from "@/lib/persian-number";
+import { exceedsAmount, formatToman, toFaDigits } from "@/lib/persian-number";
 import {
   DEFAULT_RULES,
   isBeyondAdvanceWindow,
@@ -119,8 +119,10 @@ export function ReserveComposer() {
   const price = slotPrice(rules, cDur, partySize);
   // Sending a booking the wallet cannot pay for only earns a server-side
   // rejection, so the shortfall is caught here instead.
-  const shortfall = Math.max(price - balance, 0);
-  const cannotAfford = shortfall > 0;
+  // Compared in whole cents: a sub-rial floating-point drift must not block a
+  // resident whose balance exactly covers the booking.
+  const cannotAfford = exceedsAmount(price, balance);
+  const shortfall = cannotAfford ? price - balance : 0;
 
   const blocked =
     overrunsClosing ||

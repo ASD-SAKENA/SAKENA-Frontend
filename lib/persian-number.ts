@@ -29,3 +29,29 @@ export function faNumber(value: number): string {
 export function formatToman(value: number): string {
   return `${faNumber(value)} تومان`;
 }
+
+/**
+ * An amount as it should be typed into a payment field.
+ *
+ * Truncating here made a fractional debt unpayable: a remaining balance of
+ * 0.84 became "0", which then failed the greater-than-zero rule. Toman is
+ * stored to two decimals, so at most two are kept and a whole amount stays
+ * free of a pointless ".00".
+ */
+export function toAmountInput(value: number): string {
+  // Round before formatting: toFixed alone reads 100.005 as slightly less than
+  // it is (binary floating point) and would round it down to 100.00.
+  const rounded = Math.round(value * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+}
+
+/**
+ * Whether a payment exceeds what is owed, compared in whole cents.
+ *
+ * A raw `>` is one floating-point ULP away from breaking: when the remaining
+ * balance carries a long tail (0.6666…), the amount shown to the user rounds
+ * up to 0.67, and the naive check rejects a payment the UI itself filled in.
+ */
+export function exceedsAmount(payment: number, owed: number): boolean {
+  return Math.round(payment * 100) > Math.round(owed * 100);
+}

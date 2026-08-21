@@ -5,6 +5,7 @@ import {
   LATIN_DIGITS_ONLY_MESSAGE,
   normalizeToLatinDigits,
   positiveAmountString,
+  positiveWholeAmountString,
   validateOtpAsciiDigits,
 } from "./latin-digits";
 
@@ -77,6 +78,25 @@ describe("positiveAmountString", () => {
   it("still rejects zero", () => {
     expect(schema.safeParse("0").success).toBe(false);
     expect(schema.safeParse("0.00").success).toBe(false);
+  });
+});
+
+describe("positiveWholeAmountString", () => {
+  const schema = positiveWholeAmountString();
+
+  it("accepts a whole amount", () => {
+    expect(schema.safeParse("۱۵۰۰۰۰").success).toBe(true);
+  });
+
+  it("refuses a fraction, which the backend would reject anyway", () => {
+    // A charge line must stay whole so the split across units has no
+    // fractions; accepting 100.50 here would only earn a 400.
+    expect(schema.safeParse("100.50").success).toBe(false);
+  });
+
+  it("still refuses zero and non-numeric input", () => {
+    expect(schema.safeParse("0").success).toBe(false);
+    expect(schema.safeParse("abc").success).toBe(false);
   });
 });
 

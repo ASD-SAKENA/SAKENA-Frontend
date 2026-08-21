@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { positiveAmountString } from "@/lib/latin-digits";
+import { positiveWholeAmountString } from "@/lib/latin-digits";
 
 export const buildingTransactionSchema = z.object({
   direction: z.enum(["CREDIT", "DEBIT"]),
@@ -10,7 +10,7 @@ export const buildingTransactionSchema = z.object({
     "OPERATING_EXPENSE",
     "ADJUSTMENT",
   ]),
-  amount: positiveAmountString(),
+  amount: positiveWholeAmountString(),
   description: z
     .string()
     .trim()
