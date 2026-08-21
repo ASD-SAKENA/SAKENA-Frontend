@@ -49,14 +49,8 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="text-[14.5px] font-semibold text-[var(--sk-text-muted)] no-underline transition-colors hover:text-[var(--sk-gold-light)]"
-          >
-            ورود
-          </Link>
           <GoldButton href="/login" className="h-[42px] px-5 text-sm">
-            درخواست دمو
+            ورود
             <ArrowLeft className="size-[18px]" />
           </GoldButton>
         </div>

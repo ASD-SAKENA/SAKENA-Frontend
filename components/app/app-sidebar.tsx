@@ -14,6 +14,8 @@ import { usePendingPaymentsQuery } from "@/queries/wallet";
 import { useAppUiStore } from "@/stores/app-ui.store";
 import { useAuthStore } from "@/stores/auth.store";
 
+import { useBuildingAccess } from "@/hooks/use-building-access";
+
 import { navForRole } from "@/lib/app-nav";
 import { toFaDigits } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
@@ -23,14 +25,15 @@ import type { Role } from "@/types/app.type";
 import { AppIcon } from "./app-icon";
 
 function useNavBadges(role: Role) {
+  const { ready, hasBuilding } = useBuildingAccess();
   const residentRequests = useResidentRequestsQuery({
-    enabled: role === "resident",
+    enabled: role === "resident" && ready && hasBuilding,
   });
   const managerRequests = useManagerRequestsQuery({
-    enabled: role === "manager",
+    enabled: role === "manager" && ready && hasBuilding,
   });
   const pendingPayments = usePendingPaymentsQuery({
-    enabled: role === "manager",
+    enabled: role === "manager" && ready && hasBuilding,
   });
   const staffTasks = useStaffTasksQuery({ enabled: role === "staff" });
 

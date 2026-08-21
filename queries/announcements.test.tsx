@@ -35,6 +35,15 @@ describe("useAnnouncementsQuery", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(getAnnouncements).toHaveBeenCalledTimes(1);
   });
+
+  it("does not fetch when disabled", async () => {
+    vi.mocked(getAnnouncements).mockResolvedValue([]);
+    renderHook(() => useAnnouncementsQuery({ enabled: false }), {
+      wrapper: createWrapper(),
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(getAnnouncements).not.toHaveBeenCalled();
+  });
 });
 
 describe("useCreateAnnouncementMutation", () => {

@@ -13,7 +13,8 @@ export function useAnnouncementsQuery(options?: { enabled?: boolean }) {
     queryKey: announcementKeys.list,
     queryFn: getAnnouncements,
     staleTime: 5 * 60 * 1000,
-    enabled: options?.enabled,
+    // Default true when omitted (tests / managers with known access).
+    enabled: options?.enabled ?? true,
   });
 }
 

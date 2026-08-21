@@ -16,6 +16,8 @@ import { useResidentRequestsQuery } from "@/queries/requests";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
 
+import { useBuildingAccess } from "@/hooks/use-building-access";
+
 import { faNumber } from "@/lib/persian-number";
 
 import type { StatusColor } from "@/types/app.type";
@@ -39,12 +41,13 @@ const CHIP_TINT: Record<StatusColor, string> = {
 export function ResidentDashboard() {
   const router = useRouter();
   const { data } = useResidentDashboardQuery();
-  const hasUnit = data?.hasUnit === true;
+  const { ready, hasBuilding } = useBuildingAccess();
+  const canLoadBuildingData = ready && hasBuilding;
   const { data: announcements = [] } = useAnnouncementsQuery({
-    enabled: hasUnit,
+    enabled: canLoadBuildingData,
   });
   const { data: requests = [] } = useResidentRequestsQuery({
-    enabled: hasUnit,
+    enabled: canLoadBuildingData,
   });
   const openRequestModal = useAppUiStore((s) => s.openRequestModal);
 

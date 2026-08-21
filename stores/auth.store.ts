@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { getQueryClient } from "@/lib/query-client";
+
 import type { AppUser, Role } from "@/types/app.type";
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -49,8 +51,16 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       user: null,
       token: null,
-      login: (user, token) => set({ isAuthenticated: true, user, token }),
-      logout: () => set({ isAuthenticated: false, user: null, token: null }),
+      login: (user, token) => {
+        // Drop the previous session's cached queries so a new user never
+        // inherits "hasUnit" / building data and fires forbidden requests.
+        getQueryClient().clear();
+        set({ isAuthenticated: true, user, token });
+      },
+      logout: () => {
+        getQueryClient().clear();
+        set({ isAuthenticated: false, user: null, token: null });
+      },
     }),
     {
       name: "sakena-auth",

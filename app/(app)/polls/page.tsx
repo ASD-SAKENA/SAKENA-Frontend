@@ -6,10 +6,11 @@ import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { NoUnitNotice } from "@/components/app/no-unit-notice";
 
-import { useResidentDashboardQuery } from "@/queries/dashboard";
 import { usePollsQuery } from "@/queries/polls";
 
 import { useAuthStore } from "@/stores/auth.store";
+
+import { useBuildingAccess } from "@/hooks/use-building-access";
 
 import { cn } from "@/lib/utils";
 
@@ -28,12 +29,10 @@ export default function PollsPage() {
   const role = useAuthStore((s) => s.user?.role);
   const isManager = role === "manager";
   const isResident = role === "resident";
+  const { ready, hasBuilding } = useBuildingAccess();
 
-  const { data: dashboard } = useResidentDashboardQuery({
-    enabled: isResident,
-  });
   const { data: polls = [] } = usePollsQuery({
-    enabled: !isResident || dashboard?.hasUnit === true,
+    enabled: ready && hasBuilding,
   });
   const [composerOpen, setComposerOpen] = useState(false);
   const [filter, setFilter] = useState<PollFilter>("all");
@@ -44,12 +43,23 @@ export default function PollsPage() {
     return polls;
   }, [polls, filter]);
 
-  if (isResident && dashboard && !dashboard.hasUnit) {
-    return (
-      <div className="sk-page max-w-[820px]">
-        <NoUnitNotice />
-      </div>
-    );
+  if (ready && !hasBuilding) {
+    if (isResident) {
+      return (
+        <div className="sk-page max-w-[820px]">
+          <NoUnitNotice />
+        </div>
+      );
+    }
+    if (isManager) {
+      return (
+        <div className="sk-page max-w-[820px]">
+          <div className="rounded-2xl border border-app-border bg-app-surface p-10 text-center text-[13.5px] text-app-muted">
+            ابتدا یک ساختمان ثبت کنید تا بتوانید نظرسنجی بسازید.
+          </div>
+        </div>
+      );
+    }
   }
 
   return (
