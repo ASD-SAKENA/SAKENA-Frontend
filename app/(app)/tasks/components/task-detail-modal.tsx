@@ -28,9 +28,6 @@ export function TaskDetailModal({ task, onClose }: Props) {
         <div className="mt-4 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <StatusBadge color={status.color}>{status.label}</StatusBadge>
-            <StatusBadge color={task.priorityColor}>
-              {task.priority}
-            </StatusBadge>
           </div>
 
           <div>

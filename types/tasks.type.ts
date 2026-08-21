@@ -1,6 +1,6 @@
 import type { StatusColor } from "@/types/app.type";
 import type { ServiceRequestApiStatus } from "@/types/requests.api.type";
-import type { RequestPriority, RequestStatus } from "@/types/requests.type";
+import type { RequestStatus } from "@/types/requests.type";
 
 export interface StaffTask {
   id: string;
@@ -15,8 +15,6 @@ export interface StaffTask {
   /** Optional free-text detail the resident added, e.g. «راه‌پله طبقه ۳». */
   location: string | null;
   date: string;
-  priority: RequestPriority;
-  priorityColor: StatusColor;
   /** Same Persian status wording every other role sees. */
   status: RequestStatus;
   statusColor: StatusColor;

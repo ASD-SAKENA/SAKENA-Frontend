@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 
+import { ChevronDown } from "lucide-react";
+
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/ui/accordion";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/ui/collapsible";
 
 import { useInvoiceLineItemsQuery } from "@/queries/billing";
 
-import { ALLOCATION_LABELS, CHARGE_KIND_LABELS } from "@/lib/billing";
+import { CHARGE_KIND_LABELS } from "@/lib/billing";
 import { faNumber } from "@/lib/persian-number";
+import { cn } from "@/lib/utils";
 
 interface Props {
   invoiceId: string;
@@ -27,58 +29,66 @@ export function InvoiceLineItemsAccordion({ invoiceId }: Props) {
   } = useInvoiceLineItemsQuery(invoiceId, { enabled: open });
 
   return (
-    <Accordion
-      type="single"
-      collapsible
-      className="mt-2 w-full"
-      onValueChange={(value) => setOpen(value === "details")}
-    >
-      <AccordionItem value="details" className="border-0">
-        <AccordionTrigger className="py-2 text-[12.5px] font-semibold text-app-muted hover:no-underline **:data-[slot=accordion-trigger-icon]:text-app-muted">
-          جزئیات هزینه‌های این صورت‌حساب
-        </AccordionTrigger>
-        <AccordionContent className="pb-1">
+    <Collapsible open={open} onOpenChange={setOpen} className="mt-3">
+      <CollapsibleTrigger className="group inline-flex items-center gap-1 rounded-md text-[12.5px] font-medium text-app-muted outline-none transition-colors hover:text-app-fg focus-visible:ring-2 focus-visible:ring-app-gold/40">
+        جزئیات هزینه‌ها
+        <ChevronDown
+          className={cn(
+            "size-3.5 shrink-0 transition-transform duration-200",
+            open && "rotate-180",
+          )}
+          aria-hidden
+        />
+      </CollapsibleTrigger>
+
+      <CollapsibleContent>
+        <div className="mt-2.5">
           {isFetching && lines.length === 0 ? (
-            <p className="text-[12.5px] text-app-muted">در حال بارگذاری…</p>
+            <p className="py-1 text-[12.5px] text-app-muted">در حال بارگذاری…</p>
           ) : null}
+
           {isError ? (
-            <p className="text-[12.5px] text-app-danger">
+            <p className="py-1 text-[12.5px] text-app-danger">
               جزئیات هزینه بارگذاری نشد.
             </p>
           ) : null}
+
           {!isFetching && !isError && lines.length === 0 ? (
-            <p className="text-[12.5px] text-app-muted">
-              ردیف هزینه‌ای برای این صورت‌حساب ثبت نشده است.
+            <p className="py-1 text-[12.5px] text-app-muted">
+              ردیف هزینه‌ای ثبت نشده است.
             </p>
           ) : null}
+
           {lines.length > 0 ? (
-            <ul className="flex flex-col gap-2">
+            <ul className="divide-y divide-app-border border-t border-app-border">
               {lines.map((line) => (
                 <li
                   key={line.id}
-                  className="flex items-start justify-between gap-3 rounded-lg bg-app-surface px-3 py-2.5"
+                  className="flex items-baseline justify-between gap-4 py-2.5 first:pt-2"
                 >
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-app-fg">
+                    <div className="truncate text-[13px] font-medium text-app-fg">
                       {line.title}
                     </div>
                     <div className="mt-0.5 text-[11.5px] text-app-muted">
-                      {CHARGE_KIND_LABELS[line.kind]} ·{" "}
-                      {ALLOCATION_LABELS[line.allocation]}
+                      {CHARGE_KIND_LABELS[line.kind]}
                     </div>
                   </div>
-                  <div className="shrink-0 text-left" dir="ltr">
-                    <div className="text-[13px] font-bold text-app-fg">
-                      {faNumber(line.shareAmount)}
-                    </div>
-                    <div className="text-[11px] text-app-muted">تومان</div>
+                  <div
+                    className="shrink-0 text-[13px] font-semibold tabular-nums text-app-fg"
+                    dir="ltr"
+                  >
+                    {faNumber(line.shareAmount)}{" "}
+                    <span className="text-[11px] font-normal text-app-muted">
+                      تومان
+                    </span>
                   </div>
                 </li>
               ))}
             </ul>
           ) : null}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

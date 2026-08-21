@@ -70,12 +70,11 @@ describe("getResidentRequests", () => {
 });
 
 describe("getManagerRequests", () => {
-  it("shows an honest 'نامشخص' priority instead of a fabricated level", async () => {
+  it("maps manager requests without inventing a priority field", async () => {
     vi.mocked(http.get).mockResolvedValue({ data: [rawRequest] });
     const [req] = await getManagerRequests();
     expect(http.get).toHaveBeenCalledWith("/service-requests/admin");
-    expect(req.priority).toBe("نامشخص");
-    expect(req.priorityColor).toBe("muted");
+    expect(req).not.toHaveProperty("priority");
     expect(req.unit).toBe("—");
   });
 

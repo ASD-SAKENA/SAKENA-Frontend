@@ -15,8 +15,6 @@ export type RequestStatus =
   | "تسویه‌شده"
   | "ردشده";
 
-export type RequestPriority = "فوری" | "متوسط" | "کم" | "نامشخص";
-
 export interface ServiceRequest {
   /** Backend UUID — used for actions; display uses `displayId`. */
   id: string;
@@ -38,7 +36,7 @@ export interface ServiceRequest {
 }
 
 /**
- * Manager queue view adds unit, submission time and priority columns.
+ * Manager queue view adds unit and submission time columns.
  * `unit` shows the resolved apartment (building floor + unit number) when
  * the request has one; falls back to "—" otherwise.
  */
@@ -53,8 +51,6 @@ export interface ManagerRequest {
   status: RequestStatus;
   statusColor: StatusColor;
   apiStatus: ServiceRequestApiStatus;
-  priority: RequestPriority;
-  priorityColor: StatusColor;
   /** Null until the manager picks how the completed request's cost is paid. */
   costResponsibility: ServiceCostResponsibility | null;
   completionCost: number | null;

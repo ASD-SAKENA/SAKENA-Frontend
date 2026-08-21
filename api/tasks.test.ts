@@ -45,11 +45,10 @@ beforeEach(() => {
 });
 
 describe("getStaffTasks", () => {
-  it("shows an honest 'نامشخص' priority instead of a fabricated level", async () => {
+  it("maps assigned requests into staff tasks without a priority field", async () => {
     mockedGetAssigned.mockResolvedValue([baseRequest]);
     const [task] = await getStaffTasks();
-    expect(task.priority).toBe("نامشخص");
-    expect(task.priorityColor).toBe("muted");
+    expect(task).not.toHaveProperty("priority");
     expect(task.done).toBe(false);
   });
 

@@ -63,8 +63,7 @@ function toServiceRequest(r: ServiceRequestApiResponse): ServiceRequest {
  * `unit` shows the resolved apartment (building floor + unit number) when
  * the request has one; falls back to "—" for the legacy/staff-filed
  * requests that predate the residency-required-to-file gate, which have no
- * requesting apartment at all. Priority is not modelled server-side yet —
- * shown as "نامشخص" rather than a fabricated level.
+ * requesting apartment at all.
  */
 function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
   const meta = REQUEST_STATUS_META[r.status];
@@ -79,8 +78,6 @@ function toManagerRequest(r: ServiceRequestApiResponse): ManagerRequest {
     status: meta.label,
     statusColor: meta.color,
     apiStatus: r.status,
-    priority: "نامشخص",
-    priorityColor: "muted",
     costResponsibility: r.costResponsibility,
     completionCost: r.completionCost,
     assignedTo: r.assignedTo,

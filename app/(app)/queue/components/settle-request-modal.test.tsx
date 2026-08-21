@@ -37,8 +37,6 @@ const baseRequest: ManagerRequest = {
   status: "تایید شده",
   statusColor: "success",
   apiStatus: "CONFIRMED",
-  priority: "نامشخص",
-  priorityColor: "muted",
   costResponsibility: null,
   completionCost: 500000,
   assignedTo: null,
