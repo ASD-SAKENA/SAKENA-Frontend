@@ -30,7 +30,7 @@ export function InvoiceLineItemsAccordion({ invoiceId }: Props) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="mt-3">
-      <CollapsibleTrigger className="group inline-flex items-center gap-1 rounded-md text-[12.5px] font-medium text-app-muted outline-none transition-colors hover:text-app-fg focus-visible:ring-2 focus-visible:ring-app-gold/40">
+      <CollapsibleTrigger className="group inline-flex items-center gap-1 rounded-md text-[12.5px] font-medium text-app-muted transition-colors outline-none hover:text-app-fg focus-visible:ring-2 focus-visible:ring-app-gold/40">
         جزئیات هزینه‌ها
         <ChevronDown
           className={cn(
@@ -44,7 +44,9 @@ export function InvoiceLineItemsAccordion({ invoiceId }: Props) {
       <CollapsibleContent>
         <div className="mt-2.5">
           {isFetching && lines.length === 0 ? (
-            <p className="py-1 text-[12.5px] text-app-muted">در حال بارگذاری…</p>
+            <p className="py-1 text-[12.5px] text-app-muted">
+              در حال بارگذاری…
+            </p>
           ) : null}
 
           {isError ? (
@@ -75,7 +77,7 @@ export function InvoiceLineItemsAccordion({ invoiceId }: Props) {
                     </div>
                   </div>
                   <div
-                    className="shrink-0 text-[13px] font-semibold tabular-nums text-app-fg"
+                    className="shrink-0 text-[13px] font-semibold text-app-fg tabular-nums"
                     dir="ltr"
                   >
                     {faNumber(line.shareAmount)}{" "}
