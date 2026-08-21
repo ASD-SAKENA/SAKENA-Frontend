@@ -61,7 +61,6 @@ export function navForRole(role: Role): NavItem[] {
   return [
     { label: "وظایف من", icon: "checklist", href: "/tasks" },
     { label: "تاریخچه کارها", icon: "history", href: "/tasks/history" },
-    { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
     { label: "پروفایل", icon: "person", href: "/profile" },
   ];
 }

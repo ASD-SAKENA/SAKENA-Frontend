@@ -32,12 +32,16 @@ describe("navForRole", () => {
     );
   });
 
-  it("shows announcements to every role that has them", () => {
-    for (const role of ["resident", "manager", "staff"] as const) {
-      expect(navForRole(role).map((item) => item.href)).toContain(
-        "/announcements",
-      );
-    }
+  it("shows announcements to residents and managers, not staff", () => {
+    expect(navForRole("resident").map((item) => item.href)).toContain(
+      "/announcements",
+    );
+    expect(navForRole("manager").map((item) => item.href)).toContain(
+      "/announcements",
+    );
+    expect(navForRole("staff").map((item) => item.href)).not.toContain(
+      "/announcements",
+    );
   });
 
   it("every item has a unique href within a role's nav", () => {
