@@ -9,10 +9,12 @@ import { ROW, useReserveStore } from "@/stores/reserve.store";
 
 import { useSelectedFacility } from "@/hooks/use-selected-facility";
 
+import { toFaDigits } from "@/lib/persian-number";
 import {
   DEFAULT_RULES,
   isBeyondAdvanceWindow,
   isPastSlot,
+  peopleAtSlot,
   slotTime,
   weekStartDate,
 } from "@/lib/reserve-time";
@@ -75,10 +77,17 @@ export function ReserveCalendar() {
     (now.getHours() - rules.startHour) * 2 + now.getMinutes() / 30;
   const nowTop = nowSlot >= 0 && nowSlot <= rules.slots ? nowSlot * ROW : null;
 
+  const capacity = selected?.capacity ?? 0;
+
+  /** Seats still free at a given row — capacity applies per moment. */
+  const seatsFreeAt = (day: number, slot: number): number =>
+    capacity - peopleAtSlot(bookings, day, slot);
+
   const isBookable = (day: number, slot: number): boolean =>
     !rules.closedDays.includes(day) &&
     !isPastSlot(weekOffset, day, slot, rules.startHour) &&
-    !isBeyondAdvanceWindow(weekOffset, day, slot, rules);
+    !isBeyondAdvanceWindow(weekOffset, day, slot, rules) &&
+    seatsFreeAt(day, slot) > 0;
 
   const handleCellClick = (day: number, slot: number) => {
     if (consumeJustDragged()) return;
@@ -155,6 +164,11 @@ export function ReserveCalendar() {
                       <div
                         key={slot}
                         onClick={() => handleCellClick(di, slot)}
+                        title={
+                          bookable && peopleAtSlot(bookings, di, slot) > 0
+                            ? `${toFaDigits(seatsFreeAt(di, slot))} نفر ظرفیت خالی`
+                            : undefined
+                        }
                         onMouseDown={(e) => {
                           e.preventDefault();
                           if (bookable) startDrag(di, slot);
@@ -177,6 +191,10 @@ export function ReserveCalendar() {
                   {dayBlocks.map((b, i) => {
                     const top = b.start * ROW;
                     const height = b.dur * ROW - 3;
+                    // While seats remain, the block yields the left half of
+                    // the row so another resident can still click to book it.
+                    const shared =
+                      b.start < rules.slots && isBookable(di, b.start);
                     const time = `${slotTime(b.start, rules.startHour)} – ${slotTime(
                       b.start + b.dur,
                       rules.startHour,
@@ -186,11 +204,14 @@ export function ReserveCalendar() {
                         <div
                           key={b.id}
                           onClick={() => setOpenBooking(b)}
-                          className="absolute right-1 left-1 z-[3] cursor-pointer overflow-hidden rounded-lg bg-[linear-gradient(155deg,var(--ap-gold-light),var(--ap-gold))] px-2 py-[5px] text-app-gold-fg shadow-[0_4px_12px_rgba(201,162,78,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[filter] hover:brightness-105"
+                          className={cn(
+                            "absolute z-[3] cursor-pointer overflow-hidden rounded-lg bg-[linear-gradient(155deg,var(--ap-gold-light),var(--ap-gold))] px-2 py-[5px] text-app-gold-fg shadow-[0_4px_12px_rgba(201,162,78,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[filter] hover:brightness-105",
+                            shared ? "right-1 left-1/2" : "right-1 left-1",
+                          )}
                           style={{ top, height }}
                         >
                           <div className="truncate text-[11px] leading-[1.4] font-bold">
-                            رزرو شما
+                            رزرو شما · {toFaDigits(b.partySize)} نفر
                           </div>
                           <div className="truncate text-[10.5px] leading-[1.4] text-[rgba(10,14,26,0.72)]">
                             {time}
@@ -203,7 +224,10 @@ export function ReserveCalendar() {
                       <div
                         key={b.id}
                         onClick={() => setOpenBooking(b)}
-                        className="absolute right-1 left-1 z-[2] cursor-pointer overflow-hidden rounded-lg border border-[var(--ap-glass-brd)] px-2 py-[5px] text-app-fg backdrop-blur-[6px] transition-[filter] hover:brightness-105"
+                        className={cn(
+                          "absolute z-[2] cursor-pointer overflow-hidden rounded-lg border border-[var(--ap-glass-brd)] px-2 py-[5px] text-app-fg backdrop-blur-[6px] transition-[filter] hover:brightness-105",
+                          shared ? "right-1 left-1/2" : "right-1 left-1",
+                        )}
                         style={{
                           top,
                           height,
@@ -213,7 +237,7 @@ export function ReserveCalendar() {
                         }}
                       >
                         <div className="truncate text-[11px] leading-[1.4] font-bold">
-                          رزرو شده
+                          رزرو شده · {toFaDigits(b.partySize)} نفر
                         </div>
                         <div className="truncate text-[10.5px] leading-[1.4] text-app-muted">
                           {time}

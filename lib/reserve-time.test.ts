@@ -5,6 +5,8 @@ import {
   hasSessionStarted,
   isBeyondAdvanceWindow,
   isPastSlot,
+  peakPeopleInRange,
+  peopleAtSlot,
   rangeToGrid,
   SLOT_MINUTES,
   slotPrice,
@@ -103,6 +105,41 @@ describe("slotPrice", () => {
 
   it("stays free for a whole party when the facility has no hourly price", () => {
     expect(slotPrice({ ...DEFAULT_RULES, hourlyPrice: 0 }, 2, 5)).toBe(0);
+  });
+});
+
+describe("peopleAtSlot / peakPeopleInRange", () => {
+  // 08:00-09:00 (rows 0-1) for 10 people, 09:00-10:00 (rows 2-3) for 6.
+  const bookings = [
+    { day: 1, start: 0, dur: 2, partySize: 10 },
+    { day: 1, start: 2, dur: 2, partySize: 6 },
+  ];
+
+  it("counts only the bookings covering that row", () => {
+    expect(peopleAtSlot(bookings, 1, 0)).toBe(10);
+    expect(peopleAtSlot(bookings, 1, 2)).toBe(6);
+  });
+
+  it("ignores another day", () => {
+    expect(peopleAtSlot(bookings, 2, 0)).toBe(0);
+  });
+
+  it("does not add up back-to-back bookings", () => {
+    // The bug: an 08:00 booking used to consume the 09:00 slot's capacity.
+    expect(peakPeopleInRange(bookings, 1, 0, 4)).toBe(10);
+  });
+
+  it("adds up bookings that genuinely share a row", () => {
+    const overlapping = [
+      { day: 1, start: 0, dur: 4, partySize: 4 },
+      { day: 1, start: 2, dur: 2, partySize: 6 },
+    ];
+
+    expect(peakPeopleInRange(overlapping, 1, 0, 4)).toBe(10);
+  });
+
+  it("is zero for a range no booking touches", () => {
+    expect(peakPeopleInRange(bookings, 1, 6, 2)).toBe(0);
   });
 });
 

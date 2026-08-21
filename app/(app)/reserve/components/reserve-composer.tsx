@@ -22,6 +22,7 @@ import {
   DEFAULT_RULES,
   isBeyondAdvanceWindow,
   isPastSlot,
+  peakPeopleInRange,
   SLOT_MINUTES,
   slotPrice,
   slotTime,
@@ -86,12 +87,15 @@ export function ReserveComposer() {
     (b) => b.day === composer.day && cStart < b.start + b.dur && b.start < cEnd,
   );
   const conflictMine = overlapping.some((b) => b.mine);
-  // Capacity is people, not bookings: counting rows made a 20-person facility
-  // look full after 20 reservations even when only 20 seats of 100 were taken.
-  const peopleBooked = overlapping.reduce((sum, b) => sum + b.partySize, 0);
+  // Capacity is people at a moment, not bookings over a range: an 08:00-09:00
+  // booking must not consume seats from the 09:00-10:00 slot next to it.
+  const peopleBooked = peakPeopleInRange(bookings, composer.day, cStart, cDur);
   const seatsLeft = selected !== null ? selected.capacity - peopleBooked : 0;
   const capacityFull = selected !== null && seatsLeft <= 0;
   const partyTooBig = partySize > seatsLeft;
+  // The party can also simply exceed what the facility holds at all.
+  const overFacilityCapacity =
+    selected !== null && partySize > selected.capacity;
   const closedDay = rules.closedDays.includes(composer.day);
   const pastSlot = isPastSlot(
     weekOffset,
@@ -111,6 +115,7 @@ export function ReserveComposer() {
     conflictMine ||
     capacityFull ||
     partyTooBig ||
+    overFacilityCapacity ||
     closedDay ||
     pastSlot ||
     tooFarAhead;
@@ -120,19 +125,30 @@ export function ReserveComposer() {
   // Per-person hourly rate, so the total moves with the party size.
   const price = slotPrice(rules, cDur, partySize);
 
-  const warning = closedDay
-    ? "این امکان در این روز تعطیل است."
-    : pastSlot
-      ? "زمان انتخاب‌شده گذشته است؛ بازه‌ای در آینده انتخاب کنید."
-      : tooFarAhead
-        ? `رزرو حداکثر تا ${toFaDigits(rules.maxAdvanceDays)} روز آینده ممکن است.`
-        : overrunsClosing
-          ? "پایان رزرو از ساعت کاری این امکان فراتر می‌رود."
-          : capacityFull
-            ? "ظرفیت این سانس تکمیل شده و قفل است. زمان دیگری انتخاب کنید."
-            : conflictMine
-              ? "شما در این بازه رزرو دیگری دارید. مدت یا زمان دیگری انتخاب کنید."
-              : null;
+  const warning = ((): string | null => {
+    if (closedDay) return "این امکان در این روز تعطیل است.";
+    if (pastSlot) {
+      return "زمان انتخاب‌شده گذشته است؛ بازه‌ای در آینده انتخاب کنید.";
+    }
+    if (tooFarAhead) {
+      return `رزرو حداکثر تا ${toFaDigits(rules.maxAdvanceDays)} روز آینده ممکن است.`;
+    }
+    if (overrunsClosing)
+      return "پایان رزرو از ساعت کاری این امکان فراتر می‌رود.";
+    if (overFacilityCapacity && selected) {
+      return `ظرفیت کل این امکان ${toFaDigits(selected.capacity)} نفر است.`;
+    }
+    if (capacityFull) {
+      return "ظرفیت این سانس تکمیل شده و قفل است. زمان دیگری انتخاب کنید.";
+    }
+    if (partyTooBig) {
+      return `در این بازه فقط ${toFaDigits(remaining)} نفر جای خالی هست؛ تعداد نفرات را کم کنید.`;
+    }
+    if (conflictMine) {
+      return "شما در این بازه رزرو دیگری دارید. مدت یا زمان دیگری انتخاب کنید.";
+    }
+    return null;
+  })();
 
   const handleConfirm = () => {
     if (!selected || blocked || createBooking.isPending) return;
@@ -223,7 +239,7 @@ export function ReserveComposer() {
         <button
           type="button"
           onClick={() => setPartySize((n) => n + 1)}
-          disabled={partySize >= Math.max(remaining, 1)}
+          disabled={partySize >= remaining}
           aria-label="افزایش تعداد نفرات"
           className="flex size-10 items-center justify-center rounded-[10px] border border-app-border text-app-fg transition-colors hover:border-app-gold disabled:opacity-40"
         >

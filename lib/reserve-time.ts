@@ -157,3 +157,33 @@ export function isBeyondAdvanceWindow(
   const limit = Date.now() + rules.maxAdvanceDays * 24 * 60 * 60 * 1000;
   return slotToDate(weekOffset, day, slot, rules.startHour).getTime() > limit;
 }
+
+/**
+ * The most people booked at any single half-hour row of a day.
+ *
+ * Mirrors the backend's `SlotOccupancy`: capacity applies to a moment, so a
+ * booking only occupies the rows it actually covers.
+ */
+export function peopleAtSlot(
+  bookings: { day: number; start: number; dur: number; partySize: number }[],
+  day: number,
+  slot: number,
+): number {
+  return bookings
+    .filter((b) => b.day === day && b.start <= slot && slot < b.start + b.dur)
+    .reduce((sum, b) => sum + b.partySize, 0);
+}
+
+/** Peak occupancy across the rows a candidate booking would cover. */
+export function peakPeopleInRange(
+  bookings: { day: number; start: number; dur: number; partySize: number }[],
+  day: number,
+  start: number,
+  dur: number,
+): number {
+  let peak = 0;
+  for (let slot = start; slot < start + dur; slot++) {
+    peak = Math.max(peak, peopleAtSlot(bookings, day, slot));
+  }
+  return peak;
+}
