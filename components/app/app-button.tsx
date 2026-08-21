@@ -4,13 +4,15 @@ import { forwardRef } from "react";
 
 import { cn } from "@/lib/utils";
 
-type Variant = "gold" | "outline" | "ghost";
+type Variant = "gold" | "outline" | "ghost" | "danger";
 
 const VARIANT: Record<Variant, string> = {
   gold: "bg-app-gold text-app-gold-fg font-bold hover:brightness-[1.06] disabled:cursor-not-allowed disabled:opacity-50",
   outline:
     "border border-app-border bg-transparent text-app-fg font-semibold hover:border-app-gold",
   ghost: "bg-transparent text-app-gold font-semibold hover:bg-app-surface2",
+  danger:
+    "bg-app-danger text-white font-bold hover:brightness-[1.06] disabled:cursor-not-allowed disabled:opacity-50",
 };
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {

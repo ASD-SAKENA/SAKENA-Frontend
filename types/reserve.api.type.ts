@@ -49,6 +49,8 @@ export interface BookingApiResponse {
   endsAt: string;
   /** People this booking brings; capacity is counted in people. */
   partySize: number;
+  /** What was actually taken from the resident's wallet at booking time. */
+  price: number;
 }
 
 export interface MyBookingApiResponse {
@@ -58,10 +60,12 @@ export interface MyBookingApiResponse {
   facilityIcon: string | null;
   startsAt: string;
   endsAt: string;
+  partySize: number;
   price: number;
 }
 
 export interface CreateBookingApiPayload {
   startsAt: string;
   endsAt: string;
+  partySize: number;
 }

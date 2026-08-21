@@ -1,11 +1,8 @@
 "use client";
 
-import { toast } from "sonner";
+import { useState } from "react";
 
-import {
-  useCancelBookingMutation,
-  useFacilityBookingsQuery,
-} from "@/queries/reserve";
+import { useFacilityBookingsQuery } from "@/queries/reserve";
 
 import { useAuthStore } from "@/stores/auth.store";
 import { ROW, useReserveStore } from "@/stores/reserve.store";
@@ -22,6 +19,9 @@ import {
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
+import type { GridBooking } from "@/types/reserve.type";
+
+import { BookingDetailsModal } from "./booking-details-modal";
 
 const DAY_NAMES = [
   "شنبه",
@@ -53,7 +53,7 @@ export function ReserveCalendar() {
     weekOffset,
     rules,
   );
-  const cancelBooking = useCancelBookingMutation();
+  const [openBooking, setOpenBooking] = useState<GridBooking | null>(null);
 
   const weekStart = weekStartDate(weekOffset);
   const todayIdx = weekOffset === 0 ? (new Date().getDay() + 1) % 7 : -1;
@@ -84,17 +84,6 @@ export function ReserveCalendar() {
     if (consumeJustDragged()) return;
     if (!isBookable(day, slot)) return;
     openComposer(day, slot, rules.minSlots);
-  };
-
-  const handleCancel = (bookingId: string, mine: boolean) => {
-    if (!selected || cancelBooking.isPending) return;
-    cancelBooking.mutate(
-      { facilityId: selected.id, bookingId },
-      {
-        onSuccess: () =>
-          toast.success(mine ? "رزرو شما لغو شد" : "رزرو ساکن لغو شد"),
-      },
-    );
   };
 
   return (
@@ -196,12 +185,12 @@ export function ReserveCalendar() {
                       return (
                         <div
                           key={b.id}
-                          onClick={() => handleCancel(b.id, true)}
+                          onClick={() => setOpenBooking(b)}
                           className="absolute right-1 left-1 z-[3] cursor-pointer overflow-hidden rounded-lg bg-[linear-gradient(155deg,var(--ap-gold-light),var(--ap-gold))] px-2 py-[5px] text-app-gold-fg shadow-[0_4px_12px_rgba(201,162,78,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[filter] hover:brightness-105"
                           style={{ top, height }}
                         >
                           <div className="truncate text-[11px] leading-[1.4] font-bold">
-                            رزرو شما · لغو
+                            رزرو شما
                           </div>
                           <div className="truncate text-[10.5px] leading-[1.4] text-[rgba(10,14,26,0.72)]">
                             {time}
@@ -213,11 +202,7 @@ export function ReserveCalendar() {
                     return (
                       <div
                         key={b.id}
-                        onClick={() =>
-                          isManager
-                            ? handleCancel(b.id, false)
-                            : toast("این بازه توسط ساکن دیگری رزرو شده است")
-                        }
+                        onClick={() => setOpenBooking(b)}
                         className="absolute right-1 left-1 z-[2] cursor-pointer overflow-hidden rounded-lg border border-[var(--ap-glass-brd)] px-2 py-[5px] text-app-fg backdrop-blur-[6px] transition-[filter] hover:brightness-105"
                         style={{
                           top,
@@ -228,7 +213,7 @@ export function ReserveCalendar() {
                         }}
                       >
                         <div className="truncate text-[11px] leading-[1.4] font-bold">
-                          {isManager ? "رزرو شده · لغو" : "رزرو شده"}
+                          رزرو شده
                         </div>
                         <div className="truncate text-[10.5px] leading-[1.4] text-app-muted">
                           {time}
@@ -274,6 +259,14 @@ export function ReserveCalendar() {
           </div>
         </div>
       </div>
+
+      <BookingDetailsModal
+        booking={openBooking}
+        facilityId={selected?.id ?? ""}
+        facilityLabel={selected?.label ?? ""}
+        canCancel={isManager || (openBooking?.mine ?? false)}
+        onClose={() => setOpenBooking(null)}
+      />
     </div>
   );
 }

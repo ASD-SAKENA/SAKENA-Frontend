@@ -12,6 +12,7 @@ import {
 } from "@/queries/reserve";
 
 import { formatToman, toFaDigits } from "@/lib/persian-number";
+import { hasSessionStarted } from "@/lib/reserve-time";
 
 import type { MyBooking } from "@/types/reserve.type";
 
@@ -39,7 +40,14 @@ export function MyBookingsPanel() {
     if (cancelBooking.isPending) return;
     cancelBooking.mutate(
       { facilityId: booking.facilityId, bookingId: booking.id },
-      { onSuccess: () => toast.success("رزرو شما لغو شد") },
+      {
+        onSuccess: () =>
+          toast.success(
+            booking.price > 0
+              ? "رزرو لغو شد و مبلغ به کیف پول شما بازگشت"
+              : "رزرو شما لغو شد",
+          ),
+      },
     );
   };
 
@@ -69,16 +77,26 @@ export function MyBookingsPanel() {
             <span className="text-[12.5px] text-app-muted">
               {timeRange(booking)}
             </span>
+            <span className="text-[12.5px] text-app-muted">
+              {toFaDigits(booking.partySize)} نفر
+            </span>
             <span className="mr-auto text-[12.5px] font-semibold text-app-gold">
               {booking.price > 0 ? formatToman(booking.price) : "رایگان"}
             </span>
-            <button
-              type="button"
-              onClick={() => handleCancel(booking)}
-              className="text-[12.5px] font-semibold text-app-danger"
-            >
-              لغو رزرو
-            </button>
+            {!hasSessionStarted(booking.startsAt) ? (
+              <button
+                type="button"
+                onClick={() => handleCancel(booking)}
+                className="text-[12.5px] font-semibold text-app-danger"
+              >
+                لغو رزرو
+              </button>
+            ) : (
+              // The session is under way; the backend refuses to refund it.
+              <span className="text-[12.5px] text-app-muted">
+                در حال برگزاری
+              </span>
+            )}
           </li>
         ))}
       </ul>

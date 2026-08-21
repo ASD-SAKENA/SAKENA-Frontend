@@ -41,6 +41,7 @@ export interface MyBooking {
   facilityIcon: string;
   startsAt: Date;
   endsAt: Date;
+  partySize: number;
   price: number;
 }
 
@@ -56,6 +57,11 @@ export interface GridBooking {
   dur: number;
   /** People this booking brings — capacity is measured in people. */
   partySize: number;
+  /** What the booking cost, so the details modal can name the refund. */
+  price: number;
+  /** Absolute times, for showing details and deciding if the session started. */
+  startsAt: Date;
+  endsAt: Date;
   /** Whether the current user made this booking. */
   mine: boolean;
 }

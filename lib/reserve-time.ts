@@ -116,10 +116,25 @@ export function slotTime(i: number, startHour: number): string {
   return `${toFaDigits(hh)}:${toFaDigits(mm)}`;
 }
 
-/** Price of a slot of `dur` rows, mirroring the backend's hourly formula. */
-export function slotPrice(rules: FacilityRules, dur: number): number {
+/**
+ * Price of a slot of `dur` rows, mirroring the backend's hourly formula.
+ * The hourly rate is per person, so a bigger party pays proportionally more.
+ */
+export function slotPrice(
+  rules: FacilityRules,
+  dur: number,
+  partySize = 1,
+): number {
   if (rules.hourlyPrice <= 0) return 0;
-  return Math.round((rules.hourlyPrice * dur * SLOT_MINUTES) / 60);
+  return Math.round((rules.hourlyPrice * dur * SLOT_MINUTES * partySize) / 60);
+}
+
+/**
+ * Whether a booking's session has already begun. The backend refuses to cancel
+ * (and therefore to refund) from this moment on, so the UI hides the option.
+ */
+export function hasSessionStarted(startsAt: Date): boolean {
+  return startsAt.getTime() <= Date.now();
 }
 
 /** Whether a grid cell lies in the past (a booking must start in the future). */

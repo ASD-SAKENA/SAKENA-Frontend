@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   DEFAULT_RULES,
+  hasSessionStarted,
   isBeyondAdvanceWindow,
   isPastSlot,
   rangeToGrid,
@@ -93,6 +94,25 @@ describe("slotPrice", () => {
   it("prices a half-hour (1-slot) booking", () => {
     const rules = { ...DEFAULT_RULES, hourlyPrice: 100000 };
     expect(slotPrice(rules, 1)).toBe(50000);
+  });
+
+  it("charges the hourly rate per person, so a bigger party pays more", () => {
+    const rules = { ...DEFAULT_RULES, hourlyPrice: 100000 };
+    expect(slotPrice(rules, 2, 3)).toBe(300000);
+  });
+
+  it("stays free for a whole party when the facility has no hourly price", () => {
+    expect(slotPrice({ ...DEFAULT_RULES, hourlyPrice: 0 }, 2, 5)).toBe(0);
+  });
+});
+
+describe("hasSessionStarted", () => {
+  it("is true once the start time has passed", () => {
+    expect(hasSessionStarted(new Date(2026, 2, 5, 11, 0, 0))).toBe(true);
+  });
+
+  it("is false while the session is still ahead", () => {
+    expect(hasSessionStarted(new Date(2026, 2, 5, 13, 0, 0))).toBe(false);
   });
 });
 

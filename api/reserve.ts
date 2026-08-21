@@ -118,6 +118,9 @@ export async function getBookings(
         id: booking.id,
         ...grid,
         partySize: booking.partySize,
+        price: booking.price,
+        startsAt: new Date(booking.startsAt),
+        endsAt: new Date(booking.endsAt),
         mine: myUserId !== null && booking.bookedBy === myUserId,
       };
     })
@@ -137,6 +140,7 @@ export async function getMyBookings(): Promise<MyBooking[]> {
       facilityIcon: booking.facilityIcon ?? DEFAULT_FACILITY_ICON,
       startsAt: new Date(booking.startsAt),
       endsAt: new Date(booking.endsAt),
+      partySize: booking.partySize,
       price: booking.price,
     }))
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());

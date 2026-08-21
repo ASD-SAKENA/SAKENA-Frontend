@@ -117,7 +117,8 @@ export function ReserveComposer() {
 
   const remaining = Math.max(seatsLeft, 0);
 
-  const price = slotPrice(rules, cDur);
+  // Per-person hourly rate, so the total moves with the party size.
+  const price = slotPrice(rules, cDur, partySize);
 
   const warning = closedDay
     ? "این امکان در این روز تعطیل است."

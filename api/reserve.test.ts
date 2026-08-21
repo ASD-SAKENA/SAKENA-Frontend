@@ -119,6 +119,7 @@ describe("getBookings", () => {
           startsAt: start.toISOString(),
           endsAt: end.toISOString(),
           partySize: 1,
+          price: 50000,
         },
       ],
     });
@@ -126,7 +127,17 @@ describe("getBookings", () => {
     const bookings = await getBookings("f1", 0, DEFAULT_RULES, "user-1");
 
     expect(bookings).toEqual([
-      { id: "bk1", day: 1, start: 4, dur: 2, partySize: 1, mine: true },
+      {
+        id: "bk1",
+        day: 1,
+        start: 4,
+        dur: 2,
+        partySize: 1,
+        price: 50000,
+        startsAt: start,
+        endsAt: end,
+        mine: true,
+      },
     ]);
   });
 
