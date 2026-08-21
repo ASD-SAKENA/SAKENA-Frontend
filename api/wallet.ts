@@ -21,7 +21,12 @@ export const walletKeys = {
   submissions: ["wallet", "submissions"] as const,
   pendingPayments: ["wallet", "pending-payments"] as const,
   buildingPayments: (status?: string, periodId?: string) =>
-    ["wallet", "building-payments", status ?? "all", periodId ?? "all"] as const,
+    [
+      "wallet",
+      "building-payments",
+      status ?? "all",
+      periodId ?? "all",
+    ] as const,
 };
 
 function paymentLabel(payment: PaymentApiResponse): string {

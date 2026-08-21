@@ -82,7 +82,10 @@ describe("useSubmitInvoicePaymentMutation", () => {
     vi.mocked(submitInvoicePayment).mockResolvedValue({
       id: "p1",
       invoiceId: "inv-1",
+      periodId: "period-1",
       periodTitle: "شارژ",
+      unitNumber: "12",
+      payerUsername: "resident",
       title: "شارژ",
       amount: 100000,
       transactionReference: "TRX-1",

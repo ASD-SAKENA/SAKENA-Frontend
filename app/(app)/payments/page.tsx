@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+
+import Link from "next/link";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -123,9 +124,14 @@ export default function PaymentsPage() {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.4fr_1fr]">
         <div className="rounded-2xl border border-app-border bg-[linear-gradient(135deg,#1A2336,#0F1626)] p-5 text-[#ECEEF3] shadow-[var(--ap-shadow)]">
           <div className="text-[13px] text-[#9CA3B0]">موجودی حساب ساختمان</div>
-          <div className="mt-2 text-[28px] font-extrabold text-[#E6CC8A]" dir="ltr">
+          <div
+            className="mt-2 text-[28px] font-extrabold text-[#E6CC8A]"
+            dir="ltr"
+          >
             {faNumber(balance)}{" "}
-            <span className="text-[14px] font-medium text-[#9CA3B0]">تومان</span>
+            <span className="text-[14px] font-medium text-[#9CA3B0]">
+              تومان
+            </span>
           </div>
           <p className="mt-2 text-[12.5px] text-[#9CA3B0]">
             وصول شارژ بعد از تایید پرداخت اینجا می‌نشیند.
