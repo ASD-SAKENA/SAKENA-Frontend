@@ -28,34 +28,50 @@ export function MessageBubble({
   const canEdit = mine && message.kind === "TEXT" && !message.deleted;
   const canDelete = (mine || canModerate) && !message.deleted;
 
+  const avatar = (
+    <Avatar
+      src={message.senderAvatarUrl}
+      initial={senderInitial(message.senderName)}
+      size={32}
+      alt={message.senderName}
+      className="shrink-0 bg-app-surface2 text-app-steel"
+    />
+  );
+
   if (message.deleted) {
     return (
-      <div className={cn("flex", mine ? "justify-start" : "justify-end")}>
-        <div className="rounded-2xl border border-dashed border-app-border px-3.5 py-2 text-[12.5px] text-app-muted">
+      <div
+        dir="ltr"
+        className={cn(
+          "flex items-end gap-2",
+          mine ? "justify-end" : "justify-start",
+        )}
+      >
+        {!mine ? avatar : null}
+        <div
+          dir="rtl"
+          className="rounded-2xl border border-dashed border-app-border px-3.5 py-2 text-[12.5px] text-app-muted"
+        >
           این پیام حذف شده است
         </div>
+        {mine ? avatar : null}
       </div>
     );
   }
 
   return (
     <div
+      dir="ltr"
       className={cn(
         "flex items-end gap-2",
-        mine ? "justify-start" : "justify-end",
+        mine ? "justify-end" : "justify-start",
       )}
     >
-      {!mine ? (
-        <Avatar
-          src={message.senderAvatarUrl}
-          initial={senderInitial(message.senderName)}
-          size={32}
-          alt={message.senderName}
-          className="bg-app-surface2 text-app-steel"
-        />
-      ) : null}
+      {/* Others: avatar left of the bubble. Own: avatar right, bubble left of it. */}
+      {!mine ? avatar : null}
 
       <div
+        dir="rtl"
         className={cn(
           "group max-w-[min(75%,520px)] rounded-2xl px-3.5 py-2.5 shadow-[var(--ap-shadow-sm)]",
           mine
@@ -141,6 +157,8 @@ export function MessageBubble({
           ) : null}
         </div>
       </div>
+
+      {mine ? avatar : null}
     </div>
   );
 }
