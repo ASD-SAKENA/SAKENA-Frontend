@@ -40,6 +40,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "دوره‌های شارژ", icon: "payments", href: "/billing" },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
+      { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
       { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },

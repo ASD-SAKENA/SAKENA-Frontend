@@ -18,6 +18,22 @@ describe("navForRole", () => {
     expect(hrefs).toContain("/profile");
   });
 
+  it("lets a manager reach announcements, since only they can publish one", () => {
+    // The page hides its publish button behind the manager role, so without a
+    // nav entry the feature existed but nobody could open it.
+    expect(navForRole("manager").map((item) => item.href)).toContain(
+      "/announcements",
+    );
+  });
+
+  it("shows announcements to every role that has them", () => {
+    for (const role of ["resident", "manager", "staff"] as const) {
+      expect(navForRole(role).map((item) => item.href)).toContain(
+        "/announcements",
+      );
+    }
+  });
+
   it("every item has a unique href within a role's nav", () => {
     for (const role of ["resident", "manager", "staff"] as const) {
       const hrefs = navForRole(role).map((item) => item.href);
