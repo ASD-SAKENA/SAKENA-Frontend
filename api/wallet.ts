@@ -5,6 +5,7 @@ import { faNumber } from "@/lib/persian-number";
 
 import type {
   PaymentApiResponse,
+  PaymentApiStatus,
   RecordBuildingTransactionApiPayload,
   SubmitInvoicePaymentPayload,
   WalletBalanceApiResponse,
@@ -19,6 +20,8 @@ export const walletKeys = {
   buildingLedger: ["wallet", "building", "transactions"] as const,
   submissions: ["wallet", "submissions"] as const,
   pendingPayments: ["wallet", "pending-payments"] as const,
+  buildingPayments: (status?: string, periodId?: string) =>
+    ["wallet", "building-payments", status ?? "all", periodId ?? "all"] as const,
 };
 
 function paymentLabel(payment: PaymentApiResponse): string {
@@ -106,6 +109,19 @@ export async function getPaymentSubmissions(): Promise<PaymentApiResponse[]> {
 
 export async function getPendingPayments(): Promise<PaymentApiResponse[]> {
   const { data } = await http.get<PaymentApiResponse[]>("/payments/pending");
+  return data;
+}
+
+export async function getBuildingPayments(options?: {
+  status?: PaymentApiStatus;
+  periodId?: string;
+}): Promise<PaymentApiResponse[]> {
+  const { data } = await http.get<PaymentApiResponse[]>("/payments/building", {
+    params: {
+      status: options?.status,
+      periodId: options?.periodId,
+    },
+  });
   return data;
 }
 

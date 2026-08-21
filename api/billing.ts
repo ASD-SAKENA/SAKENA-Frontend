@@ -18,6 +18,8 @@ export const billingKeys = {
   unitInvoices: (apartmentId: string) =>
     ["billing", "unit-invoices", apartmentId] as const,
   myInvoices: ["billing", "my-invoices"] as const,
+  outstandingInvoices: (periodId?: string) =>
+    ["billing", "outstanding", periodId ?? "all"] as const,
   pendingServiceCharges: ["billing", "pending-service-charges"] as const,
 };
 
@@ -120,6 +122,17 @@ export async function getUnitInvoices(
 /** Signed-in resident's invoices for their current unit. */
 export async function getMyInvoices(): Promise<UnitInvoiceApiResponse[]> {
   const { data } = await http.get<UnitInvoiceApiResponse[]>("/invoices/mine");
+  return data;
+}
+
+/** Manager: unpaid invoices across issued periods, optional period filter. */
+export async function getOutstandingInvoices(
+  periodId?: string,
+): Promise<UnitInvoiceApiResponse[]> {
+  const { data } = await http.get<UnitInvoiceApiResponse[]>(
+    "/invoices/outstanding",
+    { params: periodId ? { periodId } : undefined },
+  );
   return data;
 }
 

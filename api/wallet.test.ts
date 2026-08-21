@@ -5,6 +5,7 @@ import http from "@/services/http";
 import {
   fundWallet,
   getBuildingLedger,
+  getBuildingPayments,
   getBuildingWalletBalance,
   getMyWalletBalance,
   getPendingPayments,
@@ -130,6 +131,16 @@ describe("getPendingPayments", () => {
     mockedGet.mockResolvedValue({ data: [] });
     expect(await getPendingPayments()).toEqual([]);
     expect(http.get).toHaveBeenCalledWith("/payments/pending");
+  });
+});
+
+describe("getBuildingPayments", () => {
+  it("reads the building ledger with optional filters", async () => {
+    mockedGet.mockResolvedValue({ data: [] });
+    await getBuildingPayments({ status: "CONFIRMED", periodId: "p1" });
+    expect(http.get).toHaveBeenCalledWith("/payments/building", {
+      params: { status: "CONFIRMED", periodId: "p1" },
+    });
   });
 });
 

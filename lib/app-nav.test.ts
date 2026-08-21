@@ -24,6 +24,12 @@ describe("navForRole", () => {
     );
   });
 
+  it("labels the manager payments hub clearly", () => {
+    expect(
+      navForRole("manager").find((item) => item.href === "/payments")?.label,
+    ).toBe("پرداخت‌ها و بدهی‌ها");
+  });
+
   it("lets a manager reach announcements, since only they can publish one", () => {
     // The page hides its publish button behind the manager role, so without a
     // nav entry the feature existed but nobody could open it.
@@ -76,8 +82,8 @@ describe("pageMetaForPath", () => {
 
   it("maps the manager payment review route", () => {
     expect(pageMetaForPath("/payments")).toEqual([
-      "بررسی پرداخت‌ها",
-      "مالی · تایید یا رد رسیدهای بانکی ساکنین",
+      "پرداخت‌ها و بدهی‌ها",
+      "مالی · تایید، تاریخچه و بدهی‌های باز واحدها",
     ]);
   });
 

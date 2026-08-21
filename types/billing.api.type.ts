@@ -55,6 +55,8 @@ export interface UnitInvoiceApiResponse {
   startsOn: string | null;
   endsOn: string | null;
   apartmentId: string;
+  unitNumber: string | null;
+  residentUsername: string | null;
   amount: number;
   paidAmount: number;
   remaining: number;

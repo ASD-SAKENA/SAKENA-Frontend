@@ -5,7 +5,10 @@ export type PaymentApiStatus = "PENDING" | "CONFIRMED" | "REJECTED";
 export interface PaymentApiResponse {
   id: string;
   invoiceId: string | null;
+  periodId: string | null;
   periodTitle: string | null;
+  unitNumber: string | null;
+  payerUsername: string | null;
   title: string;
   amount: number;
   transactionReference: string;

@@ -11,6 +11,7 @@ import {
   getChargeItems,
   getChargePeriods,
   getMyInvoices,
+  getOutstandingInvoices,
   getPendingServiceCharges,
   getPeriodInvoices,
   getUnitInvoices,
@@ -73,6 +74,18 @@ export function useMyInvoicesQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: billingKeys.myInvoices,
     queryFn: getMyInvoices,
+    staleTime: STALE,
+    enabled: options?.enabled,
+  });
+}
+
+export function useOutstandingInvoicesQuery(
+  periodId?: string | null,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: billingKeys.outstandingInvoices(periodId ?? undefined),
+    queryFn: () => getOutstandingInvoices(periodId ?? undefined),
     staleTime: STALE,
     enabled: options?.enabled,
   });

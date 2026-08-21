@@ -8,6 +8,7 @@ import {
   confirmPayment,
   fundWallet,
   getBuildingLedger,
+  getBuildingPayments,
   getBuildingWalletBalance,
   getMyWalletBalance,
   getPaymentSubmissions,
@@ -20,7 +21,10 @@ import {
   walletKeys,
 } from "@/api/wallet";
 
-import type { SubmitInvoicePaymentPayload } from "@/types/wallet.api.type";
+import type {
+  PaymentApiStatus,
+  SubmitInvoicePaymentPayload,
+} from "@/types/wallet.api.type";
 
 const STALE = 5 * 60 * 1000;
 
@@ -74,6 +78,18 @@ export function usePendingPaymentsQuery(options?: { enabled?: boolean }) {
   });
 }
 
+export function useBuildingPaymentsQuery(
+  filters?: { status?: PaymentApiStatus; periodId?: string },
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: walletKeys.buildingPayments(filters?.status, filters?.periodId),
+    queryFn: () => getBuildingPayments(filters),
+    staleTime: STALE,
+    enabled: options?.enabled,
+  });
+}
+
 function useInvalidateWallet() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: walletKeys.all });
@@ -112,6 +128,7 @@ export function useRejectPaymentMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: walletKeys.pendingPayments });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });
+      queryClient.invalidateQueries({ queryKey: billingKeys.all });
     },
   });
 }

@@ -10,6 +10,7 @@ import {
   getChargeItems,
   getChargePeriods,
   getMyInvoices,
+  getOutstandingInvoices,
   getPendingServiceCharges,
   getPeriodInvoices,
   getUnitInvoices,
@@ -127,6 +128,13 @@ describe("invoices", () => {
   it("getMyInvoices reads the resident invoice list", async () => {
     await getMyInvoices();
     expect(http.get).toHaveBeenCalledWith("/invoices/mine");
+  });
+
+  it("getOutstandingInvoices reads unpaid invoices for managers", async () => {
+    await getOutstandingInvoices("p1");
+    expect(http.get).toHaveBeenCalledWith("/invoices/outstanding", {
+      params: { periodId: "p1" },
+    });
   });
 
   it("registerInvoicePayment posts the amount", async () => {
