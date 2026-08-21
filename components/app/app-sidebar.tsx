@@ -18,6 +18,7 @@ import { useBuildingAccess } from "@/hooks/use-building-access";
 
 import { navForRole } from "@/lib/app-nav";
 import { toFaDigits } from "@/lib/persian-number";
+import { statusGroupOf } from "@/lib/service-requests";
 import { cn } from "@/lib/utils";
 
 import type { Role } from "@/types/app.type";
@@ -38,10 +39,13 @@ function useNavBadges(role: Role) {
   const staffTasks = useStaffTasksQuery({ enabled: role === "staff" });
 
   if (role === "resident") {
+    // Badge = still open (not confirmed/settled/rejected). CONFIRMED and
+    // SETTLED used to be counted because only COMPLETED was filtered out.
     const open =
-      residentRequests.data?.filter(
-        (r) => r.apiStatus !== "COMPLETED" && r.apiStatus !== "REJECTED",
-      ).length ?? 0;
+      residentRequests.data?.filter((r) => {
+        const group = statusGroupOf(r.apiStatus);
+        return group !== "done" && group !== "rejected";
+      }).length ?? 0;
     return { "/requests": open };
   }
   if (role === "manager") {

@@ -15,9 +15,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
+let residentRequests: { apiStatus: string }[] = [];
 let managerRequests: { apiStatus: string }[] = [];
 vi.mock("@/queries/requests", () => ({
-  useResidentRequestsQuery: () => ({ data: [] }),
+  useResidentRequestsQuery: () => ({ data: residentRequests }),
   useManagerRequestsQuery: () => ({ data: managerRequests }),
 }));
 
@@ -31,6 +32,7 @@ function renderSidebar() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  residentRequests = [];
   managerRequests = [];
   useAuthStore.setState({
     isAuthenticated: true,
@@ -72,5 +74,25 @@ describe("AppSidebar", () => {
     renderSidebar();
     const queueLink = screen.getByText("صف درخواست‌ها").closest("a");
     expect(queueLink?.textContent).toContain("۲");
+  });
+
+  it("badges resident requests with only unfinished ones", () => {
+    useAuthStore.setState({
+      isAuthenticated: true,
+      user: buildAppUser("resident", "علی رضایی"),
+      token: "t",
+    });
+    residentRequests = [
+      { apiStatus: "PENDING" },
+      { apiStatus: "IN_PROGRESS" },
+      { apiStatus: "COMPLETED" },
+      { apiStatus: "CONFIRMED" },
+      { apiStatus: "SETTLED" },
+      { apiStatus: "REJECTED" },
+    ];
+    renderSidebar();
+    const requestsLink = screen.getByText("درخواست‌های خدماتی").closest("a");
+    expect(requestsLink?.textContent).toContain("۳");
+    expect(requestsLink?.textContent).not.toContain("۶");
   });
 });
