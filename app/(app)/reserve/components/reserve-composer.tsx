@@ -7,11 +7,13 @@ import { toast } from "sonner";
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { Modal } from "@/components/app/modal";
+import { TopUpWalletModal } from "@/components/app/top-up-wallet-modal";
 
 import {
   useCreateBookingMutation,
   useFacilityBookingsQuery,
 } from "@/queries/reserve";
+import { useMyWalletQuery } from "@/queries/wallet";
 
 import { useReserveStore } from "@/stores/reserve.store";
 
@@ -77,6 +79,8 @@ export function ReserveComposer() {
   )}`;
 
   const [partySize, setPartySize] = useState(1);
+  const [topUpOpen, setTopUpOpen] = useState(false);
+  const { data: balance = 0 } = useMyWalletQuery();
 
   const durChoices: number[] = [];
   for (let dur = rules.minSlots; dur <= rules.maxSlots; dur++) {
@@ -110,9 +114,18 @@ export function ReserveComposer() {
     rules,
   );
   const overrunsClosing = cEnd > rules.slots;
+
+  // Per-person hourly rate, so the total moves with the party size.
+  const price = slotPrice(rules, cDur, partySize);
+  // Sending a booking the wallet cannot pay for only earns a server-side
+  // rejection, so the shortfall is caught here instead.
+  const shortfall = Math.max(price - balance, 0);
+  const cannotAfford = shortfall > 0;
+
   const blocked =
     overrunsClosing ||
     conflictMine ||
+    cannotAfford ||
     capacityFull ||
     partyTooBig ||
     overFacilityCapacity ||
@@ -121,9 +134,6 @@ export function ReserveComposer() {
     tooFarAhead;
 
   const remaining = Math.max(seatsLeft, 0);
-
-  // Per-person hourly rate, so the total moves with the party size.
-  const price = slotPrice(rules, cDur, partySize);
 
   const warning = ((): string | null => {
     if (closedDay) return "این امکان در این روز تعطیل است.";
@@ -146,6 +156,9 @@ export function ReserveComposer() {
     }
     if (conflictMine) {
       return "شما در این بازه رزرو دیگری دارید. مدت یا زمان دیگری انتخاب کنید.";
+    }
+    if (cannotAfford) {
+      return `موجودی کیف پول شما ${formatToman(shortfall)} کمتر از هزینه این رزرو است.`;
     }
     return null;
   })();
@@ -265,21 +278,51 @@ export function ReserveComposer() {
         </div>
       ) : null}
 
-      <div className="mb-[18px] flex items-center justify-between border-t border-app-border py-[14px]">
-        <span className="text-[13px] text-app-muted">هزینه</span>
-        <span className="text-[15px] font-bold text-app-gold">
-          {price > 0 ? formatToman(price) : "رایگان"}
-        </span>
+      <div className="mb-[18px] border-t border-app-border py-[14px]">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] text-app-muted">هزینه</span>
+          <span className="text-[15px] font-bold text-app-gold">
+            {price > 0 ? formatToman(price) : "رایگان"}
+          </span>
+        </div>
+        {price > 0 ? (
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-[12.5px] text-app-muted">
+              موجودی کیف پول شما
+            </span>
+            <span
+              className={cn(
+                "text-[12.5px] font-semibold",
+                cannotAfford ? "text-app-danger" : "text-app-muted",
+              )}
+            >
+              {formatToman(balance)}
+            </span>
+          </div>
+        ) : null}
       </div>
 
-      <AppButton
-        variant="gold"
-        disabled={blocked || createBooking.isPending}
-        onClick={handleConfirm}
-        className="h-[46px] w-full text-[14.5px]"
-      >
-        تأیید و ثبت رزرو
-      </AppButton>
+      {cannotAfford ? (
+        <AppButton
+          variant="gold"
+          onClick={() => setTopUpOpen(true)}
+          className="h-[46px] w-full text-[14.5px]"
+        >
+          <AppIcon name="account_balance_wallet" className="size-[19px]" />
+          افزایش موجودی کیف پول
+        </AppButton>
+      ) : (
+        <AppButton
+          variant="gold"
+          disabled={blocked || createBooking.isPending}
+          onClick={handleConfirm}
+          className="h-[46px] w-full text-[14.5px]"
+        >
+          تأیید و ثبت رزرو
+        </AppButton>
+      )}
+
+      <TopUpWalletModal open={topUpOpen} onClose={() => setTopUpOpen(false)} />
     </Modal>
   );
 }

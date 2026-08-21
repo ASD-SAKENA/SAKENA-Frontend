@@ -2,6 +2,7 @@ import http from "@/services/http";
 
 import { formatFaDate } from "@/lib/format-date";
 import { faNumber } from "@/lib/persian-number";
+import { TRANSACTION_CATEGORY_META } from "@/lib/wallet";
 
 import type {
   PaymentApiResponse,
@@ -16,6 +17,7 @@ import type { Transaction, Wallet } from "@/types/wallet.type";
 export const walletKeys = {
   all: ["wallet"] as const,
   me: ["wallet", "me"] as const,
+  myLedger: ["wallet", "me", "transactions"] as const,
   building: ["wallet", "building"] as const,
   buildingLedger: ["wallet", "building", "transactions"] as const,
   submissions: ["wallet", "submissions"] as const,
@@ -29,51 +31,60 @@ export const walletKeys = {
     ] as const,
 };
 
-function paymentLabel(payment: PaymentApiResponse): string {
-  return payment.periodTitle?.trim() || payment.title;
-}
-
-function toTransaction(payment: PaymentApiResponse): Transaction {
+function toTransaction(tx: WalletTransactionApiResponse): Transaction {
+  const meta = TRANSACTION_CATEGORY_META[tx.category];
+  const outgoing = tx.direction === "DEBIT";
   return {
-    id: payment.id,
-    desc: paymentLabel(payment),
-    date: formatFaDate(payment.paidAt),
-    type: "پرداخت",
-    color: "info",
-    amount: `−${faNumber(payment.amount)}`,
-    negative: true,
+    id: tx.id,
+    desc: tx.description,
+    date: formatFaDate(tx.occurredAt),
+    type: meta.label,
+    color: meta.color,
+    amount: `${outgoing ? "−" : "+"}${faNumber(tx.amount)}`,
+    negative: outgoing,
   };
 }
 
+/** The current user's own wallet ledger, newest first. */
+export async function getMyLedger(): Promise<WalletTransactionApiResponse[]> {
+  const { data } = await http.get<WalletTransactionApiResponse[]>(
+    "/wallets/me/transactions",
+  );
+  return data;
+}
+
 /**
- * Balance comes from the real wallet endpoint; confirmed payments fill the
- * history until a full personal ledger lands for residents.
+ * Balance and history both come from the wallet ledger, so every movement —
+ * a charge payment, a facility booking, a top-up — is accounted for. Reading
+ * history from /payments used to hide anything that was not an invoice.
  */
 export async function getWallet(): Promise<Wallet> {
-  const [{ data }, balance] = await Promise.all([
-    http.get<PaymentApiResponse[]>("/payments"),
+  const [ledger, balance] = await Promise.all([
+    getMyLedger(),
     getMyWalletBalance(),
   ]);
-  const totalPaid = data.reduce((sum, p) => sum + p.amount, 0);
+  const spent = ledger
+    .filter((tx) => tx.direction === "DEBIT")
+    .reduce((sum, tx) => sum + tx.amount, 0);
   return {
     balance,
     stats: [
       {
         label: "مجموع پرداختی‌ها",
-        value: faNumber(totalPaid),
+        value: faNumber(spent),
         sub: "تومان",
         icon: "trending_up",
         color: "success",
       },
       {
-        label: "تعداد پرداخت‌ها",
-        value: faNumber(data.length),
+        label: "تعداد تراکنش‌ها",
+        value: faNumber(ledger.length),
         sub: "تراکنش",
         icon: "receipt_long",
         color: "info",
       },
     ],
-    transactions: data.map(toTransaction),
+    transactions: ledger.map(toTransaction),
   };
 }
 

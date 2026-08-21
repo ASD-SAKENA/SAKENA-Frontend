@@ -6,6 +6,7 @@ import { AppButton } from "@/components/app/app-button";
 import { KpiCard } from "@/components/app/kpi-card";
 import { SectionCard } from "@/components/app/section-card";
 import { StatusBadge } from "@/components/app/status-badge";
+import { TopUpWalletModal } from "@/components/app/top-up-wallet-modal";
 
 import { useMyInvoicesQuery } from "@/queries/billing";
 import { usePaymentSubmissionsQuery, useWalletQuery } from "@/queries/wallet";
@@ -25,7 +26,6 @@ import type { UnitInvoiceApiResponse } from "@/types/billing.api.type";
 import type { PaymentApiStatus } from "@/types/wallet.api.type";
 
 import { PayChargeModal } from "./components/pay-charge-modal";
-import { TopUpWalletModal } from "./components/top-up-wallet-modal";
 
 type WalletTab = "payable" | "history";
 

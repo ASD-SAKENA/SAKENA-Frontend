@@ -4,11 +4,14 @@ import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
+import { NoUnitNotice } from "@/components/app/no-unit-notice";
 
 import { useAnnouncementsQuery } from "@/queries/announcements";
+import { useResidentDashboardQuery } from "@/queries/dashboard";
 
 import { useAuthStore } from "@/stores/auth.store";
 
+import { faNumber } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
 import type { StatusColor } from "@/types/app.type";
@@ -41,47 +44,102 @@ const CHIP: Record<StatusColor, string> = {
 };
 
 export default function AnnouncementsPage() {
-  const { data: announcements = [] } = useAnnouncementsQuery();
   const role = useAuthStore((s) => s.user?.role);
+  const isManager = role === "manager";
+  const isResident = role === "resident";
+  const { data: dashboard } = useResidentDashboardQuery({
+    enabled: isResident,
+  });
+  const canLoadAnnouncements = isManager || dashboard?.hasUnit === true;
+  const { data: announcements = [] } = useAnnouncementsQuery({
+    enabled: canLoadAnnouncements,
+  });
   const [composerOpen, setComposerOpen] = useState(false);
+  const isEmpty = announcements.length === 0;
+
+  if (isResident && dashboard && !dashboard.hasUnit) {
+    return (
+      <div className="sk-page max-w-[820px]">
+        <NoUnitNotice />
+      </div>
+    );
+  }
 
   return (
     <div className="sk-page flex max-w-[820px] flex-col gap-3.5">
-      {role === "manager" ? (
-        <div className="flex justify-end">
-          <AppButton variant="gold" onClick={() => setComposerOpen(true)}>
-            <AppIcon name="add" className="size-[19px]" />
-            انتشار اطلاعیه
-          </AppButton>
-          <AnnouncementModal
-            open={composerOpen}
-            onClose={() => setComposerOpen(false)}
-          />
+      {!isEmpty ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-[16px] font-bold text-app-fg">اطلاعیه‌ها</h1>
+            <p className="mt-0.5 text-[12.5px] text-app-muted">
+              {faNumber(announcements.length)} اطلاعیه منتشرشده
+            </p>
+          </div>
+          {isManager ? (
+            <AppButton variant="gold" onClick={() => setComposerOpen(true)}>
+              <AppIcon name="add" className="size-[19px]" />
+              انتشار اطلاعیه
+            </AppButton>
+          ) : null}
         </div>
       ) : null}
-      {announcements.map((a) => (
-        <div
-          key={a.id}
-          className={cn(
-            "rounded-[14px] border border-r-[3px] border-app-border bg-app-surface p-5 shadow-[var(--ap-shadow-sm)]",
-            ACCENT[a.color],
-          )}
-        >
-          <div className="mb-2.5 flex items-center gap-3">
-            <div
-              className={cn(
-                "flex size-9 items-center justify-center rounded-[10px]",
-                CHIP[a.color],
-              )}
-            >
-              <AppIcon name={a.icon} className="size-5" />
-            </div>
-            <span className="flex-1 text-[15px] font-bold">{a.title}</span>
-            <span className="text-xs text-app-muted">{a.date}</span>
+
+      {isEmpty ? (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-app-border bg-app-surface px-6 py-12 text-center">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-app-surface2 text-app-muted">
+            <AppIcon name="campaign" className="size-7" />
           </div>
-          <p className="text-[13.5px] leading-[2] text-app-muted">{a.body}</p>
+          <div className="text-[15px] font-bold text-app-fg">
+            اطلاعیه‌ای تا الان منتشر نشده
+          </div>
+          <p className="max-w-[360px] text-[13px] leading-7 text-app-muted">
+            {isManager
+              ? "اولین اطلاعیه ساختمان را بنویسید تا برای همه ساکنین نمایش داده شود."
+              : "وقتی مدیر ساختمان اطلاعیه‌ای منتشر کند، اینجا نمایش داده می‌شود."}
+          </p>
+          {isManager ? (
+            <AppButton
+              variant="gold"
+              className="mt-1"
+              onClick={() => setComposerOpen(true)}
+            >
+              <AppIcon name="add" className="size-[19px]" />
+              انتشار اطلاعیه
+            </AppButton>
+          ) : null}
         </div>
-      ))}
+      ) : (
+        announcements.map((a) => (
+          <div
+            key={a.id}
+            className={cn(
+              "rounded-[14px] border border-r-[3px] border-app-border bg-app-surface p-5 shadow-[var(--ap-shadow-sm)]",
+              ACCENT[a.color],
+            )}
+          >
+            <div className="mb-2.5 flex items-center gap-3">
+              <div
+                className={cn(
+                  "flex size-9 items-center justify-center rounded-[10px]",
+                  CHIP[a.color],
+                )}
+              >
+                <AppIcon name={a.icon} className="size-5" />
+              </div>
+              <span className="flex-1 text-[15px] font-bold">{a.title}</span>
+              <span className="text-xs text-app-muted">{a.date}</span>
+            </div>
+            <p className="text-[13.5px] leading-[2] text-app-muted">{a.body}</p>
+          </div>
+        ))
+      )}
+
+      {isManager ? (
+        <AnnouncementModal
+          open={composerOpen}
+          onClose={() => setComposerOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

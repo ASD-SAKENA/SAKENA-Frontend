@@ -15,6 +15,7 @@ import {
   reserveKeys,
   updateFacility,
 } from "@/api/reserve";
+import { walletKeys } from "@/api/wallet";
 
 import type { FacilityApiPayload } from "@/types/reserve.api.type";
 import type { FacilityRules } from "@/types/reserve.type";
@@ -90,8 +91,12 @@ export function useMyBookingsQuery(options?: { enabled?: boolean }) {
 
 function useInvalidateBookings() {
   const queryClient = useQueryClient();
-  return () =>
+  // Booking and cancelling move money, so the wallet balance and ledger are
+  // stale too — not just the grid.
+  return () => {
     queryClient.invalidateQueries({ queryKey: reserveKeys.bookingsRoot });
+    queryClient.invalidateQueries({ queryKey: walletKeys.all });
+  };
 }
 
 export function useCreateBookingMutation() {

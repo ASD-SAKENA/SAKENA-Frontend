@@ -33,38 +33,28 @@ beforeEach(() => {
 });
 
 describe("getWallet", () => {
-  it("combines the real wallet balance with derived payment stats", async () => {
+  it("builds the history from the wallet ledger, not just invoice payments", async () => {
     mockedGet.mockImplementation((url: string) => {
-      if (url === "/payments") {
+      if (url === "/wallets/me/transactions") {
         return Promise.resolve({
           data: [
             {
-              id: "p1",
-              invoiceId: "inv-1",
-              periodTitle: "شارژ فروردین",
-              title: "شارژ فروردین",
-              amount: 500000,
-              transactionReference: "a",
-              hasReceipt: false,
-              status: "CONFIRMED",
-              paidAt: "2026-02-01T00:00:00Z",
-              reviewedBy: null,
-              reviewedAt: null,
-              rejectionReason: null,
+              id: "t1",
+              direction: "DEBIT",
+              category: "FACILITY_BOOKING",
+              amount: 100000,
+              description: "رزرو «استخر»",
+              balanceAfter: 750000,
+              occurredAt: "2026-03-02T00:00:00Z",
             },
             {
-              id: "p2",
-              invoiceId: "inv-2",
-              periodTitle: "شارژ اردیبهشت",
-              title: "شارژ اردیبهشت",
-              amount: 300000,
-              transactionReference: "b",
-              hasReceipt: false,
-              status: "CONFIRMED",
-              paidAt: "2026-03-01T00:00:00Z",
-              reviewedBy: null,
-              reviewedAt: null,
-              rejectionReason: null,
+              id: "t2",
+              direction: "CREDIT",
+              category: "WALLET_FUNDING",
+              amount: 850000,
+              description: "Wallet funding",
+              balanceAfter: 850000,
+              occurredAt: "2026-03-01T00:00:00Z",
             },
           ],
         });
@@ -79,12 +69,21 @@ describe("getWallet", () => {
 
     expect(wallet.balance).toBe(750000);
     expect(wallet.transactions).toHaveLength(2);
+    // A booking debit is a ledger line, so it must reach the history — this
+    // is exactly what reading from /payments used to drop.
     expect(wallet.transactions[0]).toMatchObject({
-      id: "p1",
+      id: "t1",
+      desc: "رزرو «استخر»",
+      type: "رزرو امکانات",
       negative: true,
-      amount: "−۵۰۰,۰۰۰",
+      amount: "−۱۰۰,۰۰۰",
     });
-    expect(wallet.stats[0].value).toBe("۸۰۰,۰۰۰"); // 500000 + 300000
+    expect(wallet.transactions[1]).toMatchObject({
+      id: "t2",
+      negative: false,
+      amount: "+۸۵۰,۰۰۰",
+    });
+    expect(wallet.stats[0].value).toBe("۱۰۰,۰۰۰"); // only the debit
     expect(wallet.stats[1].value).toBe("۲");
   });
 });

@@ -144,7 +144,9 @@ http.interceptors.response.use(
     switch (status) {
       case 400:
         if (!toastValidationDetails(data)) {
-          toast.error(resolveErrorMessage(data, "درخواست نامعتبر"));
+          toast.error(
+            toPersianApiMessage(resolveErrorMessage(data, "درخواست نامعتبر")),
+          );
         }
         break;
       case 401:
@@ -180,7 +182,9 @@ http.interceptors.response.use(
       case 422:
         if (!toastValidationDetails(data)) {
           toast.error(
-            resolveErrorMessage(data, "اطلاعات وارد شده نامعتبر است"),
+            toPersianApiMessage(
+              resolveErrorMessage(data, "اطلاعات وارد شده نامعتبر است"),
+            ),
           );
         }
         break;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { KpiCard } from "@/components/app/kpi-card";
+import { NoUnitNotice } from "@/components/app/no-unit-notice";
 import { SectionCard } from "@/components/app/section-card";
 import { StatusBadge } from "@/components/app/status-badge";
 
@@ -38,11 +39,20 @@ const CHIP_TINT: Record<StatusColor, string> = {
 export function ResidentDashboard() {
   const router = useRouter();
   const { data } = useResidentDashboardQuery();
-  const { data: announcements = [] } = useAnnouncementsQuery();
-  const { data: requests = [] } = useResidentRequestsQuery();
+  const hasUnit = data?.hasUnit === true;
+  const { data: announcements = [] } = useAnnouncementsQuery({
+    enabled: hasUnit,
+  });
+  const { data: requests = [] } = useResidentRequestsQuery({
+    enabled: hasUnit,
+  });
   const openRequestModal = useAppUiStore((s) => s.openRequestModal);
 
   if (!data) return null;
+
+  if (!data.hasUnit) {
+    return <NoUnitNotice />;
+  }
 
   const { kpis, unitInfo, charge } = data;
   const topAnnouncements = announcements.slice(0, 3);

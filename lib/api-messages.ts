@@ -31,6 +31,50 @@ const CONFLICT_TRANSLATIONS: { match: RegExp; fa: string }[] = [
     match: /invitation (link )?is no longer|is no longer pending|has expired/i,
     fa: "این لینک دعوت دیگر معتبر نیست. از مدیر ساختمان دعوت تازه‌ای بخواهید.",
   },
+  {
+    match: /insufficient wallet balance/i,
+    fa: "موجودی کیف پول شما کافی نیست. ابتدا کیف پول خود را شارژ کنید.",
+  },
+  {
+    match: /has room for .* more/i,
+    fa: "ظرفیت این سانس برای تعداد نفرات درخواستی کافی نیست. تعداد نفرات یا زمان دیگری انتخاب کنید.",
+  },
+  {
+    match: /holds \d+ people/i,
+    fa: "تعداد نفرات از ظرفیت کل این امکان بیشتر است.",
+  },
+  {
+    match: /cannot be cancelled once its session has started/i,
+    fa: "سانس این رزرو شروع شده و دیگر قابل لغو نیست.",
+  },
+  {
+    match: /already been cancelled/i,
+    fa: "این رزرو پیش‌تر لغو شده است.",
+  },
+  {
+    match: /slot in the past cannot be booked/i,
+    fa: "زمان انتخاب‌شده گذشته است؛ بازه‌ای در آینده انتخاب کنید.",
+  },
+  {
+    match: /facility is closed on this day/i,
+    fa: "این امکان در روز انتخاب‌شده تعطیل است.",
+  },
+  {
+    match: /facility is only open between/i,
+    fa: "زمان انتخاب‌شده خارج از ساعت کاری این امکان است.",
+  },
+  {
+    match: /bookings open only \d+ days in advance/i,
+    fa: "رزرو تنها برای بازه مجاز پیش‌رو امکان‌پذیر است.",
+  },
+  {
+    match: /shortest booking is|longest booking is/i,
+    fa: "مدت انتخاب‌شده برای این امکان مجاز نیست.",
+  },
+  {
+    match: /you already hold \d+ bookings for/i,
+    fa: "به سقف رزرو هفتگی خود برای این امکان رسیده‌اید.",
+  },
 ];
 
 /** Falls back to the original text when no translation matches. */

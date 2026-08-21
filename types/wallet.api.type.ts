@@ -34,7 +34,8 @@ export type TransactionCategoryApi =
   | "WAGE_SETTLEMENT"
   | "OPERATING_EXPENSE"
   | "ADJUSTMENT"
-  | "WALLET_FUNDING";
+  | "WALLET_FUNDING"
+  | "FACILITY_BOOKING";
 
 export interface WalletTransactionApiResponse {
   id: string;

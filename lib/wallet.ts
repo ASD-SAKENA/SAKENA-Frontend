@@ -26,4 +26,9 @@ export const TRANSACTION_CATEGORY_META: Record<
     icon: "account_balance_wallet",
     color: "gold",
   },
+  FACILITY_BOOKING: {
+    label: "رزرو امکانات",
+    icon: "event",
+    color: "info",
+  },
 };

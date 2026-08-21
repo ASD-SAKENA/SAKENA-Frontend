@@ -8,11 +8,12 @@ import {
   getAnnouncements,
 } from "@/api/announcements";
 
-export function useAnnouncementsQuery() {
+export function useAnnouncementsQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: announcementKeys.list,
     queryFn: getAnnouncements,
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled,
   });
 }
 
