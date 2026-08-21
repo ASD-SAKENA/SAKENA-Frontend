@@ -37,6 +37,7 @@ function message(id: string, sentAt: string): ChatMessageApiResponse {
     buildingId: "b1",
     senderId: "u1",
     senderName: "علی",
+    senderAvatarUrl: null,
     kind: "TEXT",
     body: `msg-${id}`,
     attachmentUrl: null,

@@ -16,4 +16,6 @@ export interface ProfileApiResponse {
   role: ApiRole;
   createdAt: string;
   active: boolean;
+  /** Short-lived URL, or null when the user has not set a picture. */
+  avatarUrl?: string | null;
 }

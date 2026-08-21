@@ -7,6 +7,8 @@ export interface ChatMessageApiResponse {
   buildingId: string;
   senderId: string;
   senderName: string;
+  /** Short-lived URL, or null when the sender has no picture. */
+  senderAvatarUrl: string | null;
   kind: ChatMessageApiKind;
   /** Null once the message is deleted. */
   body: string | null;

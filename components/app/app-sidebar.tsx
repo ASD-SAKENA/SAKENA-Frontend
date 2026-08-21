@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import type { Role } from "@/types/app.type";
 
 import { AppIcon } from "./app-icon";
+import { Avatar } from "./avatar";
 
 /** Live label under the brand — not the hardcoded "—" on AppUser.unit. */
 function useBrandSubtitle(role: Role, fallback: string): string {
@@ -173,9 +174,11 @@ export function AppSidebar() {
 
       <div className="border-t border-app-border p-3">
         <div className="flex items-center gap-3 rounded-[11px] px-2.5 py-2">
-          <div className="flex size-[38px] items-center justify-center rounded-full bg-[var(--ap-gold-soft)] text-[15px] font-bold text-app-gold">
-            {user?.initial}
-          </div>
+          <Avatar
+            src={user?.avatarUrl}
+            initial={user?.initial ?? "س"}
+            size={38}
+          />
           <div className="min-w-0 flex-1">
             <div className="truncate text-[13.5px] font-semibold text-app-fg">
               {user?.name}

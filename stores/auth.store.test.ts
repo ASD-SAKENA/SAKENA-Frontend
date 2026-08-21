@@ -11,6 +11,7 @@ describe("buildAppUser", () => {
       roleLabel: "ساکن",
       unit: "—",
       initial: "A",
+      avatarUrl: null,
     });
   });
 

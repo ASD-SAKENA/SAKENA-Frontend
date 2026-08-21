@@ -26,13 +26,18 @@ const ROLE_UNITS: Record<Role, string> = {
 };
 
 /** Build the app-level user from backend auth data (username + role). */
-export function buildAppUser(role: Role, name: string): AppUser {
+export function buildAppUser(
+  role: Role,
+  name: string,
+  avatarUrl: string | null = null,
+): AppUser {
   return {
     name,
     role,
     roleLabel: ROLE_LABELS[role],
     unit: ROLE_UNITS[role],
     initial: name.trim().charAt(0) || "س",
+    avatarUrl,
   };
 }
 
@@ -42,6 +47,8 @@ interface AuthState {
   /** JWT access token; attached as `Authorization: Bearer` by services/http. */
   token: string | null;
   login: (user: AppUser, token: string) => void;
+  /** Reflects a picture change everywhere the avatar is shown, at once. */
+  setAvatar: (avatarUrl: string | null) => void;
   logout: () => void;
 }
 
@@ -51,6 +58,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       user: null,
       token: null,
+      setAvatar: (avatarUrl) =>
+        set((state) =>
+          state.user ? { user: { ...state.user, avatarUrl } } : {},
+        ),
       login: (user, token) => {
         // Drop the previous session's cached queries so a new user never
         // inherits "hasUnit" / building data and fires forbidden requests.

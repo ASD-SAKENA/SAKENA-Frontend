@@ -26,7 +26,33 @@ function toProfileForm(data: ProfileApiResponse): ProfileForm {
 
 export async function getProfile(): Promise<ProfileForm> {
   const { data } = await http.get<ProfileApiResponse>("/profile");
+  // The sidebar and chat read the picture from the session, so a fresh
+  // profile load keeps them in step with the server.
+  useAuthStore.getState().setAvatar(data.avatarUrl ?? null);
   return toProfileForm(data);
+}
+
+/** Uploads a new profile picture and returns its URL. */
+export async function uploadAvatar(file: File): Promise<string | null> {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await http.post<ProfileApiResponse>(
+    "/profile/avatar",
+    form,
+    {
+      // Let the browser set the multipart boundary.
+      headers: { "Content-Type": undefined },
+    },
+  );
+  const url = data.avatarUrl ?? null;
+  useAuthStore.getState().setAvatar(url);
+  return url;
+}
+
+/** Removes the picture; the UI falls back to the user's initial. */
+export async function removeAvatar(): Promise<void> {
+  await http.delete("/profile/avatar");
+  useAuthStore.getState().setAvatar(null);
 }
 
 export async function updateProfile(

@@ -3,6 +3,7 @@
 import Image from "next/image";
 
 import { AppIcon } from "@/components/app/app-icon";
+import { Avatar } from "@/components/app/avatar";
 
 import { formatDuration, messageTime, senderInitial } from "@/lib/chat";
 import { cn } from "@/lib/utils";
@@ -45,9 +46,13 @@ export function MessageBubble({
       )}
     >
       {!mine ? (
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-app-surface2 text-[12.5px] font-bold text-app-steel">
-          {senderInitial(message.senderName)}
-        </div>
+        <Avatar
+          src={message.senderAvatarUrl}
+          initial={senderInitial(message.senderName)}
+          size={32}
+          alt={message.senderName}
+          className="bg-app-surface2 text-app-steel"
+        />
       ) : null}
 
       <div

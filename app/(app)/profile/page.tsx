@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { AppButton } from "@/components/app/app-button";
+import { Avatar } from "@/components/app/avatar";
 import { AppField, AppInput } from "@/components/app/form-controls";
 import { SectionCard } from "@/components/app/section-card";
 
@@ -18,6 +19,7 @@ import { toFaDigits } from "@/lib/persian-number";
 import { type ProfileForm, profileSchema } from "@/schemas/profile.schema";
 import { TENANCY_LABELS } from "@/schemas/residency.schema";
 
+import { AvatarPicker } from "./components/avatar-picker";
 import { ChangePasswordCard } from "./components/change-password-card";
 
 const EMPTY: ProfileForm = { name: "", email: "", unit: "" };
@@ -51,9 +53,11 @@ export default function ProfilePage() {
     <div className="sk-page">
       <SectionCard className="mx-auto max-w-[620px]" bodyClassName="p-[26px]">
         <div className="mb-6 flex items-center gap-[18px]">
-          <div className="flex size-[70px] items-center justify-center rounded-full bg-[var(--ap-gold-soft)] text-[26px] font-extrabold text-app-gold">
-            {user?.initial}
-          </div>
+          <Avatar
+            src={user?.avatarUrl}
+            initial={user?.initial ?? "س"}
+            size={70}
+          />
           <div>
             <div className="text-[19px] font-bold text-app-fg">
               {user?.name}
@@ -63,6 +67,16 @@ export default function ProfilePage() {
               {residency ? ` · ${TENANCY_LABELS[residency.tenancy]}` : null}
             </div>
           </div>
+        </div>
+
+        <div className="mb-6 border-y border-app-border py-5">
+          <div className="mb-3 text-[13px] font-medium text-app-fg">
+            تصویر پروفایل
+          </div>
+          <AvatarPicker />
+          <p className="mt-2.5 text-[12px] text-app-muted">
+            اگر تصویری انتخاب نکنید، حرف اول نام شما نمایش داده می‌شود.
+          </p>
         </div>
 
         <form onSubmit={onSubmit}>

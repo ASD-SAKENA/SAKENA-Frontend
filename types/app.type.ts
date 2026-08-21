@@ -18,4 +18,6 @@ export interface AppUser {
   roleLabel: string;
   unit: string;
   initial: string;
+  /** Profile picture URL; null means fall back to `initial`. */
+  avatarUrl: string | null;
 }
