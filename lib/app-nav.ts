@@ -26,6 +26,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
+      { label: "شکایات و پیشنهادات", icon: "support", href: "/support" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -49,6 +50,7 @@ export function navForRole(role: Role): NavItem[] {
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
       { label: "حساب ساختمان", icon: "wallet", href: "/building-wallet" },
       { label: "گفتگوی ساکنین", icon: "chat", href: "/chat" },
+      { label: "شکایات و پیشنهادات", icon: "support", href: "/support" },
       { label: "پروفایل", icon: "person", href: "/profile" },
     ];
   }
@@ -99,6 +101,7 @@ const PAGE_META: Record<string, [title: string, crumb: string]> = {
   ],
   "/polls": ["نظرسنجی‌ها", "مشارکت · نظرسنجی‌های ساختمان"],
   "/chat": ["گفتگوی ساکنین", "ارتباطات · پیام‌رسان داخلی ساختمان"],
+  "/support": ["شکایات و پیشنهادات", "ارتباطات · گفتگوی خصوصی با مدیر ساختمان"],
 };
 
 export function pageMetaForPath(pathname: string): [string, string] {
