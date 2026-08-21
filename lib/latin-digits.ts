@@ -9,11 +9,16 @@ export function hasNonLatinDigits(value: string): boolean {
   return NON_LATIN_DIGIT_RE.test(value);
 }
 
-/** Convert Persian (۰-۹) and Arabic-Indic (٠-٩) digits to ASCII 0-9. */
+/**
+ * Convert Persian (۰-۹) and Arabic-Indic (٠-٩) digits to ASCII 0-9, and the
+ * Arabic decimal separator (٫) to a plain dot — a Persian keyboard produces
+ * it instead of ".", and an amount typed that way must still parse.
+ */
 export function normalizeToLatinDigits(value: string): string {
   return value
     .replace(/[\u06F0-\u06F9]/g, (char) => String(char.charCodeAt(0) - 0x06f0))
-    .replace(/[\u0660-\u0669]/g, (char) => String(char.charCodeAt(0) - 0x0660));
+    .replace(/[\u0660-\u0669]/g, (char) => String(char.charCodeAt(0) - 0x0660))
+    .replace(/\u066B/g, ".");
 }
 
 export function validateOtpAsciiDigits(otp: string): string | null {
@@ -39,10 +44,17 @@ export function optionalDigitString(message: string) {
     .pipe(z.string().regex(/^\d*$/, message));
 }
 
-/** Positive integer toman amount as a string. Input stays `string`. */
+/**
+ * Positive toman amount as a string. Input stays `string`.
+ *
+ * Up to two decimals are allowed: invoices issued before charges were split
+ * in whole toman still carry fractions, and those residents have to be able
+ * to pay the exact amount they owe.
+ */
 export function positiveAmountString(
   message = "مبلغ باید عدد (تومان) باشد.",
   zeroMessage = "مبلغ باید بزرگ‌تر از صفر باشد.",
+  precisionMessage = "مبلغ حداکثر تا دو رقم اعشار مجاز است.",
 ) {
   return z
     .string()
@@ -50,7 +62,11 @@ export function positiveAmountString(
     .pipe(
       z
         .string()
-        .regex(/^\d+$/, message)
+        .regex(/^\d+(\.\d+)?$/, message)
+        .refine(
+          (value) => (value.split(".")[1]?.length ?? 0) <= 2,
+          precisionMessage,
+        )
         .refine((value) => Number(value) > 0, zeroMessage),
     );
 }

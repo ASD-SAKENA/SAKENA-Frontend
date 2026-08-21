@@ -43,11 +43,40 @@ describe("normalizeToLatinDigits", () => {
 });
 
 describe("positiveAmountString", () => {
+  const schema = positiveAmountString();
+
   it("accepts Persian digit amounts", () => {
-    const schema = positiveAmountString();
     const result = schema.safeParse("۱۵۰۰۰۰");
     expect(result.success).toBe(true);
     if (result.success) expect(result.data).toBe("150000");
+  });
+
+  it("accepts a fractional amount", () => {
+    // Invoices issued before charges were split in whole toman still carry
+    // fractions, and the resident has to be able to pay the exact figure.
+    const result = schema.safeParse("33333.33");
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toBe("33333.33");
+  });
+
+  it("accepts a fraction typed with Persian digits and separator", () => {
+    const result = schema.safeParse("۳۳۳۳۳٫۳۳");
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toBe("33333.33");
+  });
+
+  it("rejects more precision than a currency can carry", () => {
+    expect(schema.safeParse("100.005").success).toBe(false);
+  });
+
+  it("still rejects a non-numeric amount", () => {
+    expect(schema.safeParse("abc").success).toBe(false);
+    expect(schema.safeParse("100.").success).toBe(false);
+  });
+
+  it("still rejects zero", () => {
+    expect(schema.safeParse("0").success).toBe(false);
+    expect(schema.safeParse("0.00").success).toBe(false);
   });
 });
 

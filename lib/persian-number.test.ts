@@ -35,6 +35,14 @@ describe("faNumber", () => {
   it("formats zero", () => {
     expect(faNumber(0)).toBe("۰");
   });
+
+  it("shows two decimals for a fractional amount", () => {
+    expect(faNumber(33333.33)).toBe("۳۳,۳۳۳.۳۳");
+  });
+
+  it("keeps a whole amount free of decimals", () => {
+    expect(faNumber(33333)).toBe("۳۳,۳۳۳");
+  });
 });
 
 describe("formatToman", () => {
