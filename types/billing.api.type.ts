@@ -87,4 +87,6 @@ export interface AddChargeItemApiPayload {
   amount: number;
   kind: ChargeItemApiKind;
   allocation: CostAllocationApi;
+  /** Required for SPECIFIC_UNIT, and rejected by the API for the other two. */
+  targetApartmentId?: string;
 }

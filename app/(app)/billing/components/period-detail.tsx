@@ -103,7 +103,7 @@ export function PeriodDetail({ period }: Props) {
       >
         {draft ? (
           <div className="mb-4 border-b border-app-border pb-4">
-            <ChargeItemForm periodId={period.id} />
+            <ChargeItemForm periodId={period.id} units={units} />
           </div>
         ) : null}
 

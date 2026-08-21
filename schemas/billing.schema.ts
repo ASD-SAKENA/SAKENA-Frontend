@@ -29,16 +29,31 @@ export const chargePeriodSchema = z
 
 export type ChargePeriodForm = z.infer<typeof chargePeriodSchema>;
 
-export const chargeItemSchema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(2, "عنوان هزینه را وارد کنید.")
-    .max(200, "عنوان حداکثر ۲۰۰ کاراکتر است."),
-  amount: positiveWholeAmountString(),
-  kind: z.enum(["RECURRING_CHARGE", "FACILITY_COST", "EXTRAORDINARY_EXPENSE"]),
-  allocation: z.enum(["EQUAL", "BY_AREA"]),
-});
+export const chargeItemSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(2, "عنوان هزینه را وارد کنید.")
+      .max(200, "عنوان حداکثر ۲۰۰ کاراکتر است."),
+    amount: positiveWholeAmountString(),
+    kind: z.enum([
+      "RECURRING_CHARGE",
+      "FACILITY_COST",
+      "EXTRAORDINARY_EXPENSE",
+    ]),
+    allocation: z.enum(["EQUAL", "BY_AREA", "SPECIFIC_UNIT"]),
+    /** Empty unless the cost falls on one unit. */
+    targetApartmentId: z.string(),
+  })
+  // The backend refuses a SPECIFIC_UNIT item with no target, and refuses a
+  // target on the other two. Mirroring both directions here turns a 400 into
+  // an inline message on the field that is actually wrong.
+  .refine(
+    (data) =>
+      data.allocation !== "SPECIFIC_UNIT" || data.targetApartmentId !== "",
+    { message: "واحد موردنظر را انتخاب کنید.", path: ["targetApartmentId"] },
+  );
 
 export type ChargeItemForm = z.infer<typeof chargeItemSchema>;
 

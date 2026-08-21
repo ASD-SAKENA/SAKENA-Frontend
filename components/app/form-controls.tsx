@@ -18,11 +18,18 @@ export function AppField({ label, error, children, className }: FieldProps) {
   return (
     <div className={cn("mb-4", className)}>
       {label ? (
-        <label className="mb-2 block text-[13px] font-medium text-app-fg">
-          {label}
+        // The control is wrapped rather than linked by id: it associates the
+        // two without every call site having to invent one, so clicking the
+        // label focuses the field and screen readers announce it.
+        <label className="block">
+          <span className="mb-2 block text-[13px] font-medium text-app-fg">
+            {label}
+          </span>
+          {children}
         </label>
-      ) : null}
-      {children}
+      ) : (
+        children
+      )}
       {error ? (
         <p className="mt-1.5 text-[12px] text-app-danger">{error}</p>
       ) : null}

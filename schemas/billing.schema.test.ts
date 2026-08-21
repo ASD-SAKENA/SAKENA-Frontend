@@ -53,6 +53,31 @@ describe("chargeItemSchema", () => {
       amount: "500000",
       kind: "RECURRING_CHARGE",
       allocation: "EQUAL",
+      targetApartmentId: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("requires the unit when the cost falls on a single one", () => {
+    // The aggregate refuses a SPECIFIC_UNIT item with no target, so catching
+    // it here turns a 400 into a message on the field that is wrong.
+    const result = chargeItemSchema.safeParse({
+      title: "تعمیر درب",
+      amount: "300000",
+      kind: "RECURRING_CHARGE",
+      allocation: "SPECIFIC_UNIT",
+      targetApartmentId: "",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a single-unit cost that names its unit", () => {
+    const result = chargeItemSchema.safeParse({
+      title: "تعمیر درب",
+      amount: "300000",
+      kind: "RECURRING_CHARGE",
+      allocation: "SPECIFIC_UNIT",
+      targetApartmentId: "apt-2",
     });
     expect(result.success).toBe(true);
   });
