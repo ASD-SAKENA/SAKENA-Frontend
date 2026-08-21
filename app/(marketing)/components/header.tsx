@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,7 +12,15 @@ const NAV_LINKS = [
   { href: "#roles", label: "برای چه کسانی" },
   { href: "#how", label: "نحوه کار" },
   { href: "#faq", label: "سؤالات متداول" },
-];
+] as const;
+
+function scrollToSection(hash: string) {
+  const id = hash.replace(/^#/, "");
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.history.pushState(null, "", hash);
+}
 
 export function Header() {
   return (
@@ -38,13 +48,17 @@ export function Header() {
 
         <nav className="flex flex-1 items-center justify-center gap-7 max-[900px]:hidden">
           {NAV_LINKS.map((link) => (
-            <Link
+            <a
               key={link.href}
               href={link.href}
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection(link.href);
+              }}
               className="text-[14.5px] text-[var(--sk-text-muted)] no-underline transition-colors hover:text-[var(--sk-gold-light)]"
             >
               {link.label}
-            </Link>
+            </a>
           ))}
         </nav>
 

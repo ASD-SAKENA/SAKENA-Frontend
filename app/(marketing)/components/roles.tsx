@@ -23,7 +23,7 @@ export function Roles({ roles }: Props) {
   return (
     <section
       id="roles"
-      className="border-y border-[var(--sk-border-subtle)] bg-[var(--sk-bg-band)]"
+      className="scroll-mt-24 border-y border-[var(--sk-border-subtle)] bg-[var(--sk-bg-band)]"
     >
       <div className="mx-auto max-w-[1100px] px-8 py-[90px] max-[560px]:px-5">
         <SectionHeading

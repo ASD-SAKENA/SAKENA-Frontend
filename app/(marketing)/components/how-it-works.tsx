@@ -11,7 +11,7 @@ export function HowItWorks({ steps }: Props) {
   return (
     <section
       id="how"
-      className="mx-auto max-w-[1200px] px-8 py-[90px] max-[560px]:px-5"
+      className="mx-auto max-w-[1200px] scroll-mt-24 px-8 py-[90px] max-[560px]:px-5"
     >
       <SectionHeading
         eyebrow="نحوه کار"

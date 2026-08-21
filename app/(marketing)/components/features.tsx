@@ -14,7 +14,7 @@ export function Features({ features }: Props) {
   return (
     <section
       id="features"
-      className="mx-auto max-w-[1200px] px-8 py-[90px] max-[560px]:px-5"
+      className="mx-auto max-w-[1200px] scroll-mt-24 px-8 py-[90px] max-[560px]:px-5"
     >
       <SectionHeading
         eyebrow="امکانات"

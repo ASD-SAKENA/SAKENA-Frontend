@@ -17,7 +17,7 @@ export function Faq({ faqs }: Props) {
   return (
     <section
       id="faq"
-      className="border-t border-[var(--sk-border-subtle)] bg-[var(--sk-bg-band)]"
+      className="scroll-mt-24 border-t border-[var(--sk-border-subtle)] bg-[var(--sk-bg-band)]"
     >
       <div className="mx-auto max-w-[780px] px-8 py-[90px] max-[560px]:px-5">
         <SectionHeading
