@@ -10,6 +10,7 @@ import {
   deleteChargePeriod,
   getChargeItems,
   getChargePeriods,
+  getInvoiceLineItems,
   getMyInvoices,
   getOutstandingInvoices,
   getPendingServiceCharges,
@@ -39,6 +40,18 @@ export function useChargeItemsQuery(periodId: string | null) {
     queryKey: billingKeys.items(periodId ?? ""),
     queryFn: () => getChargeItems(periodId ?? ""),
     enabled: periodId !== null,
+    staleTime: STALE,
+  });
+}
+
+export function useInvoiceLineItemsQuery(
+  invoiceId: string | null,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: billingKeys.invoiceItems(invoiceId ?? ""),
+    queryFn: () => getInvoiceLineItems(invoiceId ?? ""),
+    enabled: invoiceId !== null && (options?.enabled ?? true),
     staleTime: STALE,
   });
 }

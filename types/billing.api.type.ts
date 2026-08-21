@@ -9,7 +9,7 @@ export type ChargeItemApiKind =
   | "FACILITY_COST"
   | "EXTRAORDINARY_EXPENSE";
 
-export type CostAllocationApi = "EQUAL" | "BY_AREA";
+export type CostAllocationApi = "EQUAL" | "BY_AREA" | "SPECIFIC_UNIT";
 
 export type InvoiceApiStatus = "UNPAID" | "PARTIALLY_PAID" | "PAID";
 
@@ -35,6 +35,16 @@ export interface ChargeItemApiResponse {
   kind: ChargeItemApiKind;
   allocation: CostAllocationApi;
   createdAt: string;
+}
+
+/** Resident view: one manager cost line with this unit's allocated share. */
+export interface InvoiceLineItemApiResponse {
+  id: string;
+  title: string;
+  kind: ChargeItemApiKind;
+  allocation: CostAllocationApi;
+  totalAmount: number;
+  shareAmount: number;
 }
 
 export interface ServiceChargeApiResponse {

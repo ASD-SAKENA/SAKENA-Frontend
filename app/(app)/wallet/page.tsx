@@ -25,6 +25,7 @@ import type { StatusColor } from "@/types/app.type";
 import type { UnitInvoiceApiResponse } from "@/types/billing.api.type";
 import type { PaymentApiStatus } from "@/types/wallet.api.type";
 
+import { InvoiceLineItemsAccordion } from "./components/invoice-line-items-accordion";
 import { PayChargeModal } from "./components/pay-charge-modal";
 
 type WalletTab = "payable" | "history";
@@ -214,6 +215,7 @@ export default function WalletPage() {
                           مانده: {faNumber(invoice.remaining)} تومان
                         </span>
                       </div>
+                      <InvoiceLineItemsAccordion invoiceId={invoice.id} />
                     </div>
                     <AppButton
                       variant="gold"

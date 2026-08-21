@@ -5,6 +5,7 @@ import type {
   ChargeItemApiResponse,
   ChargePeriodApiResponse,
   CreateChargePeriodApiPayload,
+  InvoiceLineItemApiResponse,
   ServiceChargeApiResponse,
   UnitInvoiceApiResponse,
 } from "@/types/billing.api.type";
@@ -21,6 +22,8 @@ export const billingKeys = {
   outstandingInvoices: (periodId?: string) =>
     ["billing", "outstanding", periodId ?? "all"] as const,
   pendingServiceCharges: ["billing", "pending-service-charges"] as const,
+  invoiceItems: (invoiceId: string) =>
+    ["billing", "invoice-items", invoiceId] as const,
 };
 
 export async function getChargePeriods(
@@ -122,6 +125,16 @@ export async function getUnitInvoices(
 /** Signed-in resident's invoices for their current unit. */
 export async function getMyInvoices(): Promise<UnitInvoiceApiResponse[]> {
   const { data } = await http.get<UnitInvoiceApiResponse[]>("/invoices/mine");
+  return data;
+}
+
+/** Cost lines on a resident invoice, with this unit's share of each. */
+export async function getInvoiceLineItems(
+  invoiceId: string,
+): Promise<InvoiceLineItemApiResponse[]> {
+  const { data } = await http.get<InvoiceLineItemApiResponse[]>(
+    `/invoices/${invoiceId}/items`,
+  );
   return data;
 }
 

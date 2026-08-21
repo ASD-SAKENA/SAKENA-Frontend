@@ -9,6 +9,7 @@ import {
   deleteChargePeriod,
   getChargeItems,
   getChargePeriods,
+  getInvoiceLineItems,
   getMyInvoices,
   getOutstandingInvoices,
   getPendingServiceCharges,
@@ -128,6 +129,11 @@ describe("invoices", () => {
   it("getMyInvoices reads the resident invoice list", async () => {
     await getMyInvoices();
     expect(http.get).toHaveBeenCalledWith("/invoices/mine");
+  });
+
+  it("getInvoiceLineItems reads cost lines for one invoice", async () => {
+    await getInvoiceLineItems("inv-1");
+    expect(http.get).toHaveBeenCalledWith("/invoices/inv-1/items");
   });
 
   it("getOutstandingInvoices reads unpaid invoices for managers", async () => {

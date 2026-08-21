@@ -112,9 +112,9 @@ export function ResidentDashboard() {
             <AppButton
               variant="outline"
               className="h-[46px]"
-              onClick={() => router.push("/billing")}
+              onClick={() => router.push("/wallet")}
             >
-              جزئیات دوره
+              جزئیات شارژ
             </AppButton>
           </div>
         </div>

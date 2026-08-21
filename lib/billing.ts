@@ -38,6 +38,7 @@ export const CHARGE_KIND_ICONS: Record<ChargeItemApiKind, string> = {
 export const ALLOCATION_LABELS: Record<CostAllocationApi, string> = {
   EQUAL: "تقسیم مساوی",
   BY_AREA: "بر اساس متراژ",
+  SPECIFIC_UNIT: "واحد مشخص",
 };
 
 export const INVOICE_STATUS_META: Record<
