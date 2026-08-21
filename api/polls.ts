@@ -32,6 +32,11 @@ export async function votePoll(
   return data;
 }
 
+export async function withdrawVote(pollId: string): Promise<PollApiResponse> {
+  const { data } = await http.delete<PollApiResponse>(`/polls/${pollId}/votes`);
+  return data;
+}
+
 export async function closePoll(pollId: string): Promise<PollApiResponse> {
   const { data } = await http.post<PollApiResponse>(`/polls/${pollId}/close`);
   return data;

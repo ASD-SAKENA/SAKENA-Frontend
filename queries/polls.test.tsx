@@ -2,12 +2,13 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { pollKeys } from "@/api/polls";
-import { createPoll, getPolls, votePoll } from "@/api/polls";
+import { createPoll, getPolls, votePoll, withdrawVote } from "@/api/polls";
 
 import {
   useCreatePollMutation,
   usePollsQuery,
   useVotePollMutation,
+  useWithdrawVoteMutation,
 } from "./polls";
 import { createTestQueryClient, createWrapper } from "./test-utils";
 
@@ -16,6 +17,7 @@ vi.mock("@/api/polls", () => ({
   getPolls: vi.fn(),
   createPoll: vi.fn(),
   votePoll: vi.fn(),
+  withdrawVote: vi.fn(),
   closePoll: vi.fn(),
 }));
 
@@ -59,5 +61,22 @@ describe("useVotePollMutation", () => {
     result.current.mutate({ pollId: "p1", optionId: "opt-1" });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(vi.mocked(votePoll).mock.calls[0]).toEqual(["p1", "opt-1"]);
+  });
+});
+
+describe("useWithdrawVoteMutation", () => {
+  it("withdraws by poll id and invalidates the list", async () => {
+    vi.mocked(withdrawVote).mockResolvedValue({} as never);
+    const client = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+
+    const { result } = renderHook(() => useWithdrawVoteMutation(), {
+      wrapper: createWrapper(client),
+    });
+    result.current.mutate("p1");
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(vi.mocked(withdrawVote).mock.calls[0]?.[0]).toBe("p1");
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: pollKeys.all });
   });
 });

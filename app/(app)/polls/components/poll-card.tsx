@@ -2,10 +2,15 @@
 
 import { toast } from "sonner";
 
+import { AppButton } from "@/components/app/app-button";
 import { AppIcon } from "@/components/app/app-icon";
 import { StatusBadge } from "@/components/app/status-badge";
 
-import { useClosePollMutation, useVotePollMutation } from "@/queries/polls";
+import {
+  useClosePollMutation,
+  useVotePollMutation,
+  useWithdrawVoteMutation,
+} from "@/queries/polls";
 
 import { formatFaDate } from "@/lib/format-date";
 import { toFaDigits } from "@/lib/persian-number";
@@ -15,18 +20,23 @@ import type { PollApiResponse } from "@/types/polls.api.type";
 
 interface Props {
   poll: PollApiResponse;
+  /** Managers moderate and always see live tallies; they never vote. */
   canModerate: boolean;
+  /** Only residents cast or withdraw a vote. */
+  canVote: boolean;
 }
 
-export function PollCard({ poll, canModerate }: Props) {
+export function PollCard({ poll, canModerate, canVote }: Props) {
   const vote = useVotePollMutation();
+  const withdraw = useWithdrawVoteMutation();
   const closePoll = useClosePollMutation();
 
-  // Results are revealed once the resident has voted or the poll is over.
-  const showResults = poll.hasVoted || !poll.open;
+  // Managers see live results; residents see them after voting or when closed.
+  const showResults = canModerate || poll.hasVoted || !poll.open;
+  const interactive = canVote && poll.open && !poll.hasVoted;
 
   const handleVote = (optionId: string) => {
-    if (poll.hasVoted || !poll.open || vote.isPending) return;
+    if (!interactive || vote.isPending) return;
     vote.mutate(
       { pollId: poll.id, optionId },
       { onSuccess: () => toast.success("رأی شما ثبت شد. سپاس از مشارکت شما!") },
@@ -57,10 +67,15 @@ export function PollCard({ poll, canModerate }: Props) {
         ) : null}
       </div>
 
+      {canModerate && poll.open ? (
+        <p className="mb-3 text-[12.5px] text-app-muted">
+          شما به‌عنوان مدیر رأی نمی‌دهید؛ نتیجه به‌صورت زنده نمایش داده می‌شود.
+        </p>
+      ) : null}
+
       <div className="flex flex-col gap-2">
         {poll.options.map((option) => {
           const chosen = poll.myOptionId === option.optionId;
-          const interactive = poll.open && !poll.hasVoted;
 
           return (
             <button
@@ -107,11 +122,24 @@ export function PollCard({ poll, canModerate }: Props) {
         })}
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-[12px] text-app-muted">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-app-muted">
         <AppIcon name="groups" className="size-[16px]" />
         <span>{toFaDigits(poll.totalVotes)} رأی</span>
         <span>· {formatFaDate(poll.createdAt)}</span>
-        {poll.hasVoted ? (
+        {canVote && poll.hasVoted && poll.open ? (
+          <AppButton
+            variant="ghost"
+            className="mr-auto h-8 px-2 text-[12.5px]"
+            disabled={withdraw.isPending}
+            onClick={() =>
+              withdraw.mutate(poll.id, {
+                onSuccess: () => toast.success("رأی شما پس گرفته شد"),
+              })
+            }
+          >
+            پس گرفتن رأی
+          </AppButton>
+        ) : poll.hasVoted ? (
           <span className="mr-auto text-app-success">رأی شما ثبت شده است</span>
         ) : null}
       </div>

@@ -8,6 +8,7 @@ import {
   getPolls,
   pollKeys,
   votePoll,
+  withdrawVote,
 } from "@/api/polls";
 
 const STALE = 60 * 1000;
@@ -39,6 +40,14 @@ export function useVotePollMutation() {
   return useMutation({
     mutationFn: ({ pollId, optionId }: { pollId: string; optionId: string }) =>
       votePoll(pollId, optionId),
+    onSuccess: invalidate,
+  });
+}
+
+export function useWithdrawVoteMutation() {
+  const invalidate = useInvalidatePolls();
+  return useMutation({
+    mutationFn: withdrawVote,
     onSuccess: invalidate,
   });
 }

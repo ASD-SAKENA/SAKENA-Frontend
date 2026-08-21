@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import http from "@/services/http";
 
-import { closePoll, createPoll, getPolls, votePoll } from "./polls";
+import {
+  closePoll,
+  createPoll,
+  getPolls,
+  votePoll,
+  withdrawVote,
+} from "./polls";
 
 vi.mock("@/services/http", () => ({
   default: {
@@ -42,6 +48,14 @@ describe("votePoll", () => {
     expect(http.post).toHaveBeenCalledWith("/polls/p1/votes", {
       optionId: "opt-1",
     });
+  });
+});
+
+describe("withdrawVote", () => {
+  it("deletes the caller's vote", async () => {
+    vi.mocked(http.delete).mockResolvedValue({ data: { id: "p1" } });
+    await withdrawVote("p1");
+    expect(http.delete).toHaveBeenCalledWith("/polls/p1/votes");
   });
 });
 
