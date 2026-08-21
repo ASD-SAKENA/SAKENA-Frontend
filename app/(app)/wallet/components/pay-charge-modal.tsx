@@ -42,7 +42,7 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
     handleSubmit,
     reset,
     setValue,
-    watch,
+    getValues,
     formState: { errors, isSubmitSuccessful },
   } = useForm<InvoicePaymentForm>({
     resolver: zodResolver(invoicePaymentSchema),
@@ -62,12 +62,9 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
     reset({ amount: "", transactionReference: "" });
   }, [isSubmitSuccessful, reset]);
 
-  const amountValue = Number(watch("amount") || 0);
+  // Amount is validated on click via getValues — avoid RHF watch() (React Compiler).
   const canPayFromWallet =
-    invoice !== null &&
-    amountValue > 0 &&
-    amountValue <= invoice.remaining &&
-    amountValue <= balance;
+    invoice !== null && balance > 0 && invoice.remaining > 0;
 
   const onSubmit = handleSubmit(async (values) => {
     if (!invoice) return;
@@ -96,7 +93,7 @@ export function PayChargeModal({ invoice, open, onClose }: Props) {
 
   const handlePayFromWallet = async () => {
     if (!invoice) return;
-    const amount = Number(watch("amount") || 0);
+    const amount = Number(getValues("amount") || 0);
     if (amount <= 0 || amount > invoice.remaining) {
       toast.error("مبلغ معتبر برای پرداخت از کیف پول وارد کنید");
       return;

@@ -9,22 +9,19 @@ import { SectionCard } from "@/components/app/section-card";
 import { StatusBadge } from "@/components/app/status-badge";
 
 import { useMyInvoicesQuery } from "@/queries/billing";
-import {
-  usePaymentSubmissionsQuery,
-  useWalletQuery,
-} from "@/queries/wallet";
+import { usePaymentSubmissionsQuery, useWalletQuery } from "@/queries/wallet";
 
 import { INVOICE_STATUS_META } from "@/lib/billing";
 import { formatFaDate } from "@/lib/format-date";
 import { faNumber } from "@/lib/persian-number";
 import { cn } from "@/lib/utils";
 
+import type { StatusColor } from "@/types/app.type";
 import type { UnitInvoiceApiResponse } from "@/types/billing.api.type";
 import type { PaymentApiStatus } from "@/types/wallet.api.type";
-import type { StatusColor } from "@/types/app.type";
 
-import { PayChargeModal } from "./pay-charge-modal";
-import { TopUpWalletModal } from "./top-up-wallet-modal";
+import { PayChargeModal } from "./components/pay-charge-modal";
+import { TopUpWalletModal } from "./components/top-up-wallet-modal";
 
 const PAYMENT_STATUS_META: Record<
   PaymentApiStatus,
@@ -141,9 +138,7 @@ export default function WalletPage() {
                       </div>
                     ) : null}
                     <div className="mt-2 flex flex-wrap gap-3 text-[12.5px] text-app-muted">
-                      <span>
-                        مبلغ کل: {faNumber(invoice.amount)} تومان
-                      </span>
+                      <span>مبلغ کل: {faNumber(invoice.amount)} تومان</span>
                       <span>
                         پرداخت‌شده: {faNumber(invoice.paidAmount)} تومان
                       </span>
@@ -186,7 +181,11 @@ export default function WalletPage() {
         </SectionCard>
       ) : null}
 
-      <SectionCard title="وضعیت درخواست‌های پرداخت" className="mb-4" bodyClassName="p-0">
+      <SectionCard
+        title="وضعیت درخواست‌های پرداخت"
+        className="mb-4"
+        bodyClassName="p-0"
+      >
         {submissions.length === 0 ? (
           <p className="px-[18px] py-4 text-[13px] text-app-muted">
             هنوز درخواست پرداختی ثبت نکرده‌اید.
@@ -220,11 +219,16 @@ export default function WalletPage() {
                       <td className="px-5 py-[13px]">
                         {faNumber(payment.amount)}
                       </td>
-                      <td className="px-5 py-[13px] font-mono text-[12.5px] text-app-muted" dir="ltr">
+                      <td
+                        className="px-5 py-[13px] font-mono text-[12.5px] text-app-muted"
+                        dir="ltr"
+                      >
                         {payment.transactionReference}
                       </td>
                       <td className="px-5 py-[13px]">
-                        <StatusBadge color={meta.color}>{meta.label}</StatusBadge>
+                        <StatusBadge color={meta.color}>
+                          {meta.label}
+                        </StatusBadge>
                       </td>
                       <td className="px-5 py-[13px] text-app-muted">
                         {formatFaDate(payment.paidAt)}

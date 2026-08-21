@@ -98,7 +98,9 @@ export async function submitInvoicePayment(
 }
 
 export async function getPaymentSubmissions(): Promise<PaymentApiResponse[]> {
-  const { data } = await http.get<PaymentApiResponse[]>("/payments/submissions");
+  const { data } = await http.get<PaymentApiResponse[]>(
+    "/payments/submissions",
+  );
   return data;
 }
 

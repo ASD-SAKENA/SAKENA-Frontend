@@ -21,4 +21,9 @@ export const TRANSACTION_CATEGORY_META: Record<
     color: "warning",
   },
   ADJUSTMENT: { label: "اصلاح حساب", icon: "filter_list", color: "steel" },
+  WALLET_FUNDING: {
+    label: "شارژ کیف پول",
+    icon: "account_balance_wallet",
+    color: "gold",
+  },
 };
