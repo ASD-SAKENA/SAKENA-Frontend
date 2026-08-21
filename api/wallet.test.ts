@@ -7,10 +7,11 @@ import {
   getBuildingLedger,
   getBuildingWalletBalance,
   getMyWalletBalance,
+  getPendingPayments,
   getWallet,
   recordBuildingTransaction,
-  recordPayment,
   settleServiceRequest,
+  submitInvoicePayment,
 } from "./wallet";
 
 vi.mock("@/services/http", () => ({
@@ -38,15 +39,31 @@ describe("getWallet", () => {
           data: [
             {
               id: "p1",
+              invoiceId: "inv-1",
+              periodTitle: "شارژ فروردین",
               title: "شارژ فروردین",
               amount: 500000,
+              transactionReference: "a",
+              hasReceipt: false,
+              status: "CONFIRMED",
               paidAt: "2026-02-01T00:00:00Z",
+              reviewedBy: null,
+              reviewedAt: null,
+              rejectionReason: null,
             },
             {
               id: "p2",
+              invoiceId: "inv-2",
+              periodTitle: "شارژ اردیبهشت",
               title: "شارژ اردیبهشت",
               amount: 300000,
+              transactionReference: "b",
+              hasReceipt: false,
+              status: "CONFIRMED",
               paidAt: "2026-03-01T00:00:00Z",
+              reviewedBy: null,
+              reviewedAt: null,
+              rejectionReason: null,
             },
           ],
         });
@@ -71,15 +88,48 @@ describe("getWallet", () => {
   });
 });
 
-describe("recordPayment", () => {
-  it("posts the payload and returns the new id", async () => {
-    mockedPost.mockResolvedValue({ data: { id: "p1" } });
-    const result = await recordPayment({ title: "شارژ", amount: 100000 });
-    expect(http.post).toHaveBeenCalledWith("/payments", {
-      title: "شارژ",
-      amount: 100000,
+describe("submitInvoicePayment", () => {
+  it("posts multipart form data for an invoice payment", async () => {
+    mockedPost.mockResolvedValue({
+      data: {
+        id: "p1",
+        invoiceId: "inv-1",
+        periodTitle: "شارژ",
+        title: "شارژ",
+        amount: 100000,
+        transactionReference: "TRX-1",
+        hasReceipt: false,
+        status: "PENDING",
+        paidAt: "2026-04-01T00:00:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        rejectionReason: null,
+      },
     });
-    expect(result).toEqual({ id: "p1" });
+
+    const result = await submitInvoicePayment({
+      invoiceId: "inv-1",
+      amount: 100000,
+      transactionReference: "TRX-1",
+    });
+
+    expect(http.post).toHaveBeenCalledWith(
+      "/payments",
+      expect.any(FormData),
+      expect.objectContaining({
+        headers: { "Content-Type": undefined },
+      }),
+    );
+    expect(result.id).toBe("p1");
+    expect(result.status).toBe("PENDING");
+  });
+});
+
+describe("getPendingPayments", () => {
+  it("reads the manager review queue", async () => {
+    mockedGet.mockResolvedValue({ data: [] });
+    expect(await getPendingPayments()).toEqual([]);
+    expect(http.get).toHaveBeenCalledWith("/payments/pending");
   });
 });
 
@@ -92,54 +142,51 @@ describe("getMyWalletBalance", () => {
 });
 
 describe("fundWallet", () => {
-  it("posts the top-up amount and returns the new balance", async () => {
-    mockedPost.mockResolvedValue({ data: { balance: 550000 } });
-    const balance = await fundWallet(500000);
+  it("posts the top-up amount", async () => {
+    mockedPost.mockResolvedValue({ data: { balance: 1500000 } });
+    expect(await fundWallet(500000)).toBe(1500000);
     expect(http.post).toHaveBeenCalledWith("/wallets/me/top-ups", {
       amount: 500000,
     });
-    expect(balance).toBe(550000);
   });
 });
 
 describe("settleServiceRequest", () => {
-  it("posts to the settle endpoint for the given request", async () => {
-    mockedPost.mockResolvedValue({ data: {} });
+  it("posts to the settle endpoint", async () => {
+    mockedPost.mockResolvedValue({ data: null });
     await settleServiceRequest("req-1");
     expect(http.post).toHaveBeenCalledWith("/wallets/settle/req-1");
   });
 });
 
-describe("getBuildingWalletBalance", () => {
-  it("reads the building account balance", async () => {
-    mockedGet.mockResolvedValue({ data: { balance: 1200000 } });
-    expect(await getBuildingWalletBalance()).toBe(1200000);
-    expect(http.get).toHaveBeenCalledWith("/wallets/building");
+describe("building wallet", () => {
+  it("reads balance and ledger", async () => {
+    mockedGet.mockImplementation((url: string) => {
+      if (url === "/wallets/building") {
+        return Promise.resolve({ data: { balance: 10 } });
+      }
+      if (url === "/wallets/building/transactions") {
+        return Promise.resolve({ data: [] });
+      }
+      throw new Error(url);
+    });
+    expect(await getBuildingWalletBalance()).toBe(10);
+    expect(await getBuildingLedger()).toEqual([]);
   });
-});
 
-describe("getBuildingLedger", () => {
-  it("returns the raw transaction list", async () => {
-    mockedGet.mockResolvedValue({ data: [{ id: "t1" }] });
-    const ledger = await getBuildingLedger();
-    expect(ledger).toEqual([{ id: "t1" }]);
-    expect(http.get).toHaveBeenCalledWith("/wallets/building/transactions");
-  });
-});
-
-describe("recordBuildingTransaction", () => {
-  it("posts the transaction payload", async () => {
-    mockedPost.mockResolvedValue({ data: {} });
-    const payload = {
-      direction: "CREDIT" as const,
-      category: "ADJUSTMENT" as const,
-      amount: 10000,
-      description: "اصلاح",
-    };
-    await recordBuildingTransaction(payload);
-    expect(http.post).toHaveBeenCalledWith(
-      "/wallets/building/transactions",
-      payload,
-    );
+  it("records a building transaction", async () => {
+    mockedPost.mockResolvedValue({ data: null });
+    await recordBuildingTransaction({
+      direction: "DEBIT",
+      category: "OPERATING_EXPENSE",
+      amount: 1000,
+      description: "آب",
+    });
+    expect(http.post).toHaveBeenCalledWith("/wallets/building/transactions", {
+      direction: "DEBIT",
+      category: "OPERATING_EXPENSE",
+      amount: 1000,
+      description: "آب",
+    });
   });
 });

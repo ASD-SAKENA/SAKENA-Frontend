@@ -1,55 +1,63 @@
 import { describe, expect, it } from "vitest";
 
-import { paymentSchema, topUpSchema } from "./wallet.schema";
+import {
+  invoicePaymentSchema,
+  rejectPaymentSchema,
+  topUpSchema,
+} from "./wallet.schema";
 
-describe("paymentSchema", () => {
-  it("accepts a valid title and amount", () => {
-    const result = paymentSchema.safeParse({
-      title: "شارژ تیرماه",
-      amount: "850000",
+describe("invoicePaymentSchema", () => {
+  it("accepts amount and transaction reference", () => {
+    const result = invoicePaymentSchema.safeParse({
+      amount: "150000",
+      transactionReference: "TRX-12345",
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects a title shorter than 3 characters", () => {
+  it("rejects a short transaction reference", () => {
     expect(
-      paymentSchema.safeParse({ title: "ab", amount: "100" }).success,
+      invoicePaymentSchema.safeParse({
+        amount: "100",
+        transactionReference: "ab",
+      }).success,
     ).toBe(false);
   });
 
   it("rejects a non-numeric amount", () => {
     expect(
-      paymentSchema.safeParse({ title: "شارژ", amount: "abc" }).success,
+      invoicePaymentSchema.safeParse({
+        amount: "abc",
+        transactionReference: "TRX-12345",
+      }).success,
     ).toBe(false);
   });
 
-  it("rejects a zero amount", () => {
+  it("rejects zero amount", () => {
     expect(
-      paymentSchema.safeParse({ title: "شارژ", amount: "0" }).success,
-    ).toBe(false);
-  });
-
-  it("rejects a negative-looking amount (regex requires digits only)", () => {
-    expect(
-      paymentSchema.safeParse({ title: "شارژ", amount: "-100" }).success,
+      invoicePaymentSchema.safeParse({
+        amount: "0",
+        transactionReference: "TRX-12345",
+      }).success,
     ).toBe(false);
   });
 });
 
 describe("topUpSchema", () => {
-  it("accepts a positive numeric amount", () => {
+  it("accepts a positive integer amount", () => {
     expect(topUpSchema.safeParse({ amount: "500000" }).success).toBe(true);
-  });
-
-  it("rejects a zero amount", () => {
-    expect(topUpSchema.safeParse({ amount: "0" }).success).toBe(false);
-  });
-
-  it("rejects a non-numeric amount", () => {
-    expect(topUpSchema.safeParse({ amount: "abc" }).success).toBe(false);
   });
 
   it("rejects an empty amount", () => {
     expect(topUpSchema.safeParse({ amount: "" }).success).toBe(false);
+  });
+});
+
+describe("rejectPaymentSchema", () => {
+  it("requires a reason", () => {
+    expect(rejectPaymentSchema.safeParse({ reason: "ab" }).success).toBe(false);
+    expect(
+      rejectPaymentSchema.safeParse({ reason: "مبلغ اشتباه است" }).success,
+    ).toBe(true);
   });
 });

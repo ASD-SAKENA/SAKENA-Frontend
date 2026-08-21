@@ -9,10 +9,12 @@ import {
   deleteChargePeriod,
   getChargeItems,
   getChargePeriods,
+  getMyInvoices,
   getPendingServiceCharges,
   getPeriodInvoices,
   getUnitInvoices,
   issueChargePeriod,
+  payInvoiceFromWallet,
   registerInvoicePayment,
   removeChargeItem,
 } from "./billing";
@@ -122,10 +124,22 @@ describe("invoices", () => {
     });
   });
 
+  it("getMyInvoices reads the resident invoice list", async () => {
+    await getMyInvoices();
+    expect(http.get).toHaveBeenCalledWith("/invoices/mine");
+  });
+
   it("registerInvoicePayment posts the amount", async () => {
     await registerInvoicePayment("inv-1", 250000);
     expect(http.post).toHaveBeenCalledWith("/invoices/inv-1/payments", {
       amount: 250000,
+    });
+  });
+
+  it("payInvoiceFromWallet posts optional amount", async () => {
+    await payInvoiceFromWallet("inv-1", 100000);
+    expect(http.post).toHaveBeenCalledWith("/invoices/inv-1/pay-from-wallet", {
+      amount: 100000,
     });
   });
 });

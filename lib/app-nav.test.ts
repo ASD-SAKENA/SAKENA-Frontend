@@ -18,6 +18,12 @@ describe("navForRole", () => {
     expect(hrefs).toContain("/profile");
   });
 
+  it("lets a manager review pending resident payments", () => {
+    expect(navForRole("manager").map((item) => item.href)).toContain(
+      "/payments",
+    );
+  });
+
   it("lets a manager reach announcements, since only they can publish one", () => {
     // The page hides its publish button behind the manager role, so without a
     // nav entry the feature existed but nobody could open it.
@@ -60,7 +66,14 @@ describe("pageMetaForPath", () => {
   it("returns the known title/crumb pair for a mapped route", () => {
     expect(pageMetaForPath("/wallet")).toEqual([
       "کیف پول و پرداخت",
-      "مالی · موجودی و تاریخچه تراکنش‌ها",
+      "مالی · صورت‌حساب واحد و پرداخت",
+    ]);
+  });
+
+  it("maps the manager payment review route", () => {
+    expect(pageMetaForPath("/payments")).toEqual([
+      "بررسی پرداخت‌ها",
+      "مالی · تایید یا رد رسیدهای بانکی ساکنین",
     ]);
   });
 

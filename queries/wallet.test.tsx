@@ -9,16 +9,16 @@ import {
   fundWallet,
   getMyWalletBalance,
   getWallet,
-  recordPayment,
   settleServiceRequest,
+  submitInvoicePayment,
 } from "@/api/wallet";
 
 import { createTestQueryClient, createWrapper } from "./test-utils";
 import {
   useFundWalletMutation,
   useMyWalletQuery,
-  useRecordPaymentMutation,
   useSettleRequestMutation,
+  useSubmitInvoicePaymentMutation,
   useWalletQuery,
 } from "./wallet";
 
@@ -29,7 +29,7 @@ vi.mock("@/api/wallet", async () => {
     getWallet: vi.fn(),
     getMyWalletBalance: vi.fn(),
     fundWallet: vi.fn(),
-    recordPayment: vi.fn(),
+    submitInvoicePayment: vi.fn(),
     settleServiceRequest: vi.fn(),
   };
 });
@@ -77,19 +77,39 @@ describe("useFundWalletMutation", () => {
   });
 });
 
-describe("useRecordPaymentMutation", () => {
-  it("invalidates the wallet query on success", async () => {
-    vi.mocked(recordPayment).mockResolvedValue({ id: "p1" });
+describe("useSubmitInvoicePaymentMutation", () => {
+  it("invalidates wallet and invoice queries on success", async () => {
+    vi.mocked(submitInvoicePayment).mockResolvedValue({
+      id: "p1",
+      invoiceId: "inv-1",
+      periodTitle: "شارژ",
+      title: "شارژ",
+      amount: 100000,
+      transactionReference: "TRX-1",
+      hasReceipt: false,
+      status: "PENDING",
+      paidAt: "2026-04-01T00:00:00Z",
+      reviewedBy: null,
+      reviewedAt: null,
+      rejectionReason: null,
+    });
     const client = createTestQueryClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
 
-    const { result } = renderHook(() => useRecordPaymentMutation(), {
+    const { result } = renderHook(() => useSubmitInvoicePaymentMutation(), {
       wrapper: createWrapper(client),
     });
-    result.current.mutate({ title: "شارژ", amount: 100000 });
+    result.current.mutate({
+      invoiceId: "inv-1",
+      amount: 100000,
+      transactionReference: "TRX-1",
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: walletKeys.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: billingKeys.myInvoices,
+    });
   });
 });
 

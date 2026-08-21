@@ -17,6 +17,7 @@ export const billingKeys = {
   invoices: (periodId: string) => ["billing", "invoices", periodId] as const,
   unitInvoices: (apartmentId: string) =>
     ["billing", "unit-invoices", apartmentId] as const,
+  myInvoices: ["billing", "my-invoices"] as const,
   pendingServiceCharges: ["billing", "pending-service-charges"] as const,
 };
 
@@ -116,6 +117,12 @@ export async function getUnitInvoices(
   return data;
 }
 
+/** Signed-in resident's invoices for their current unit. */
+export async function getMyInvoices(): Promise<UnitInvoiceApiResponse[]> {
+  const { data } = await http.get<UnitInvoiceApiResponse[]>("/invoices/mine");
+  return data;
+}
+
 export async function registerInvoicePayment(
   invoiceId: string,
   amount: number,
@@ -123,6 +130,18 @@ export async function registerInvoicePayment(
   const { data } = await http.post<UnitInvoiceApiResponse>(
     `/invoices/${invoiceId}/payments`,
     { amount },
+  );
+  return data;
+}
+
+/** Instant settlement from the resident's personal wallet balance. */
+export async function payInvoiceFromWallet(
+  invoiceId: string,
+  amount?: number,
+): Promise<UnitInvoiceApiResponse> {
+  const { data } = await http.post<UnitInvoiceApiResponse>(
+    `/invoices/${invoiceId}/pay-from-wallet`,
+    amount !== undefined ? { amount } : {},
   );
   return data;
 }

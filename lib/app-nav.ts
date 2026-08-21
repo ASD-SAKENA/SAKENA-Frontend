@@ -39,6 +39,11 @@ export function navForRole(role: Role): NavItem[] {
       },
       { label: "واحدها و ساکنین", icon: "apartment", href: "/units" },
       { label: "دوره‌های شارژ", icon: "payments", href: "/billing" },
+      {
+        label: "بررسی پرداخت‌ها",
+        icon: "fact_check",
+        href: "/payments",
+      },
       { label: "امکانات", icon: "meeting_room", href: "/reserve" },
       { label: "اطلاعیه‌ها", icon: "campaign", href: "/announcements" },
       { label: "نظرسنجی‌ها", icon: "chart", href: "/polls" },
@@ -72,7 +77,11 @@ export function roleHomePath(role: Role): string {
 const PAGE_META: Record<string, [title: string, crumb: string]> = {
   "/dashboard": ["داشبورد", "خانه · خلاصه وضعیت شما"],
   "/reserve": ["رزرو امکانات مشترک", "رزرو امکانات · انتخاب امکان و زمان"],
-  "/wallet": ["کیف پول و پرداخت", "مالی · موجودی و تاریخچه تراکنش‌ها"],
+  "/wallet": ["کیف پول و پرداخت", "مالی · صورت‌حساب واحد و پرداخت"],
+  "/payments": [
+    "بررسی پرداخت‌ها",
+    "مالی · تایید یا رد رسیدهای بانکی ساکنین",
+  ],
   "/requests": ["درخواست‌های خدماتی", "پشتیبانی · ثبت و پیگیری درخواست"],
   "/announcements": ["اطلاعیه‌ها", "ارتباطات · اعلانات ساختمان"],
   "/profile": ["پروفایل", "حساب کاربری · اطلاعات شخصی"],

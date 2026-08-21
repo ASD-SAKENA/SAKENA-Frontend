@@ -1,15 +1,27 @@
 /** Response shapes of the Sakena backend payment and wallet endpoints. */
 
+export type PaymentApiStatus = "PENDING" | "CONFIRMED" | "REJECTED";
+
 export interface PaymentApiResponse {
   id: string;
+  invoiceId: string | null;
+  periodTitle: string | null;
   title: string;
   amount: number;
+  transactionReference: string;
+  hasReceipt: boolean;
+  status: PaymentApiStatus;
   paidAt: string;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
 }
 
-export interface RecordPaymentApiPayload {
-  title: string;
+export interface SubmitInvoicePaymentPayload {
+  invoiceId: string;
   amount: number;
+  transactionReference: string;
+  receipt?: File | null;
 }
 
 export type TransactionDirectionApi = "CREDIT" | "DEBIT";
@@ -18,7 +30,8 @@ export type TransactionCategoryApi =
   | "CHARGE_COLLECTION"
   | "WAGE_SETTLEMENT"
   | "OPERATING_EXPENSE"
-  | "ADJUSTMENT";
+  | "ADJUSTMENT"
+  | "WALLET_FUNDING";
 
 export interface WalletTransactionApiResponse {
   id: string;

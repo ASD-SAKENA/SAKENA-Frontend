@@ -5,16 +5,22 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { billingKeys } from "@/api/billing";
 import { requestKeys } from "@/api/requests";
 import {
+  confirmPayment,
   fundWallet,
   getBuildingLedger,
   getBuildingWalletBalance,
   getMyWalletBalance,
+  getPaymentSubmissions,
+  getPendingPayments,
   getWallet,
   recordBuildingTransaction,
-  recordPayment,
+  rejectPayment,
   settleServiceRequest,
+  submitInvoicePayment,
   walletKeys,
 } from "@/api/wallet";
+
+import type { SubmitInvoicePaymentPayload } from "@/types/wallet.api.type";
 
 const STALE = 5 * 60 * 1000;
 
@@ -50,16 +56,63 @@ export function useBuildingLedgerQuery() {
   });
 }
 
+export function usePaymentSubmissionsQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: walletKeys.submissions,
+    queryFn: getPaymentSubmissions,
+    staleTime: STALE,
+    enabled: options?.enabled,
+  });
+}
+
+export function usePendingPaymentsQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: walletKeys.pendingPayments,
+    queryFn: getPendingPayments,
+    staleTime: STALE,
+    enabled: options?.enabled,
+  });
+}
+
 function useInvalidateWallet() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: walletKeys.all });
 }
 
-export function useRecordPaymentMutation() {
-  const invalidate = useInvalidateWallet();
+export function useSubmitInvoicePaymentMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: recordPayment,
-    onSuccess: invalidate,
+    mutationFn: (payload: SubmitInvoicePaymentPayload) =>
+      submitInvoicePayment(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: walletKeys.all });
+      queryClient.invalidateQueries({ queryKey: billingKeys.myInvoices });
+      queryClient.invalidateQueries({ queryKey: billingKeys.all });
+    },
+  });
+}
+
+export function useConfirmPaymentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: confirmPayment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: walletKeys.pendingPayments });
+      queryClient.invalidateQueries({ queryKey: walletKeys.all });
+      queryClient.invalidateQueries({ queryKey: billingKeys.all });
+    },
+  });
+}
+
+export function useRejectPaymentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      rejectPayment(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: walletKeys.pendingPayments });
+      queryClient.invalidateQueries({ queryKey: walletKeys.all });
+    },
   });
 }
 

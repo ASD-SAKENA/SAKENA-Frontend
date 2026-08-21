@@ -6,7 +6,7 @@ import { faNumber } from "@/lib/persian-number";
 import type {
   PaymentApiResponse,
   RecordBuildingTransactionApiPayload,
-  RecordPaymentApiPayload,
+  SubmitInvoicePaymentPayload,
   WalletBalanceApiResponse,
   WalletTransactionApiResponse,
 } from "@/types/wallet.api.type";
@@ -17,12 +17,18 @@ export const walletKeys = {
   me: ["wallet", "me"] as const,
   building: ["wallet", "building"] as const,
   buildingLedger: ["wallet", "building", "transactions"] as const,
+  submissions: ["wallet", "submissions"] as const,
+  pendingPayments: ["wallet", "pending-payments"] as const,
 };
+
+function paymentLabel(payment: PaymentApiResponse): string {
+  return payment.periodTitle?.trim() || payment.title;
+}
 
 function toTransaction(payment: PaymentApiResponse): Transaction {
   return {
     id: payment.id,
-    desc: payment.title,
+    desc: paymentLabel(payment),
     date: formatFaDate(payment.paidAt),
     type: "پرداخت",
     color: "info",
@@ -32,9 +38,8 @@ function toTransaction(payment: PaymentApiResponse): Transaction {
 }
 
 /**
- * Balance comes from the real wallet endpoint; the stats/history below still
- * derive from payment records until a full transaction ledger lands for
- * residents (buildings already have one - see getBuildingLedger).
+ * Balance comes from the real wallet endpoint; confirmed payments fill the
+ * history until a full personal ledger lands for residents.
  */
 export async function getWallet(): Promise<Wallet> {
   const [{ data }, balance] = await Promise.all([
@@ -64,11 +69,62 @@ export async function getWallet(): Promise<Wallet> {
   };
 }
 
-export async function recordPayment(
-  payload: RecordPaymentApiPayload,
-): Promise<{ id: string }> {
-  const { data } = await http.post<PaymentApiResponse>("/payments", payload);
-  return { id: data.id };
+/** Submit bank-transfer evidence against a specific unit invoice. */
+export async function submitInvoicePayment(
+  payload: SubmitInvoicePaymentPayload,
+): Promise<PaymentApiResponse> {
+  const form = new FormData();
+  form.append(
+    "payment",
+    new Blob(
+      [
+        JSON.stringify({
+          invoiceId: payload.invoiceId,
+          amount: payload.amount,
+          transactionReference: payload.transactionReference,
+        }),
+      ],
+      { type: "application/json" },
+    ),
+  );
+  if (payload.receipt) {
+    form.append("receipt", payload.receipt);
+  }
+  const { data } = await http.post<PaymentApiResponse>("/payments", form, {
+    // Let the browser set the multipart boundary.
+    headers: { "Content-Type": undefined },
+  });
+  return data;
+}
+
+export async function getPaymentSubmissions(): Promise<PaymentApiResponse[]> {
+  const { data } = await http.get<PaymentApiResponse[]>("/payments/submissions");
+  return data;
+}
+
+export async function getPendingPayments(): Promise<PaymentApiResponse[]> {
+  const { data } = await http.get<PaymentApiResponse[]>("/payments/pending");
+  return data;
+}
+
+export async function confirmPayment(
+  paymentId: string,
+): Promise<PaymentApiResponse> {
+  const { data } = await http.patch<PaymentApiResponse>(
+    `/payments/${paymentId}/confirm`,
+  );
+  return data;
+}
+
+export async function rejectPayment(
+  paymentId: string,
+  reason: string,
+): Promise<PaymentApiResponse> {
+  const { data } = await http.patch<PaymentApiResponse>(
+    `/payments/${paymentId}/reject`,
+    { reason },
+  );
+  return data;
 }
 
 /** Current user's wallet balance (worker wages land here after settlement). */

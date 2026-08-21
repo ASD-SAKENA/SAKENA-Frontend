@@ -10,13 +10,16 @@ import {
   deleteChargePeriod,
   getChargeItems,
   getChargePeriods,
+  getMyInvoices,
   getPendingServiceCharges,
   getPeriodInvoices,
   getUnitInvoices,
   issueChargePeriod,
+  payInvoiceFromWallet,
   registerInvoicePayment,
   removeChargeItem,
 } from "@/api/billing";
+import { walletKeys } from "@/api/wallet";
 
 import type { AddChargeItemApiPayload } from "@/types/billing.api.type";
 
@@ -63,6 +66,15 @@ export function useUnitInvoicesQuery(apartmentId: string | null) {
     queryFn: () => getUnitInvoices(apartmentId ?? ""),
     enabled: apartmentId !== null,
     staleTime: STALE,
+  });
+}
+
+export function useMyInvoicesQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: billingKeys.myInvoices,
+    queryFn: getMyInvoices,
+    staleTime: STALE,
+    enabled: options?.enabled,
   });
 }
 
@@ -141,5 +153,22 @@ export function useRegisterInvoicePaymentMutation() {
       amount: number;
     }) => registerInvoicePayment(invoiceId, amount),
     onSuccess: invalidate,
+  });
+}
+
+export function usePayInvoiceFromWalletMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      invoiceId,
+      amount,
+    }: {
+      invoiceId: string;
+      amount?: number;
+    }) => payInvoiceFromWallet(invoiceId, amount),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      queryClient.invalidateQueries({ queryKey: walletKeys.all });
+    },
   });
 }

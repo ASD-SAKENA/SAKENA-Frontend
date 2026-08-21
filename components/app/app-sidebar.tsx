@@ -9,6 +9,7 @@ import {
   useResidentRequestsQuery,
 } from "@/queries/requests";
 import { useStaffTasksQuery } from "@/queries/tasks";
+import { usePendingPaymentsQuery } from "@/queries/wallet";
 
 import { useAppUiStore } from "@/stores/app-ui.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -28,6 +29,9 @@ function useNavBadges(role: Role) {
   const managerRequests = useManagerRequestsQuery({
     enabled: role === "manager",
   });
+  const pendingPayments = usePendingPaymentsQuery({
+    enabled: role === "manager",
+  });
   const staffTasks = useStaffTasksQuery({ enabled: role === "staff" });
 
   if (role === "resident") {
@@ -41,7 +45,10 @@ function useNavBadges(role: Role) {
     const pending =
       managerRequests.data?.filter((r) => r.apiStatus === "PENDING").length ??
       0;
-    return { "/queue": pending };
+    return {
+      "/queue": pending,
+      "/payments": pendingPayments.data?.length ?? 0,
+    };
   }
   if (role === "admin") return {};
   const open = staffTasks.data?.filter((t) => !t.done).length ?? 0;

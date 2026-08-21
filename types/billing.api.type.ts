@@ -51,6 +51,9 @@ export interface ServiceChargeApiResponse {
 export interface UnitInvoiceApiResponse {
   id: string;
   periodId: string;
+  periodTitle: string;
+  startsOn: string | null;
+  endsOn: string | null;
   apartmentId: string;
   amount: number;
   paidAmount: number;
