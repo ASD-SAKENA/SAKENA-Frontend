@@ -121,11 +121,11 @@ export default function PaymentsPage() {
 
   return (
     <div className="sk-page flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl border border-app-border bg-[linear-gradient(135deg,#1A2336,#0F1626)] p-5 text-[#ECEEF3] shadow-[var(--ap-shadow)]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:items-stretch">
+        <div className="flex flex-col rounded-2xl border border-app-border bg-[linear-gradient(135deg,#1A2336,#0F1626)] p-5 text-[#ECEEF3] shadow-[var(--ap-shadow)]">
           <div className="text-[13px] text-[#9CA3B0]">موجودی حساب ساختمان</div>
           <div
-            className="mt-2 text-[28px] font-extrabold text-[#E6CC8A]"
+            className="mt-1.5 text-[28px] leading-none font-extrabold text-[#E6CC8A]"
             dir="ltr"
           >
             {faNumber(balance)}{" "}
@@ -133,18 +133,18 @@ export default function PaymentsPage() {
               تومان
             </span>
           </div>
-          <p className="mt-2 text-[12.5px] text-[#9CA3B0]">
+          <p className="mt-2.5 max-w-[36ch] text-[12.5px] leading-6 text-[#9CA3B0]">
             وصول شارژ بعد از تایید پرداخت اینجا می‌نشیند.
           </p>
           <Link
             href="/building-wallet"
-            className="mt-4 inline-flex h-10 items-center rounded-xl border border-white/15 px-4 text-[13px] font-semibold text-[#E6CC8A] hover:bg-white/5"
+            className="mt-4 inline-flex h-10 w-fit items-center rounded-xl border border-white/15 px-4 text-[13px] font-semibold text-[#E6CC8A] transition-colors hover:bg-white/5 md:mt-auto"
           >
             دفتر حساب ساختمان
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:auto-rows-fr md:grid-cols-1">
           <SummaryTile
             label="در انتظار تایید"
             value={faNumber(pending.length)}
@@ -364,11 +364,11 @@ function SummaryTile({
   tone: "warning" | "danger";
 }) {
   return (
-    <div className="rounded-2xl border border-app-border bg-app-surface p-4 shadow-[var(--ap-shadow-sm)]">
-      <div className="text-[12.5px] text-app-muted">{label}</div>
+    <div className="flex h-full min-h-[5.5rem] flex-col justify-between gap-2 rounded-2xl border border-app-border bg-app-surface px-4 py-3.5 shadow-[var(--ap-shadow-sm)]">
+      <div className="text-[12.5px] leading-5 text-app-muted">{label}</div>
       <div
         className={cn(
-          "mt-2 text-[24px] font-extrabold",
+          "text-[26px] leading-none font-extrabold tabular-nums",
           tone === "warning" ? "text-app-warning" : "text-app-danger",
         )}
       >
