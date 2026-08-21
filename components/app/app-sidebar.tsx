@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { useMyResidencyQuery } from "@/queries/residency";
 import {
   useManagerRequestsQuery,
   useResidentRequestsQuery,
 } from "@/queries/requests";
+import { useMyResidencyQuery } from "@/queries/residency";
 import { useStaffTasksQuery } from "@/queries/tasks";
 import { useBuildingsQuery } from "@/queries/units";
 import { usePendingPaymentsQuery } from "@/queries/wallet";
